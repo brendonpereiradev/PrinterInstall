@@ -45,3 +45,6 @@ Desktop.ini
 
 ## Publish output (optional local drops)
 publish/
+
+## Git worktrees (local only)
+.worktrees/
