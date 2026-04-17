@@ -1,4 +1,5 @@
 using System.Net;
+using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
 
@@ -9,4 +10,16 @@ public interface IRemotePrinterOperations
     Task CreateTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, string printerHostAddress, int portNumber, string protocol, CancellationToken cancellationToken = default);
 
     Task AddPrinterAsync(string computerName, NetworkCredential credential, string printerName, string driverName, string portName, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<RemotePrinterQueueInfo>> ListPrinterQueuesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
+
+    Task RemovePrinterQueueAsync(string computerName, NetworkCredential credential, string printerName, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
+
+    Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
+
+    Task RemoveTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
 }

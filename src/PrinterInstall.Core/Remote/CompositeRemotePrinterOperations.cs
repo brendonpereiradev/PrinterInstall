@@ -1,4 +1,5 @@
 using System.Net;
+using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
 
@@ -50,6 +51,54 @@ public sealed class CompositeRemotePrinterOperations : IRemotePrinterOperations
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             await _fallback.AddPrinterAsync(computerName, credential, printerName, driverName, portName, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public async Task<IReadOnlyList<RemotePrinterQueueInfo>> ListPrinterQueuesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _primary.ListPrinterQueuesAsync(computerName, credential, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return await _fallback.ListPrinterQueuesAsync(computerName, credential, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public async Task RemovePrinterQueueAsync(string computerName, NetworkCredential credential, string printerName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _primary.RemovePrinterQueueAsync(computerName, credential, printerName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await _fallback.RemovePrinterQueueAsync(computerName, credential, printerName, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public async Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _primary.CountPrintersUsingPortAsync(computerName, credential, portName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return await _fallback.CountPrintersUsingPortAsync(computerName, credential, portName, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public async Task RemoveTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _primary.RemoveTcpPrinterPortAsync(computerName, credential, portName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await _fallback.RemoveTcpPrinterPortAsync(computerName, credential, portName, cancellationToken).ConfigureAwait(false);
         }
     }
 }
