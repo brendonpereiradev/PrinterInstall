@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LocalizeModuleInfo xmlns="http://schema.epson.net/multilanguage/inkjet/v100">
+	<VIFInfo>
+		<Section Name="CommonDrvInfo">
+			<UILResModule>E_WIA0EE.DLL</UILResModule>
+			<HelpFilePV>E_QIPV1E.CHM</HelpFilePV>
+			<HelpResModule>E_WIHK0E.DLL</HelpResModule>
+			<JAHelpFile>E_JJA03E.CHM</JAHelpFile>
+			<JAResModule>E_WJA03E.DLL</JAResModule>
+			<BISACHelpFile>DEVOP0AE.CHM</BISACHelpFile>
+		</Section>
+	</VIFInfo>
+<Arabic>
+  <LangID Region="W">0401</LangID>
+  <LangID Region="A">0401</LangID>
+  <LangID Region="J">0401</LangID>
+  </Arabic>
+<Azerbaijani>
+  <LangID Region="W">042C</LangID>
+  <LangID Region="A">042C</LangID>
+  <LangID Region="J">042C</LangID>
+  </Azerbaijani>
+<Belarussian>
+  <LangID Region="W">0423</LangID>
+  <LangID Region="A">0423</LangID>
+  <LangID Region="J">0423</LangID>
+  </Belarussian>
+<Bulgarian>
+  <LangID Region="W">0402</LangID>
+  <LangID Region="A">0402</LangID>
+  <LangID Region="J">0402</LangID>
+  </Bulgarian>
+<Catalan>
+  <LangID Region="W">0403</LangID>
+  <LangID Region="A">0403</LangID>
+  <LangID Region="J">0403</LangID>
+  </Catalan>
+<Chinese-Simplified>
+  <LangID Region="W">0804</LangID>
+  <LangID Region="A">0804</LangID>
+  <LangID Region="J">0804</LangID>
+  </Chinese-Simplified>
+<Chinese-Traditional>
+  <LangID Region="W">0404</LangID>
+  <LangID Region="A">0404</LangID>
+  <LangID Region="J">0404</LangID>
+  </Chinese-Traditional>
+<Croatian>
+  <LangID Region="W">041A</LangID>
+  <LangID Region="A">041A</LangID>
+  <LangID Region="J">041A</LangID>
+  </Croatian>
+<Czech>
+  <LangID Region="W">0405</LangID>
+  <LangID Region="A">0405</LangID>
+  <LangID Region="J">0405</LangID>
+  </Czech>
+<Danish>
+  <LangID Region="W">0406</LangID>
+  <LangID Region="A">0406</LangID>
+  <LangID Region="J">0406</LangID>
+  </Danish>
+<Dutch>
+  <LangID Region="W">0413</LangID>
+  <LangID Region="A">0413</LangID>
+  <LangID Region="J">0413</LangID>
+  </Dutch>
+<Estonian>
+  <LangID Region="W">0425</LangID>
+  <LangID Region="A">0425</LangID>
+  <LangID Region="J">0425</LangID>
+  </Estonian>
+<Finnish>
+  <LangID Region="W">040B</LangID>
+  <LangID Region="A">040B</LangID>
+  <LangID Region="J">040B</LangID>
+  </Finnish>
+<French>
+  <LangID Region="W">040C</LangID>
+  <LangID Region="A">0C0C</LangID>
+  <LangID Region="J">040C</LangID>
+  </French>
+<German>
+  <LangID Region="W">0407</LangID>
+  <LangID Region="A">0407</LangID>
+  <LangID Region="J">0407</LangID>
+  </German>
+<Greek>
+  <LangID Region="W">0408</LangID>
+  <LangID Region="A">0408</LangID>
+  <LangID Region="J">0408</LangID>
+  </Greek>
+<Hebrew>
+  <LangID Region="W">040D</LangID>
+  <LangID Region="A">040D</LangID>
+  <LangID Region="J">040D</LangID>
+  </Hebrew>
+<Hindi>
+  <LangID Region="W">0439</LangID>
+  <LangID Region="A">0439</LangID>
+  <LangID Region="J">0439</LangID>
+  </Hindi>
+<Hungarian>
+  <LangID Region="W">040E</LangID>
+  <LangID Region="A">040E</LangID>
+  <LangID Region="J">040E</LangID>
+  </Hungarian>
+<Indonesian>
+  <LangID Region="W">0421</LangID>
+  <LangID Region="A">0421</LangID>
+  <LangID Region="J">0421</LangID>
+  </Indonesian>
+<Italian>
+  <LangID Region="W">0410</LangID>
+  <LangID Region="A">0410</LangID>
+  <LangID Region="J">0410</LangID>
+  </Italian>
+<Japanese>
+  <LangID Region="W">0411</LangID>
+  <LangID Region="A">0411</LangID>
+  <LangID Region="J">0411</LangID>
+  </Japanese>
+<Kazakh>
+  <LangID Region="W">043F</LangID>
+  <LangID Region="A">043F</LangID>
+  <LangID Region="J">043F</LangID>
+  </Kazakh>
+<Kiswahili>
+  <LangID Region="W">0441</LangID>
+  <LangID Region="A">0441</LangID>
+  <LangID Region="J">0441</LangID>
+  </Kiswahili>
+<Korean>
+  <LangID Region="W">0412</LangID>
+  <LangID Region="A">0412</LangID>
+  <LangID Region="J">0412</LangID>
+  </Korean>
+</LocalizeModuleInfo>

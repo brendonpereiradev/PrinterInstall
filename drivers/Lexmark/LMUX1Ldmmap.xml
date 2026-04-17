@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2012-2013 Lexmark International, Inc. All rights reserved. -->
+<Properties xmlns="http://schemas.microsoft.com/windows/2011/08/printing/devmodemap">
+  <Property Name="WatermarkEnabled">
+    <Bool>false</Bool>
+  </Property>
+  <Property Name="WatermarkPagesAffected">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark1InfoId">
+    <String Length="65" />
+  </Property>
+  <Property Name="Watermark1InfoName">
+    <String Length="65" />
+  </Property>
+  <Property Name="Watermark1InfoText">
+    <String Length="257" />
+  </Property>
+  <Property Name="Watermark1InfoRotate">
+    <Int32>45</Int32>
+  </Property>
+  <Property Name="Watermark1InfoTextColor">
+    <ByteArray Size="4"></ByteArray>
+  </Property>
+  <Property Name="Watermark1InfoFont">
+    <String Length="65"></String>
+  </Property>
+  <Property Name="Watermark1InfoFontSize">
+    <Int32>72</Int32>
+  </Property>
+  <Property Name="Watermark1InfoFontStyle">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark1InfoFontEffects">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark1InfoTransparency">
+    <Int32>70</Int32>
+  </Property>
+  <Property Name="Watermark1InfoHorzPos">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark1InfoVertPos">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark1InfoVertOffset">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark1InfoHorzOffset">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark1InfoDynamicFlag">
+    <Bool>false</Bool>
+  </Property>
+  <Property Name="Watermark1InfoOrientation">
+    <Int32>1</Int32>
+  </Property>
+  <Property Name="Watermark1AboveDocumentText">
+    <Bool>true</Bool>
+  </Property>
+  <Property Name="Watermark2InfoId">
+    <String Length="65" />
+  </Property>
+  <Property Name="Watermark2InfoName">
+    <String Length="65" />
+  </Property>
+  <Property Name="Watermark2InfoText">
+    <String Length="257" />
+  </Property>
+  <Property Name="Watermark2InfoRotate">
+    <Int32>45</Int32>
+  </Property>
+  <Property Name="Watermark2InfoTextColor">
+    <ByteArray Size="4"></ByteArray>
+  </Property>
+  <Property Name="Watermark2InfoFont">
+    <String Length="65"></String>
+  </Property>
+  <Property Name="Watermark2InfoFontSize">
+    <Int32>72</Int32>
+  </Property>
+  <Property Name="Watermark2InfoFontStyle">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark2InfoFontEffects">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark2InfoTransparency">
+    <Int32>70</Int32>
+  </Property>
+  <Property Name="Watermark2InfoHorzPos">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark2InfoVertPos">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark2InfoVertOffset">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark2InfoHorzOffset">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Watermark2InfoDynamicFlag">
+    <Bool>false</Bool>
+  </Property>
+  <Property Name="Watermark2InfoOrientation">
+    <Int32>1</Int32>
+  </Property>
+  <Property Name="Watermark2AboveDocumentText">
+    <Bool>true</Bool>
+  </Property>
+  <Property Name="PageWatermarkEnabled">
+    <Bool>false</Bool>
+  </Property>
+  <Property Name="PageWatermarkOriginWidth">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="PageWatermarkOriginHeight">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="PageWatermarkTextColor">
+    <ByteArray Size="4"></ByteArray>
+  </Property>
+  <Property Name="PageWatermarkTextFontSize">
+    <Int32>72</Int32>
+  </Property>
+  <Property Name="PageWatermarkTextText">
+    <String Length="257" />
+  </Property>
+  <Property Name="PageWatermarkTransparency">
+    <Int32>70</Int32>
+  </Property>
+  <Property Name="PageWatermarkTextAngle">
+    <Int32>45</Int32>
+  </Property>
+  <Property Name="PageWatermarkAboveDocumentText">
+    <Bool>true</Bool>
+  </Property>
+  <Property Name="EnablePrintAndHold">
+    <Bool>false</Bool>
+  </Property>
+  <Property Name="PrintAndHoldValue">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="UserName">
+    <String Length="25" />
+  </Property>
+  <Property Name="PIN">
+    <String Length="10" />
+  </Property>
+  <Property Name="KeepPreviousPrintAndHoldJobs">
+    <Bool>false</Bool>
+  </Property>
+  <Property Name="DocumentPagesPerSheet">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="DocumentPresentationDirection">
+    <Int32>0</Int32>
+  </Property>
+   <Property Name="EnableAccountTracking">
+    <Bool>false</Bool>
+  </Property>
+  <Property Name="AccountTrackingUserName">
+    <String Length="65"></String>
+  </Property>
+  <Property Name="AccountTrackingAccountNumber">
+    <String Length="33"></String>
+  </Property>
+  <Property Name="AccountTrackingDepartmentNumber">
+    <String Length="33"></String>
+  </Property>
+  <Property Name="PageScaling">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="Scale">
+    <Int32>100</Int32>
+  </Property>
+  <Property Name="DocumentDuplex">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="DocumentCopies">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="PageCopies">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="JobCollate">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="PageForceFrontSide">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="JobScalingManual">
+    <Int32>100</Int32>
+  </Property>
+  <Property Name="JobScaleOffsetWidth">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="JobScaleOffsetHeight">
+    <Int32>0</Int32>
+  </Property>
+  <Property Name="FitToPageCustomForm">
+   <String Length="257" />
+  </Property>
+  <Property Name="SaveApplied">
+    <String Length="65">0</String>
+  </Property>
+  <Property Name="FaxNumber">
+    <String Length="160"></String>
+  </Property>
+  <Property Name="FaxDialingPrefix">
+    <String Length="65"></String>
+  </Property>
+  <Property Name="FaxName">
+    <String Length="65">LoggedInUserName</String>
+  </Property>
+  <Property Name="FaxCoverPageName">
+    <String Length="129"></String>
+  </Property>
+  <Property Name="FaxCoverPageComment">
+    <String Length="1501"></String>
+  </Property>
+  <Property Name="FaxSenderName">
+    <String Length="129"></String>
+  </Property>
+  <Property Name="FaxSenderCompany">
+    <String Length="129"></String>
+  </Property>
+  <Property Name="FaxSenderAddress1">
+    <String Length="129"></String>
+  </Property>
+  <Property Name="FaxSenderAddress2">
+    <String Length="129"></String>
+  </Property>
+  <Property Name="FaxSenderFax">
+    <String Length="129"></String>
+  </Property>
+  <Property Name="FaxSenderVoice">
+    <String Length="129"></String>
+  </Property>
+  <Property Name="FaxSenderEmail">
+    <String Length="129"></String>
+  </Property>
+  <Property Name="FaxSenderImage">
+    <String Length="260"></String>
+  </Property>
+  <Property Name="DuplexMode">
+    <String Length="65">Manual</String>
+  </Property>
+  <Property Name="PageInputBin">
+    <String Length="65"></String>
+  </Property> 
+  <Property Name="JobBookletCoverInputBin">
+    <String Length="65"></String>
+  </Property>  
+</Properties>

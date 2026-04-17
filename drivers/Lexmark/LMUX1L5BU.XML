@@ -1,0 +1,449 @@
+<?xml version='1.0'?>
+<!-- Copyright 2012-2013 Lexmark International, Inc. All rights reserved. -->
+<bidi:Schema xmlns:bidi="http://schemas.microsoft.com/windows/2010/09/printing/usbbidi">
+  <Property name='Printer'>
+    <Property name='DeviceInfo'>
+      <Value name='FirmwareVersion' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      <Value name='SerialNumber' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      <Value name='ModelName' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      <Value name='MTMN' type='BIDI_STRING' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='false' refreshInterval='60'/>
+    </Property>
+    <Property name='Paper'>
+      <Property name='PaperTypes'>
+        <Property name='Plain'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Letterhead'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Labels'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Envelope'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Recycled'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Glossy'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='HeavyGlossy'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Vinyl'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Bond'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='RoughEnvelope'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Transparency'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Preprinted'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Colored'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Light'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Heavy'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='Rough'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='CardStock'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='CustomType1'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='CustomType2'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='CustomType3'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='CustomType4'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='CustomType5'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+        <Property name='CustomType6'>
+          <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        </Property>
+      </Property>
+    </Property>
+    <Property name='Configuration'>
+      <Property name='Memory'>
+        <Value name='Size' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='true' refreshInterval='60'/>
+        <Value name='PS' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='true' refreshInterval='60'/>
+      </Property>
+      <Property name='HardDisk'>
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='RDCOption' drvPrinterEvent='true' refreshInterval='60'/>
+      </Property>
+      <Property name='OptionalCard'>
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='RDCOption' drvPrinterEvent='true' refreshInterval='60'/>
+      </Property>
+      <Property name='DuplexUnit'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+      <Property name='Resolutions'>
+        <Property name='Resolution600DPI'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Resolution1200DPI'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Resolution1200IQ'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Resolution2400IQ'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Resolution4800CQ'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+      </Property>
+      <Property name='A3Printer'>
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='NVRAMQuery' drvPrinterEvent='true' refreshInterval='60'/>
+      </Property>
+    </Property>
+    <Property name="Consumables">
+      <Property name="BlackCartridge">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="CyanCartridge">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="MagentaCartridge">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="YellowCartridge">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name='ColorPrinter'>
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='true' refreshInterval='60' />
+      </Property>
+      <Property name="ColorCartridge">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="PhotoDrum">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="BlackPhotoDrum">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="CyanPhotoDrum">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="MagentaPhotoDrum">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="YellowPhotoDrum">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="WasteTonerBottle">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="MaintenanceKit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="160MaintenanceKit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="320MaintenanceKit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="480MaintenanceKit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="SeparatorRollAndPickAssembly">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="ImagingUnit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="BlackAndColorImagingUnit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="CyanImagingUnit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="MagentaImagingUnit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="YellowImagingUnit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="ImagingKit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="TransferModule">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+      <Property name="ImageTransferUnit">
+        <Value name='Installed' type='BIDI_BOOL' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Type' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Color' type='BIDI_STRING' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+        <Value name='Level' type='BIDI_INT' accessType='Get' queryKey='USBQuery' drvPrinterEvent='false' refreshInterval='60'/>
+      </Property>
+    </Property>
+    <Property name='Layout'>
+      <Property name='InputBin'>
+        <Property name='Tray1'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Tray2'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Tray3'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Tray4'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Tray5'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Tray6'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Tray7'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='EnvFeed'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Manual'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='MultiPurposeBin'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='ManualEnv'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaSize" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="MediaType" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="FeedDirection" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="CurrentLevel" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+      </Property>
+    </Property>
+    <Property name='Finishing'>
+      <Property name='OutputBin'>
+        <Property name='Bin1'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin2'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin3'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin4'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin5'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin6'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin7'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin8'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin9'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin10'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin11'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+        <Property name='Bin12'>
+          <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Capacity" type="BIDI_INT" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+          <Value name="Status" type="BIDI_STRING" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+        </Property>
+      </Property>
+      <Property name='Staple'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+      <Property name='StapleDual'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+      <Property name='HolePunch'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+      <Property name='HolePunch2'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+      <Property name='HolePunch3'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+      <Property name='HolePunch4'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="NVRAMQuery" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+      <Property name='Offset'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+      <Property name='Fold'>
+        <Value name="Installed" type="BIDI_BOOL" accessType="Get" queryKey="Configuration" refreshInterval="60" drvPrinterEvent="true"/>
+      </Property>
+    </Property>
+  </Property>
+</bidi:Schema>

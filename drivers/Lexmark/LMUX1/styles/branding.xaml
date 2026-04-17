@@ -1,0 +1,100 @@
+﻿<!-->
+    Copyright 2013 Lexmark International, Inc. All rights reserved.
+
+    Custom branding colors for Lexmark (Hinged verison)
+<!-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    
+    <!-- Title Bar -->
+    <SolidColorBrush x:Key="titleBarBorderBrushKey" Color="#BCBEC0" />
+    <Color x:Key="titleBarBackgroundGradientStop1Color">#FFFFFF</Color>
+    <Color x:Key="titleBarBackgroundGradientStop2Color">#E6E7E8</Color>
+    <SolidColorBrush x:Key="titleBarTextForegroundBrushKey" Color="#000000" />
+    <SolidColorBrush x:Key="iconTextForegroundBrushKey" Color="Black"/>
+    <SolidColorBrush x:Key="verticalBarFillColorBrushKey" Color="Black"/>
+
+    <!-- MainWindow -->
+    <SolidColorBrush x:Key="mainWindowBackgroundBrushKey" Color="#FFFFFF" />
+
+    <!-- Collections -->
+    <SolidColorBrush x:Key="collectionHeadingTextForegroundBrushKey" Color="White" />
+    <SolidColorBrush x:Key="collectionHeadingBackgroundBrushKey" Color="#004A80" />
+    <SolidColorBrush x:Key="collectionContentBorderBrushKey" Color="#DDDDDD" />
+    <SolidColorBrush x:Key="collectionContentBackgroundBrushKey" Color="#F5F5F5" />
+
+    <!-- HotKey -->
+    <SolidColorBrush x:Key="hotkeyBorderBrushKey" Color="Transparent" />
+    <SolidColorBrush x:Key="hotkeyBackgroundBrushKey" Color="Black" />
+    <SolidColorBrush x:Key="hotKeyTextForegroundBrushKey" Color="White" />
+
+    <!-- ToolTip -->
+    <SolidColorBrush x:Key="toolTipBackgroundBrushKey" Color="White" />
+    <SolidColorBrush x:Key="toolTipBorderBrushKey" Color="#DDDDDD" />
+    <SolidColorBrush x:Key="toolTipTitleForegroundBrushKey" Color="#004A80" />
+
+    <!-- ConstraintHelp Popup -->
+    <SolidColorBrush x:Key="constraintHelpTextForegroundBrushKey" Color="Black" />
+    <SolidColorBrush x:Key="constraintPopupBackgroundBrushKey" Color="White"/>
+    <SolidColorBrush x:Key="constraintPopupBorderBrushKey" Color="#DDDDDD"/>
+
+    <!-- Popup Dialog Box -->
+    <SolidColorBrush x:Key="popupDialogBackgroundBrushKey" Color="WhiteSmoke"/>
+    <SolidColorBrush x:Key="popupDialogTitleTextForegroundBrushKey" Color="Black"/>
+    <SolidColorBrush x:Key="popupDialogBoxTextForegroundBrushKey" Color="Black"/>
+
+    <!-- Toner Levels Dialog -->
+    <SolidColorBrush x:Key="tonerDialogBackgroundBrushKey" Color="WhiteSmoke"/>
+
+    <!-- Close/OK Button in About and Toner level dialogs -->
+    <SolidColorBrush x:Key="closeButtonBorderBrushKey" Color="#707070" />
+    <SolidColorBrush x:Key="closeButtonBackgroundBrushKey" Color="White"/>
+    <SolidColorBrush x:Key="closeButtonTextForegroundBrushKey" Color="Black"/>
+
+    <!-- Bottom Bar -->
+    <SolidColorBrush x:Key="bottomBarBackgroundBrushKey" Color="White" />
+    <SolidColorBrush x:Key="okCancelButtonForegroundBrushKey" Color="#000000" />
+    <SolidColorBrush x:Key="okCancelButtonBackgroundBrushKey" Color="White"/>
+    <SolidColorBrush x:Key="okCancelButtonBorderBrushKey" Color="#707070" />
+
+    <!--Watermark Dynamic Text Token Border Brush-->
+    <SolidColorBrush x:Key="watermarkTokenBorderBrushKey" Color="#707070" />
+    <SolidColorBrush x:Key="watermarkTokenBackgroundBrushKey" Color="#F5F5F5" />
+    
+    <!--Region Unhinged -->
+    <!-- These need to vary between standard and high contrast, but there is currently no requirement for them to be hingeable -->
+    
+    <!-- Checkboxes -->
+    <SolidColorBrush x:Key="checkBoxCheckBrushKey" Color="#FF212121" />
+    <SolidColorBrush x:Key="checkBoxMouseOverBackgroundBrushKey" Color="#FFF3F9FF" />
+    <SolidColorBrush x:Key="checkBoxMouseOverBorderBrushKey" Color="#FF5593FF" />
+    <SolidColorBrush x:Key="checkBoxMouseOverCheckBrushKey" Color="#FF212121" />
+    <SolidColorBrush x:Key="checkBoxDisabledBackgroundBrushKey" Color="#FFE6E6E6" />
+    <SolidColorBrush x:Key="checkBoxDisabledBorderBrushKey" Color="#FFBCBCBC" />
+    <SolidColorBrush x:Key="checkBoxDisabledCheckBrushKey" Color="#FF707070" />
+    <SolidColorBrush x:Key="checkBoxPressedBackgroundBrushKey" Color="#FFD9ECFF" />
+    <SolidColorBrush x:Key="checkBoxPressedBorderBrushKey" Color="#FF3C77DD" />
+    <SolidColorBrush x:Key="checkBoxPressedCheckBrushKey" Color="#FF212121" />
+
+    <!-- Watermark Editor -->
+    <SolidColorBrush x:Key="wmkEditorToggleButtonBorderBrushKey" Color="#ACACAC" />
+    <SolidColorBrush x:Key="wmkEditorArrowFillBrushKey" Color="#FF606060" />
+    <sys:Double x:Key="watermarkTokenizedTextboxHeightKey">24</sys:Double>
+
+    <Color x:Key="comboboxBackgroundGradientStop1Color">#FFF0F0F0</Color>
+    <Color x:Key="comboboxBackgroundGradientStop2Color">#FFE5E5E5</Color>
+
+    <!-- down arrow to match other comboboxes on the watermark editor toolbar -->
+    <Path x:Key="ToolbarArrowDown" 
+          Data="F1M 0,0 L2.667,2.66665 5.3334,0 5.3334,-1.78168 2.6667,0.88501 0,-1.78168 0,0z" 
+          Fill="{DynamicResource wmkEditorArrowFillBrushKey}" />
+
+    <!-- up arrow to match other comboboxes on the watermark editor toolbar-->
+    <Path x:Key="ToolbarArrowUp" 
+          Data="F1M 0,0 L2.667,-2.66665 5.3334,0 5.3334,1.78168 2.6667,-0.88501 0,1.78168 0,0z"
+          Fill="{DynamicResource wmkEditorArrowFillBrushKey}" /> 
+
+    <!--EndRegion -->
+    
+</ResourceDictionary>
