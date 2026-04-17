@@ -1,0 +1,24 @@
+<driver version='6.6'>
+
+<stock>
+Name=2 x 4
+Data=WkxJQhwAAAAYAAAAeJwrOMbA8KCHkeEbCwMYwwCICQBmGASc
+</stock>
+
+<stock>
+Name=4 x 4
+Data=WkxJQhwAAAAWAAAAeJx70MPI8ACIv7EwgDEMgJgAbFQE0w==
+</stock>
+
+<stock>
+Name=4 x 6
+Data=WkxJQhwAAAAYAAAAeJx70MPIEBDMxPCNhQGMYQDEBABZywQL
+</stock>
+
+<font type='Bar Code'>
+Name=Sample Bar Code Font
+Data=WkxJQqgAAABAAAAAeJybwMgABgoaZgbBibkFOakKTolFCs75KakKbvl5JQxIAKTUEEQoMKQwoIEYdAEkwA4m2TDEGfHoQQcAOGsJSg==
+</font>
+
+</driver>
+

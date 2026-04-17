@@ -1,0 +1,117 @@
+<!--
+Copyright 2017 Lexmark International, Inc. All rights reserved.
+-->
+<Filters>
+   <Filter  dll                     = "LMUX1LFM.DLL"
+            clsid                   = "{E4E2BD0D-61A2-4f50-8ECE-132802AEF01F}"
+            name                    = "Peer To Peer Filter">
+            <Input         guid     = "{4d47a67c-66cc-4430-850e-daf466fe5bc4}"
+                           comment  = "IID_IPrintReadStream" />
+            <Output        guid     = "{65bb7f1b-371e-4571-8ac7-912f510c1a38}"
+                           comment  = "IID_IPrintWriteStream" />
+   </Filter>
+   <Filter  dll                     = "LMUX1LFG.DLL"
+            clsid                   = "{C0689D1F-2682-4CE6-A2E5-F801B528A411}"
+            name                    = "Preprocessing Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFU.DLL"
+            clsid                   = "{1C0F9B80-9AE0-46DD-FFFF-FFFFB47DF2D0}"
+            name                    = "Page Resize Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFR.DLL"
+            clsid                   = "{F3A8F80A-3C4D-41b3-8AC7-BCCB4F63F467}"
+            name                    = "Print Text As Black Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFT.DLL"
+            clsid                   = "{7225FC23-16C4-4D5E-BCA1-C0A760C0B5E6}"
+            name                    = "Watermark Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFL.DLL"
+            clsid                   = "{C3AEF6EE-A5CE-47E2-A7C7-730058C9B2D1}"
+            name                    = "Nup Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                    = "LMUX1LFH.DLL"
+            clsid                   = "{B72EFC59-68E3-4e72-866E-FE3D3A4FA385}"
+            name                    = "Booklet Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFQ.DLL"
+            clsid                   = "{E92D07BB-0345-472a-94F9-045EC492190F}"
+            name                    = "MultipleInput Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFI.DLL"
+            clsid                   = "{DD9A5747-CBFE-416a-B9E1-E88BD9AD7447}"
+            name                    = "Poster Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFK.DLL"
+            clsid                   = "{8B50CC98-85AA-4E84-AE6C-3E0F10F777DE}"
+            name                    = "Manual Duplex Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFN.DLL"
+            clsid                   = "{715C0CE8-ACAE-4B49-AD44-9832C2597B57}"
+            name                    = "Host base Collate Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFP.DLL"
+            clsid                   = "{26717D06-C8DC-4B42-8956-B473054F3280}"
+            name                    = "Print Ticket Modification Filter">
+            <Input         guid     = "{B8CF8530-5562-47C4-AB67-B1F69ECF961E}"
+                           comment  = "IID_IReachPackageProvider"/>
+            <Output        guid     = "{4368D8A2-4181-4A9F-B295-3D9A38BB9BA0}"
+                           comment  = "IID_IReachPackageConsumer"/>
+   </Filter>
+   <Filter dll                      = "MSxpsPCL6.dll"
+           clsid                    = "{3821E518-33AF-4d17-92B3-28EB410D46B6}"
+           name                     = "Microsoft XPS to PCL6">
+           <Input          guid     = "{4d47a67c-66cc-4430-850e-daf466fe5bc4}"
+                           comment  = "IID_IPrintReadStream"/>
+           <Output         guid     = "{65bb7f1b-371e-4571-8ac7-912f510c1a38}"
+                           comment  = "IID_IPrintWriteStream"/>
+   </Filter>
+   <Filter  dll                     = "LMUX1LFW.DLL"
+           clsid                    = "{c08dad70-069e-4d4b-b968-8d1fd8745254}"
+           name                     = "PJL Wrapper Filter">
+           <Input          guid     = "{4d47a67c-66cc-4430-850e-daf466fe5bc4}"
+                           comment  = "IID_IPrintReadStream"/>
+           <Output         guid     = "{65bb7f1b-371e-4571-8ac7-912f510c1a38}"
+                           comment  = "IID_IPrintWriteStream"/>
+   </Filter>
+</Filters>

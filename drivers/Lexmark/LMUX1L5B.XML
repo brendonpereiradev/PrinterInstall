@@ -1,0 +1,768 @@
+<?xml version='1.0'?>
+<!-- Lexmark Printer Driver Extensions -->
+<!-- Copyright 2012-2013 Lexmark International, Inc. All rights reserved. -->
+<bidi:Schema xmlns:bidi='http://schemas.microsoft.com/windows/2005/03/printing/bidi'>
+  <Property name='Printer'>
+    <Property name='DeviceInfo'>
+      <Value name='FriendlyName' oid='1.3.6.1.2.1.1.5' type='BIDI_STRING'   />
+      <Value name='Location' oid='1.3.6.1.2.1.1.6' type='BIDI_STRING' />
+      <Value name='Comment' oid='1.3.6.1.2.1.1.1' type='BIDI_STRING' />
+      <Value name='FirmwareVersion' oid='1.3.6.1.4.1.641.2.1.2.1.4' type='BIDI_STRING' deviceIndex='true' />
+      <!-- oid and type are correct according to mib specs but Oasis and Arcas did not support-->
+      <Value name='SerialNumber' oid='1.3.6.1.4.1.641.6.2.3.1.5' type='BIDI_STRING' deviceIndex='true' />
+      <!-- oid and type are correct according to mib specs but Oasis and Arcas did not support-->
+      <Value name='ModelName' oid='1.3.6.1.4.1.641.6.2.3.1.4' type='BIDI_STRING'  deviceIndex='true' />
+      <!-- oid and type are correct according to mib specs but Oasis and Arcas did not support-->
+    </Property>
+    <Property name='Paper'>
+      <Property name='PaperTypes'>
+        <Property name='Glossy'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.52' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='Glossy'/>
+          </Installed>
+        </Property>
+        <Property name='HeavyGlossy'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.52' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='Heavy Glossy'/>
+          </Installed>
+        </Property>
+        <Property name='Vinyl'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.52' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='Vinyl Labels'/>
+          </Installed>
+        </Property>
+        <Property name='RoughEnvelope'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.1102' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='Rough Envelope'/>
+          </Installed>
+        </Property>
+        <Property name='Recycled'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.52' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='Recycled'/>
+          </Installed>
+        </Property>
+        <Property name='Rough'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.52' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='Rough/Cotton'/>
+          </Installed>
+        </Property>
+        <Property name='Heavy'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.52' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='Heavy Paper'/>
+          </Installed>
+        </Property>
+        <Property name='Light'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.52' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='Light Paper'/>
+          </Installed>
+        </Property>
+      </Property>
+    </Property>
+    <Property name='Configuration'>
+      <Property name='Memory'>
+        <Value name='Size' oid='1.3.6.1.2.1.25.2.2' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+        <Value name='PS' oid='1.3.6.1.2.1.25.2.2' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+      </Property>
+      <Property name='PublicStorageTable'>
+        <IndexedProperty name='Row'>
+          <Value name='Description' oid='1.3.6.1.2.1.25.2.3.1.3' type='BIDI_STRING' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='Type' oid='1.3.6.1.2.1.25.2.3.1.2' type='BIDI_STRING' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='CapacityUnit' oid='1.3.6.1.2.1.25.2.3.1.4' type='BIDI_INT' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='Capacity' oid='1.3.6.1.2.1.25.2.3.1.5' type='BIDI_INT' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='Used' oid='1.3.6.1.2.1.25.2.3.1.6' type='BIDI_INT' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'/>
+        </IndexedProperty>
+      </Property>
+      <Property name='HardDisk'>
+        <Installed name='Installed' oid='1.3.6.1.2.1.25.2.3.1.2' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+          <Lookup value='1.3.6.1.2.1.25.2.1.4'/>
+        </Installed>
+      </Property>
+      <Property name='OptionalCard'>
+        <Installed name='Installed' oid='1.3.6.1.2.1.25.2.3.1.3' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+          <Lookup value='%flash%'/>
+        </Installed>
+      </Property>
+      <Property name='DuplexUnit'>
+        <Installed name='Installed' oid='1.3.6.1.2.1.43.13.4.1.9' deviceIndex='true' refreshInterval='600' drvPrinterEvent='true'>
+          <Lookup value='3'/>
+          <Lookup value='4'/>
+        </Installed>
+      </Property>
+      <Property name='Resolutions'>
+        <Property name='Resolution600DPI'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.2190' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='600 dpi'/>
+          </Installed>
+        </Property>
+        <Property name='Resolution1200DPI'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.2190' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='1200 dpi'/>
+          </Installed>
+        </Property>
+        <Property name='Resolution1200IQ'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.2190' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='1200 IQ'/>
+			<Lookup value='1200 Image Q'/>
+          </Installed>
+        </Property>
+        <Property name='Resolution2400IQ'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.2190' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='2400 IQ'/>
+			<Lookup value='2400 Image Q'/>
+          </Installed>
+        </Property>
+        <Property name='Resolution4800CQ'>
+          <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.2190' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+            <Lookup value='4800 CQ'/>
+          </Installed>
+        </Property>
+      </Property>
+      <Property name='A3Printer'>
+        <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.1101' deviceIndex='true' refreshInterval='300' drvPrinterEvent='true'>
+          <Lookup value='A3'/>
+          <Lookup value='SRA3'/>
+          <Lookup value='12x18'/>
+          <Lookup value='Tabloid'/>
+        </Installed>
+      </Property>
+    </Property>
+    <Property name ='Consumables'>
+      <Property name='ColorPrinter'>
+        <Installed name='Installed' oid='1.3.6.1.2.1.43.11.1.1.6' deviceIndex='true' refreshInterval='600' drvPrinterEvent='true'>
+          <Lookup value='Cyan Cartridge'/>
+          <Lookup value='Magenta Cartridge'/>
+          <Lookup value='Yellow Cartridge'/>
+          <Lookup value='Cyan Toner'/>
+          <Lookup value='Magenta Toner'/>
+          <Lookup value='Yellow Toner'/>
+        </Installed>
+      </Property>
+      <Property name='PublicSuppliesTable'>
+        <IndexedProperty name='Row'>
+          <Value name='Description' type='BIDI_STRING' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.2.1.43.11.1.1.6'/>
+          <Converter name='Type' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.2.1.43.11.1.1.5'>
+            <Conversion mibValue='1' bidiValue='other'/>
+            <Conversion mibValue='2' bidiValue='unknown'/>
+            <Conversion mibValue='3' bidiValue='toner'/>
+            <Conversion mibValue='4' bidiValue='wasteToner'/>
+            <Conversion mibValue='5' bidiValue='ink'/>
+            <Conversion mibValue='6' bidiValue='inkCartridge'/>
+            <Conversion mibValue='7' bidiValue='inkRibbon'/>
+            <Conversion mibValue='8' bidiValue='wasteInk'/>
+            <Conversion mibValue='9' bidiValue='opc'/>
+            <Conversion mibValue='10' bidiValue='developer'/>
+            <Conversion mibValue='11' bidiValue='fuserOil'/>
+            <Conversion mibValue='12' bidiValue='solidWax'/>
+            <Conversion mibValue='13' bidiValue='ribbonWax'/>
+            <Conversion mibValue='14' bidiValue='wasteWax'/>
+            <Conversion mibValue='15' bidiValue='fuser'/>
+            <Conversion mibValue='16' bidiValue='coronaWire'/>
+            <Conversion mibValue='17' bidiValue='fuserOilWick'/>
+            <Conversion mibValue='18' bidiValue='cleanerUnit'/>
+            <Conversion mibValue='19' bidiValue='fuserCleaningPad'/>
+            <Conversion mibValue='20' bidiValue='transferUnit'/>
+            <Conversion mibValue='21' bidiValue='tonerCartridge'/>
+            <Conversion mibValue='22' bidiValue='fuserOiler'/>
+            <Conversion mibValue='23' bidiValue='water'/>
+            <Conversion mibValue='24' bidiValue='wasteWater'/>
+            <Conversion mibValue='25' bidiValue='glueWaterAdditive'/>
+            <Conversion mibValue='26' bidiValue='wastePaper'/>
+            <Conversion mibValue='27' bidiValue='bindingSupply'/>
+            <Conversion mibValue='28' bidiValue='bandingSupply'/>
+            <Conversion mibValue='29' bidiValue='stitchingWire'/>
+            <Conversion mibValue='30' bidiValue='shrinkWrap'/>
+            <Conversion mibValue='31' bidiValue='paperWrap'/>
+            <Conversion mibValue='32' bidiValue='staples'/>
+            <Conversion mibValue='33' bidiValue='inserts'/>
+            <Conversion mibValue='34' bidiValue='covers'/>
+          </Converter>
+          <Converter name='CapacityUnit' oid='1.3.6.1.2.1.43.11.1.1.7' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'>
+            <Conversion mibValue='3' bidiValue='tenThousandthsOfInches' />
+            <Conversion mibValue='4' bidiValue='micrometers' />
+            <Conversion mibValue='7' bidiValue='impressions' />
+            <Conversion mibValue='8' bidiValue='sheets' />
+            <Conversion mibValue='11' bidiValue='hours' />
+            <Conversion mibValue='12' bidiValue='thousandthsOfOunces' />
+            <Conversion mibValue='13' bidiValue='tenthsOfGrams' />
+            <Conversion mibValue='14' bidiValue='hundrethsOfFluidOunces' />
+            <Conversion mibValue='15' bidiValue='tenthsOfMilliliters' />
+            <Conversion mibValue='16' bidiValue='feet' />
+            <Conversion mibValue='17' bidiValue='meters' />
+            <Conversion mibValue='18' bidiValue='items' />
+          </Converter>
+          <Value name='Level' type='BIDI_INT' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.2.1.43.11.1.1.9'/>
+          <Value name='Capacity' type='BIDI_INT' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.2.1.43.11.1.1.8'/>
+        </IndexedProperty>
+      </Property>
+      <Property name='PrivateSuppliesTable'>
+        <IndexedProperty name='Row'>
+          <Value name='Description' type='BIDI_STRING' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.4.4.1.1.5'/>
+          <Value name='Color' type='BIDI_STRING' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.4.4.1.1.4'/>
+          <Converter name='Type' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.4.4.1.1.3'>
+            <Conversion mibValue='1' bidiValue='unknown'/>
+            <Conversion mibValue='2' bidiValue='other'/>
+            <Conversion mibValue='3' bidiValue='inkCartridge'/>
+            <Conversion mibValue='4' bidiValue='inkBottle'/>
+            <Conversion mibValue='5' bidiValue='inkPrinthead'/>
+            <Conversion mibValue='6' bidiValue='toner'/>
+            <Conversion mibValue='7' bidiValue='photoconductor'/>
+            <Conversion mibValue='8' bidiValue='transferModule'/>
+            <Conversion mibValue='9' bidiValue='fuser'/>
+            <Conversion mibValue='10' bidiValue='wastetonerBox'/>
+            <Conversion mibValue='11' bidiValue='staples'/>
+            <Conversion mibValue='12' bidiValue='holepunchBox'/>
+          </Converter>
+          <Converter name='Status' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.4.4.1.1.12'>
+            <Conversion mibValue='1' bidiValue='other'/>
+            <Conversion mibValue='2' bidiValue='unknown'/>
+            <Conversion mibValue='3' bidiValue='ok'/>
+            <Conversion mibValue='4' bidiValue='low'/>
+            <Conversion mibValue='5' bidiValue='empty'/>
+            <Conversion mibValue='6' bidiValue='invalid'/>
+          </Converter>
+          <Converter name='CapacityUnit' oid='1.3.6.1.4.1.641.6.4.4.1.1.13' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'>
+            <Conversion mibValue='1' bidiValue='unknown' />
+            <Conversion mibValue='2' bidiValue='other' />
+            <Conversion mibValue='3' bidiValue='items' />
+            <Conversion mibValue='4' bidiValue='sides' />
+            <Conversion mibValue='5' bidiValue='sheets' />
+            <Conversion mibValue='16' bidiValue='millimeters' />
+            <Conversion mibValue='17' bidiValue='centimeters' />
+            <Conversion mibValue='18' bidiValue='meters' />
+            <Conversion mibValue='19' bidiValue='inches' />
+            <Conversion mibValue='20' bidiValue='feet' />
+            <Conversion mibValue='21' bidiValue='grams' />
+            <Conversion mibValue='22' bidiValue='ounces' />
+            <Conversion mibValue='32' bidiValue='nanoseconds' />
+            <Conversion mibValue='33' bidiValue='microseconds' />
+            <Conversion mibValue='34' bidiValue='milliseconds' />
+            <Conversion mibValue='35' bidiValue='seconds' />
+            <Conversion mibValue='36' bidiValue='minutes' />
+            <Conversion mibValue='37' bidiValue='hours' />
+            <Conversion mibValue='38' bidiValue='days' />
+            <Conversion mibValue='39' bidiValue='weeks' />
+            <Conversion mibValue='40' bidiValue='months' />
+            <Conversion mibValue='41' bidiValue='years' />
+          </Converter>
+          <Value name='Level' type='BIDI_INT' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.4.4.1.1.16'/>
+          <Value name='Capacity' type='BIDI_INT' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.4.4.1.1.14'/>
+          <Value name='SerialNumber' type='BIDI_STRING' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.4.4.1.1.6'/>
+        </IndexedProperty>
+      </Property>
+    </Property>
+    <Property name='Layout'>
+      <Property name="InputBin">
+        <InputBin name="Tray1" mibName="Tray 1" refreshInterval='600'>
+          <BinValue name="Capacity" type="BIDI_INT" drvPrinterEvent='true' valueId="9"/>
+        </InputBin>
+        <InputBin name="Tray2" mibName="Tray 2" refreshInterval='600'>
+          <BinValue name="Capacity" type="BIDI_INT" drvPrinterEvent='true' valueId="9"/>
+        </InputBin>
+        <InputBin name="Tray3" mibName="Tray 3" refreshInterval='600'>
+          <BinValue name="Capacity" type="BIDI_INT" drvPrinterEvent='true' valueId="9"/>
+        </InputBin>
+        <InputBin name="Tray4" mibName="Tray 4" refreshInterval='600'>
+          <BinValue name="Capacity" type="BIDI_INT" drvPrinterEvent='true' valueId="9"/>
+        </InputBin>
+        <InputBin name="Tray5" mibName="Tray 5" refreshInterval='600'>
+          <BinValue name="Capacity" type="BIDI_INT" drvPrinterEvent='true' valueId="9"/>
+        </InputBin>
+        <InputBin name="Tray6" mibName="Tray 6" refreshInterval='600'>
+          <BinValue name="Capacity" type="BIDI_INT" drvPrinterEvent='true' valueId="9"/>
+        </InputBin>
+        <InputBin name="Tray7" mibName="Tray 7" refreshInterval='600'>
+          <BinValue name="Capacity" type="BIDI_INT" drvPrinterEvent='true' valueId="9"/>
+        </InputBin>
+        <InputBin name="EnvFeed" mibName="Feeder" refreshInterval='600'>
+          <BinValue name="Capacity" type="BIDI_INT" drvPrinterEvent='true' valueId="9"/>
+        </InputBin>
+        <InputBin name="Manual" mibName="Manual Paper" refreshInterval='600' />
+        <InputBin name="MultiPurposeBin" mibName="MP Tray" refreshInterval='600' />
+        <InputBin name="ManualEnv"  mibName="Manual Envelope" refreshInterval='600' />
+      </Property>
+      <Property name='PublicInputTable' >
+        <IndexedProperty name='Row'>
+          <Value name ='Name' oid='1.3.6.1.2.1.43.8.2.1.13' deviceIndex='true' type='BIDI_STRING' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name ='Description' oid='1.3.6.1.2.1.43.8.2.1.18' deviceIndex='true' type='BIDI_STRING' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name ='MediaName' oid='1.3.6.1.2.1.43.8.2.1.12' deviceIndex='true' type='BIDI_STRING' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name ='MediaType' oid='1.3.6.1.2.1.43.8.2.1.21' deviceIndex='true' type='BIDI_STRING' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name ='MediaColor' oid='1.3.6.1.2.1.43.8.2.1.22' deviceIndex='true' type='BIDI_STRING' drvPrinterEvent='true' refreshInterval='600'/>
+          <Converter name='MediaDimUnit' oid='1.3.6.1.2.1.43.8.2.1.3' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+            <Conversion mibValue='3' bidiValue='tenThousandthsOfInches'/>
+            <Conversion mibValue='4' bidiValue='micrometers'/>
+          </Converter>
+          <Value name ='MediaDimXFeedDirDeclared' oid='1.3.6.1.2.1.43.8.2.1.5' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name ='MediaDimYFeedDirDeclared' oid='1.3.6.1.2.1.43.8.2.1.4' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name ='MediaDimXFeedDirChosen' oid='1.3.6.1.2.1.43.8.2.1.7' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name ='MediaDimYFeedDirChosen' oid='1.3.6.1.2.1.43.8.2.1.6' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Converter name='CapacityUnit' oid='1.3.6.1.2.1.43.8.2.1.8' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'>
+            <Conversion mibValue='3' bidiValue='tenThousandthsOfInches' />
+            <Conversion mibValue='4' bidiValue='micrometers' />
+            <Conversion mibValue='8' bidiValue='sheets' />
+            <Conversion mibValue='16' bidiValue='feet' />
+            <Conversion mibValue='17' bidiValue='meters' />
+          </Converter>
+          <Value name ='Capacity' oid='1.3.6.1.2.1.43.8.2.1.9' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name ='CurrentLevel' oid='1.3.6.1.2.1.43.8.2.1.10' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+        </IndexedProperty>
+      </Property>
+    </Property>
+    <Property name='Finishing'>
+      <Property name="OutputBin">
+        <Property name="StdBin">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Standard Bin"/>
+          </Installed>
+        </Property>
+        <Property name="TopBin">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Top Bin"/>
+          </Installed>
+        </Property>
+        <Property name="RearBin">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Rear Bin"/>
+          </Installed>
+        </Property>
+        <Property name="SideBin">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Side Bin"/>
+          </Installed>
+        </Property>
+        <Property name="Bin1">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 1"/>
+            <Lookup value="Output Bin 1"/>
+          </Installed>
+        </Property>
+        <Property name="Bin2">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 2"/>
+            <Lookup value="Output Bin 2"/>
+          </Installed>
+        </Property>
+        <Property name="Bin3">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 3"/>
+            <Lookup value="Output Bin 3"/>
+          </Installed>
+        </Property>
+        <Property name="Bin4">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 4"/>
+            <Lookup value="Output Bin 4"/>
+          </Installed>
+        </Property>
+        <Property name="Bin5">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 5"/>
+            <Lookup value="Output Bin 5"/>
+          </Installed>
+        </Property>
+        <Property name="Bin6">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 6"/>
+            <Lookup value="Output Bin 6"/>
+          </Installed>
+        </Property>
+        <Property name="Bin7">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 7"/>
+            <Lookup value="Output Bin 7"/>
+          </Installed>
+        </Property>
+        <Property name="Bin8">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 8"/>
+            <Lookup value="Output Bin 8"/>
+          </Installed>
+        </Property>
+        <Property name="Bin9">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 9"/>
+            <Lookup value="Output Bin 9"/>
+          </Installed>
+        </Property>
+        <Property name="Bin10">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 10"/>
+            <Lookup value="Output Bin 10"/>
+          </Installed>
+        </Property>
+        <Property name="Bin11">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 11"/>
+            <Lookup value="Output Bin 11"/>
+          </Installed>
+        </Property>
+        <Property name="Bin12">
+          <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.7.1' deviceIndex='false' drvPrinterEvent='true' refreshInterval='600'>
+            <Lookup value="Bin 12"/>
+            <Lookup value="Output Bin 12"/>
+          </Installed>
+        </Property>
+      </Property>
+      <Property name='PublicOutputTable'>
+        <IndexedProperty name='Row'>
+          <Value name='Name' oid='1.3.6.1.2.1.43.9.2.1.7' deviceIndex='true' type='BIDI_STRING' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='Description' oid='1.3.6.1.2.1.43.9.2.1.12' deviceIndex='true' type='BIDI_STRING' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='Capacity' oid='1.3.6.1.2.1.43.9.2.1.4' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Converter name='CapacityUnit' oid='1.3.6.1.2.1.43.9.2.1.3' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+            <Conversion mibValue='3' bidiValue='tenThousandthsOfInches'/>
+            <Conversion mibValue='4' bidiValue='micrometers'/>
+            <Conversion mibValue='8' bidiValue='sheets'/>
+            <Conversion mibValue='16' bidiValue='feet'/>
+            <Conversion mibValue='17' bidiValue='meters'/>
+          </Converter>
+          <Value name='RemainingCapacity' oid='1.3.6.1.2.1.43.9.2.1.5' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='Status' oid='1.3.6.1.2.1.43.9.2.1.6' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Converter name='Type' oid='1.3.6.1.2.1.43.9.2.1.2' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+            <Conversion mibValue='1' bidiValue='other'/>
+            <Conversion mibValue='2' bidiValue='unknown'/>
+            <Conversion mibValue='3' bidiValue='removableBin'/>
+            <Conversion mibValue='4' bidiValue='unRemovableBin'/>
+            <Conversion mibValue='5' bidiValue='continuousRollDevice'/>
+            <Conversion mibValue='6' bidiValue='mailBox'/>
+            <Conversion mibValue='7' bidiValue='continuousFanFold'/>
+          </Converter>
+          <Converter name='DimUnit' oid='1.3.6.1.2.1.43.9.2.1.14' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+            <Conversion mibValue='3' bidiValue='tenThousandthsOfInches'/>
+            <Conversion mibValue='4' bidiValue='micrometers'/>
+          </Converter>
+          <Value name='MaxDimXFeedDir' oid='1.3.6.1.2.1.43.9.2.1.16' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='MaxDimYFeedDir' oid='1.3.6.1.2.1.43.9.2.1.15' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='MinDimXFeedDir' oid='1.3.6.1.2.1.43.9.2.1.18' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Value name='MinDimYFeedDir' oid='1.3.6.1.2.1.43.9.2.1.17' deviceIndex='true' type='BIDI_INT' drvPrinterEvent='true' refreshInterval='600'/>
+          <Converter name='StackingOrder' oid='1.3.6.1.2.1.43.9.2.1.19' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+            <Conversion mibValue='2' bidiValue='unknown'/>
+            <Conversion mibValue='3' bidiValue='firstToLast'/>
+            <Conversion mibValue='4' bidiValue='lastToFirst'/>
+          </Converter>
+          <Converter name='DeliveryOrientation' oid='1.3.6.1.2.1.43.9.2.1.20' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+            <Conversion mibValue='3' bidiValue='faceUp'/>
+            <Conversion mibValue='4' bidiValue='faceDown'/>
+          </Converter>
+          <Converter name='Collation' oid='1.3.6.1.2.1.43.9.2.1.23' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+            <Conversion mibValue='1' bidiValue='other'/>
+            <Conversion mibValue='3' bidiValue='on'/>
+            <Conversion mibValue='4' bidiValue='off'/>
+            <Conversion mibValue='5' bidiValue='notPresent'/>
+          </Converter>
+          <Converter name='OffsetStacking' oid='1.3.6.1.2.1.43.9.2.1.24' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+            <Conversion mibValue='1' bidiValue='other'/>
+            <Conversion mibValue='3' bidiValue='on'/>
+            <Conversion mibValue='4' bidiValue='off'/>
+            <Conversion mibValue='5' bidiValue='notPresent'/>
+          </Converter>
+        </IndexedProperty>
+      </Property>
+      <Installed name='CollationSupported' oid='1.3.6.1.2.1.43.9.2.1.23' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'>
+        <Lookup value='3'/>
+        <Lookup value='4'/>
+      </Installed>
+      <Installed name='Offset' oid='1.3.6.1.2.1.43.9.2.1.24' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'>
+        <Lookup value='3'/>
+        <Lookup value='4'/>
+      </Installed>
+      <Property name='Staple'>
+        <Installed name='Installed' oid='1.3.6.1.2.1.43.11.1.1.6' deviceIndex='true' drvPrinterEvent='true' refreshInterval='300'>
+          <!-- Same call as previous driver (and correct according to mib specs). Arcas supported, Oasis did not. -->
+          <Lookup value='Staples'/>
+        </Installed>
+      </Property>
+      <Property name='StapleDual'>
+        <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.1072' deviceIndex='true' drvPrinterEvent='true' refreshInterval='300'>
+          <Lookup value='2 staples, top'/>
+          <Lookup value='2 staples, left'/>
+          <Lookup value='2 staples, bottom'/>
+          <Lookup value='2 staples, right'/>
+        </Installed>
+      </Property>
+      <Property name='HolePunch'>
+        <Installed name='Installed' oid='1.3.6.1.2.1.43.11.1.1.6' deviceIndex='true' drvPrinterEvent='true' refreshInterval='300'>
+          <!-- Same call as previous driver (and correct according to mib specs). Arcas supported, Oasis did not. -->
+          <Lookup value='Hole Punch Box'/>
+        </Installed>
+      </Property>
+      <Property name='HolePunch2'>
+        <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.4171' deviceIndex='true' drvPrinterEvent='true' refreshInterval='300'>
+          <Lookup value='2 holes'/>
+        </Installed>
+      </Property>
+      <Property name='HolePunch3'>
+        <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.4171' deviceIndex='true' drvPrinterEvent='true' refreshInterval='300'>
+          <Lookup value='3 holes'/>
+        </Installed>
+      </Property>
+      <Property name='HolePunch4'>
+        <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.4171' deviceIndex='true' drvPrinterEvent='true' refreshInterval='300'>
+          <Lookup value='4 holes'/>
+        </Installed>
+      </Property>
+      <Property name='Offset'>
+        <Installed name='Installed' oid='1.3.6.1.2.1.43.9.2.1.24' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'>
+          <Lookup value='3'/>
+        </Installed>
+      </Property>
+      <Property name='Fold'>
+        <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.4673' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+          <Lookup value="Bifold" />
+          <Lookup value="Trifold" />
+          <Lookup value="Booklet Fold" />
+        </Installed>
+      </Property>
+      <Property name='TriFold'>
+        <Installed name='Installed' oid='1.3.6.1.4.1.641.7.3.5.1.3.4673' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' >
+          <Lookup value="Trifold" />
+        </Installed>
+      </Property>
+    </Property>
+    <Property name ='Status'>
+      <Property name='Summary' >
+        <Converter name='State' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.2.1.25.3.5.1.1'>
+          <Conversion mibValue='1' bidiValue='other'/>
+          <Conversion mibValue='2' bidiValue='unknown'/>
+          <Conversion mibValue='3' bidiValue='idle'/>
+          <Conversion mibValue='4' bidiValue='printing'/>
+          <Conversion mibValue='5' bidiValue='warmup'/>
+        </Converter>
+        <Value name='StateReason'  oid='1.3.6.1.2.1.25.3.5.1.2' type='BIDI_STRING'  deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' />
+        <!-- each bit serves as flag for different conditions. hrPrinterDetectedErrorState in mib specs -->
+      </Property>
+      <Property name='PublicDetailed'>
+        <IndexedProperty name='Row'>
+          <Value name='Description' type='BIDI_STRING' oid='1.3.6.1.2.1.43.18.1.1.8' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'/>
+          <Converter name='Severity' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.2.1.43.18.1.1.2'>
+            <Conversion mibValue='1' bidiValue='other'/>
+            <Conversion mibValue='3' bidiValue='criticalBinaryChangeEvent'/>
+            <Conversion mibValue='4' bidiValue='warningUnaryChangeEvent'/>
+            <Conversion mibValue='5' bidiValue='warningBinaryChangeEvent'/>
+          </Converter>
+          <Converter name='Group' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.2.1.43.18.1.1.4'>
+            <Conversion mibValue='1' bidiValue='other'/>
+            <Conversion mibValue='3' bidiValue='hostResourcesMIBStorageTable'/>
+            <Conversion mibValue='4' bidiValue='hostResourcesMIBDeviceTable'/>
+            <Conversion mibValue='5' bidiValue='generalPrinter'/>
+            <Conversion mibValue='6' bidiValue='cover'/>
+            <Conversion mibValue='7' bidiValue='localization'/>
+            <Conversion mibValue='8' bidiValue='input'/>
+            <Conversion mibValue='9' bidiValue='output'/>
+            <Conversion mibValue='10' bidiValue='marker'/>
+            <Conversion mibValue='11' bidiValue='markerSupplies'/>
+            <Conversion mibValue='12' bidiValue='markerColorant'/>
+            <Conversion mibValue='13' bidiValue='mediaPath'/>
+            <Conversion mibValue='14' bidiValue='channel'/>
+            <Conversion mibValue='15' bidiValue='interpreter'/>
+            <Conversion mibValue='16' bidiValue='consoleDisplayBuffer'/>
+            <Conversion mibValue='17' bidiValue='consoleLights'/>
+            <Conversion mibValue='18' bidiValue='alert'/>
+            <Conversion mibValue='30' bidiValue='finDevice'/>
+            <Conversion mibValue='31' bidiValue='finSupply'/>
+            <Conversion mibValue='32' bidiValue='finSupplyMediaInput'/>
+            <Conversion mibValue='33' bidiValue='finAttributeTable'/>
+          </Converter>
+          <Converter name='Code' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.2.1.43.18.1.1.7'>
+            <Conversion mibValue='1' bidiValue='other' />
+            <Conversion mibValue='2' bidiValue='unknown' />
+            <Conversion mibValue='3' bidiValue='coverOpened' />
+            <Conversion mibValue='4' bidiValue='coverClosed' />
+            <Conversion mibValue='5' bidiValue='interlockOpened' />
+            <Conversion mibValue='6' bidiValue='interlockClosed' />
+            <Conversion mibValue='7' bidiValue='configurationChanged' />
+            <Conversion mibValue='8' bidiValue='jammed' />
+            <Conversion mibValue='9' bidiValue='subunitMissing' />
+            <Conversion mibValue='10' bidiValue='subunitLifeAlmostOver' />
+            <Conversion mibValue='11' bidiValue='subunitLifeOver' />
+            <Conversion mibValue='12' bidiValue='subunitAlmostEmpty' />
+            <Conversion mibValue='13' bidiValue='subunitEmpty' />
+            <Conversion mibValue='14' bidiValue='subunitAlmostFull' />
+            <Conversion mibValue='15' bidiValue='subunitFull' />
+            <Conversion mibValue='16' bidiValue='subunitNearLimit' />
+            <Conversion mibValue='17' bidiValue='subunitAtLimit' />
+            <Conversion mibValue='18' bidiValue='subunitOpened' />
+            <Conversion mibValue='19' bidiValue='subunitClosed' />
+            <Conversion mibValue='20' bidiValue='subunitTurnedOn' />
+            <Conversion mibValue='21' bidiValue='subunitTurnedOff' />
+            <Conversion mibValue='22' bidiValue='subunitOffline' />
+            <Conversion mibValue='23' bidiValue='subunitPowerSaver' />
+            <Conversion mibValue='24' bidiValue='subunitWarmingUp' />
+            <Conversion mibValue='25' bidiValue='subunitAdded' />
+            <Conversion mibValue='26' bidiValue='subunitRemoved' />
+            <Conversion mibValue='27' bidiValue='subunitResourceAdded' />
+            <Conversion mibValue='28' bidiValue='subunitResourceRemoved' />
+            <Conversion mibValue='29' bidiValue='subunitRecoverableFailure' />
+            <Conversion mibValue='30' bidiValue='subunitUnrecoverableFailure' />
+            <Conversion mibValue='31' bidiValue='subunitRecoverableStorageError' />
+            <Conversion mibValue='32' bidiValue='subunitUnrecoverableStorageError' />
+            <Conversion mibValue='33' bidiValue='subunitMotorFailure' />
+            <Conversion mibValue='34' bidiValue='subunitMemoryExhausted' />
+            <Conversion mibValue='35' bidiValue='subunitUnderTemperature' />
+            <Conversion mibValue='36' bidiValue='subunitOverTemperature' />
+            <Conversion mibValue='37' bidiValue='subunitTimingFailure' />
+            <Conversion mibValue='38' bidiValue='subunitThermistorFailure' />
+            <Conversion mibValue='501' bidiValue='doorOpen' />
+            <Conversion mibValue='502' bidiValue='doorClosed' />
+            <Conversion mibValue='503' bidiValue='poweredUp' />
+            <Conversion mibValue='504' bidiValue='poweredDown' />
+            <Conversion mibValue='505' bidiValue='printerNMSReset' />
+            <Conversion mibValue='506' bidiValue='printerManualReset' />
+            <Conversion mibValue='507' bidiValue='printerReadyToPrint' />
+            <Conversion mibValue='801' bidiValue='inputMediaTrayMissing' />
+            <Conversion mibValue='802' bidiValue='inputMediaSizeChanged' />
+            <Conversion mibValue='803' bidiValue='inputMediaWeightChanged' />
+            <Conversion mibValue='804' bidiValue='inputMediaTypeChanged' />
+            <Conversion mibValue='805' bidiValue='inputMediaColorChanged' />
+            <Conversion mibValue='806' bidiValue='inputMediaFormPartsChange' />
+            <Conversion mibValue='807' bidiValue='inputMediaSupplyLow' />
+            <Conversion mibValue='808' bidiValue='inputMediaSupplyEmpty' />
+            <Conversion mibValue='809' bidiValue='inputMediaChangeRequest' />
+            <Conversion mibValue='810' bidiValue='inputManualInputRequest' />
+            <Conversion mibValue='811' bidiValue='inputTrayPositionFailure' />
+            <Conversion mibValue='812' bidiValue='inputTrayElevationFailure' />
+            <Conversion mibValue='813' bidiValue='inputCannotFeedSizeSelected' />
+            <Conversion mibValue='901' bidiValue='outputMediaTrayMissing' />
+            <Conversion mibValue='902' bidiValue='outputMediaTrayAlmostFull' />
+            <Conversion mibValue='903' bidiValue='outputMediaTrayFull' />
+            <Conversion mibValue='904' bidiValue='outputMailboxSelectFailure' />
+            <Conversion mibValue='1001' bidiValue='markerFuserUnderTemperature' />
+            <Conversion mibValue='1002' bidiValue='markerFuserOverTemperature' />
+            <Conversion mibValue='1003' bidiValue='markerFuserTimingFailure' />
+            <Conversion mibValue='1004' bidiValue='markerFuserThermistorFailure' />
+            <Conversion mibValue='1005' bidiValue='markerAdjustingPrintQuality' />
+            <Conversion mibValue='1101' bidiValue='markerTonerEmpty' />
+            <Conversion mibValue='1102' bidiValue='markerInkEmpty' />
+            <Conversion mibValue='1103' bidiValue='markerPrintRibbonEmpty' />
+            <Conversion mibValue='1104' bidiValue='markerTonerAlmostEmpty' />
+            <Conversion mibValue='1105' bidiValue='markerInkAlmostEmpty' />
+            <Conversion mibValue='1106' bidiValue='markerPrintRibbonAlmostEmpty' />
+            <Conversion mibValue='1107' bidiValue='markerWasteTonerReceptacleAlmostFull' />
+            <Conversion mibValue='1108' bidiValue='markerWasteInkReceptacleAlmostFull' />
+            <Conversion mibValue='1109' bidiValue='markerWasteTonerReceptacleFull' />
+            <Conversion mibValue='1110' bidiValue='markerWasteInkReceptacleFull' />
+            <Conversion mibValue='1111' bidiValue='markerOpcLifeAlmostOver' />
+            <Conversion mibValue='1112' bidiValue='markerOpcLifeOver' />
+            <Conversion mibValue='1113' bidiValue='markerDeveloperAlmostEmpty' />
+            <Conversion mibValue='1114' bidiValue='markerDeveloperEmpty' />
+            <Conversion mibValue='1115' bidiValue='markerTonerCartridgeMissing' />
+            <Conversion mibValue='1301' bidiValue='mediaPathMediaTrayMissing' />
+            <Conversion mibValue='1302' bidiValue='mediaPathMediaTrayAlmostFull' />
+            <Conversion mibValue='1303' bidiValue='mediaPathMediaTrayFull' />
+            <Conversion mibValue='1501' bidiValue='interpreterMemoryIncreased' />
+            <Conversion mibValue='1502' bidiValue='interpreterMemoryDecreased' />
+            <Conversion mibValue='1503' bidiValue='interpreterCartridgeAdded' />
+            <Conversion mibValue='1504' bidiValue='interpreterCartridgeDeleted' />
+            <Conversion mibValue='1505' bidiValue='interpreterResourceAdded' />
+            <Conversion mibValue='1506' bidiValue='interpreterResourceDeleted' />
+            <Conversion mibValue='1507' bidiValue='interpreterResourceUnavailable' />
+            <Conversion mibValue='1509' bidiValue='interpreterComplexPageEncountered' />
+            <Conversion mibValue='1801' bidiValue='alertRemovalOfBinaryChangeEntry' />
+          </Converter>
+        </IndexedProperty>
+      </Property>
+      <Property name='PrivateDetailed'>
+        <IndexedProperty name='Row'>
+          <Value name='Description' type='BIDI_STRING' oid='1.3.6.1.4.1.641.6.5.1.1.6' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'/>
+          <Converter name='Severity' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.5.1.1.4'>
+            <Conversion mibValue='1' bidiValue='unknown'/>
+            <Conversion mibValue='2' bidiValue='other'/>
+            <Conversion mibValue='3' bidiValue='informational'/>
+            <Conversion mibValue='4' bidiValue='warning'/>
+            <Conversion mibValue='5' bidiValue='critical'/>
+            <Conversion mibValue='6' bidiValue='serviceRequired'/>
+          </Converter>
+          <Value name='Data' type='BIDI_STRING' oid='1.3.6.1.4.1.641.6.5.1.1.7' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600'/>
+          <Converter name='Code' deviceIndex='true' drvPrinterEvent='true' refreshInterval='600' oid='1.3.6.1.4.1.641.6.5.1.1.5'>
+            <Conversion mibValue='1' bidiValue='unknown' />
+            <Conversion mibValue='2' bidiValue='other' />
+            <Conversion mibValue='3' bidiValue='coverOpen' />
+            <Conversion mibValue='4' bidiValue='coverClosed' />
+            <Conversion mibValue='5' bidiValue='interlockOpen' />
+            <Conversion mibValue='6' bidiValue='interlockClosed' />
+            <Conversion mibValue='7' bidiValue='doorOpen' />
+            <Conversion mibValue='8' bidiValue='doorClosed' />
+            <Conversion mibValue='9' bidiValue='calibrating' />
+            <Conversion mibValue='10' bidiValue='alignmentFailed' />
+            <Conversion mibValue='11' bidiValue='warrantyOverrideRequired' />
+            <Conversion mibValue='12' bidiValue='printHeadCarrierPathObstructed' />
+            <Conversion mibValue='13' bidiValue='heldJobsMayNotBeRestored' />
+            <Conversion mibValue='14' bidiValue='busy' />
+            <Conversion mibValue='15' bidiValue='waiting' />
+            <Conversion mibValue='100' bidiValue='subunitErrorOther' />
+            <Conversion mibValue='101' bidiValue='subunitLifeAlmostOver' />
+            <Conversion mibValue='102' bidiValue='subunitLifeOver' />
+            <Conversion mibValue='103' bidiValue='subunitJammed' />
+            <Conversion mibValue='104' bidiValue='subunitUnderTemperature' />
+            <Conversion mibValue='105' bidiValue='subunitOverTemperature' />
+            <Conversion mibValue='106' bidiValue='subunitInsufficientMemory' />
+            <Conversion mibValue='107' bidiValue='subunitMemoryFull' />
+            <Conversion mibValue='108' bidiValue='subunitNVFailure' />
+            <Conversion mibValue='109' bidiValue='subunitDisabled' />
+            <Conversion mibValue='110' bidiValue='subunitCommunicationError' />
+            <Conversion mibValue='200' bidiValue='supplyErrorOther' />
+            <Conversion mibValue='201' bidiValue='supplyOk' />
+            <Conversion mibValue='202' bidiValue='supplyEarlyWarning' />
+            <Conversion mibValue='203' bidiValue='supplyNearFull' />
+            <Conversion mibValue='205' bidiValue='supplyFull' />
+            <Conversion mibValue='206' bidiValue='supplyNearLow' />
+            <Conversion mibValue='207' bidiValue='supplyLow' />
+            <Conversion mibValue='208' bidiValue='supplyNearEmpty' />
+            <Conversion mibValue='209' bidiValue='supplyEmpty' />
+            <Conversion mibValue='210' bidiValue='supplyLifeAlmostOver' />
+            <Conversion mibValue='211' bidiValue='supplyLifeOver' />
+            <Conversion mibValue='212' bidiValue='supplyNearReplace' />
+            <Conversion mibValue='213' bidiValue='supplyReplace' />
+            <Conversion mibValue='214' bidiValue='supplyMissing' />
+            <Conversion mibValue='215' bidiValue='supplyInvalid' />
+            <Conversion mibValue='216' bidiValue='supplyDefective' />
+            <Conversion mibValue='217' bidiValue='supplyImproperInstall' />
+            <Conversion mibValue='218' bidiValue='supplyUnsupported' />
+            <Conversion mibValue='219' bidiValue='supplyUncalibrated' />
+            <Conversion mibValue='300' bidiValue='inputMediaErrorOther' />
+            <Conversion mibValue='301' bidiValue='inputMediaTrayMissing' />
+            <Conversion mibValue='302' bidiValue='inputMediaSupplyLow' />
+            <Conversion mibValue='303' bidiValue='inputMediaSupplyEmpty' />
+            <Conversion mibValue='304' bidiValue='inputMediaChangeRequest' />
+            <Conversion mibValue='305' bidiValue='inputMediaLoadRequest' />
+            <Conversion mibValue='400' bidiValue='outputMediaErrorOther' />
+            <Conversion mibValue='401' bidiValue='outputMediaTrayMissing' />
+            <Conversion mibValue='402' bidiValue='outputMediaNearFull' />
+            <Conversion mibValue='403' bidiValue='outputMediaFull' />
+            <Conversion mibValue='404' bidiValue='outputMediaEmptyRequest' />
+            <Conversion mibValue='500' bidiValue='mediaPathErrorOther' />
+            <Conversion mibValue='501' bidiValue='mediaPathPaperJam' />
+            <Conversion mibValue='600' bidiValue='scannerErrorOther' />
+            <Conversion mibValue='601' bidiValue='scannerLampWarming' />
+            <Conversion mibValue='602' bidiValue='scannerLampLifeWarning' />
+            <Conversion mibValue='603' bidiValue='scannerLampError' />
+            <Conversion mibValue='604' bidiValue='scannerADFJam' />
+            <Conversion mibValue='605' bidiValue='scannerStalled' />
+            <Conversion mibValue='606' bidiValue='scannerLocked' />
+            <Conversion mibValue='607' bidiValue='scannerDisabled' />
+            <Conversion mibValue='700' bidiValue='faxErrorOther' />
+            <Conversion mibValue='701' bidiValue='faxStorageNearFull' />
+            <Conversion mibValue='702' bidiValue='faxStorageFull' />
+            <Conversion mibValue='703' bidiValue='faxStorageSendNearFull' />
+            <Conversion mibValue='704' bidiValue='faxStorageSendFull' />
+            <Conversion mibValue='705' bidiValue='faxStorageReceiveNearFull' />
+            <Conversion mibValue='706' bidiValue='faxStorageReceiveFull' />
+            <Conversion mibValue='707' bidiValue='faxPhoneLineDisconnected' />
+            <Conversion mibValue='708' bidiValue='faxDisabled' />
+            <Conversion mibValue='709' bidiValue='faxConfigurationError' />
+            <Conversion mibValue='800' bidiValue='interpreterErrorOther' />
+            <Conversion mibValue='801' bidiValue='interpreterInsufficientMemory' />
+            <Conversion mibValue='802' bidiValue='interpreterOutOfMemory' />
+            <Conversion mibValue='803' bidiValue='interpreterComplexPage' />
+            <Conversion mibValue='804' bidiValue='interpreterJobHardwareMismatch' />
+            <Conversion mibValue='805' bidiValue='interpreterPrintDataExceedsMediaSize' />
+            <Conversion mibValue='900' bidiValue='emailErrorOther' />
+            <Conversion mibValue='901' bidiValue='emailConfigurationError' />
+            <Conversion mibValue='1000' bidiValue='storageErrorOther' />
+            <Conversion mibValue='1001' bidiValue='storageUnformatted' />
+            <Conversion mibValue='1002' bidiValue='storageFull' />
+            <Conversion mibValue='20000' bidiValue='neverError' />
+          </Converter>
+        </IndexedProperty>
+      </Property>
+    </Property>
+  </Property>
+</bidi:Schema>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lexmark Printer Driver Extensions -->
+<!-- Copyright 2012-2013 Lexmark International, Inc. All rights reserved. -->
+<de:DriverEvents xmlns:de="http://schemas.microsoft.com/windows/2011/08/printing/driverevents" schemaVersion="4.0">
+   <!-- Media Empty -->
+   <DriverEvent eventId="{D4B80B66-7022-4414-8FF6-866444B940E1}">
+      <Transport>WSD</Transport>
+      <Transport>SNMP</Transport>
+      <Query>\Printer.Status</Query>
+      <Trigger result="\Printer.Status.Summary:StateReason" comparison="EqualTo" value="MediaEmpty">
+         <StandardMessage resourceId="123" />
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Paper Jam -->
+   <DriverEvent eventId="{6698DF79-72CA-4B9B-BCBF-D565541D864D}">
+      <Transport>WSD</Transport>
+      <Transport>SNMP</Transport>
+      <Query>\Printer.Status</Query>
+      <Trigger result="\Printer.Status.Summary:StateReason" comparison="EqualTo" value="MediaJam">
+         <StandardMessage resourceId="121" />
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Attention Required (Supply missing/defective etc) -->
+   <DriverEvent eventId="{2D2DDF33-FD34-43B2-A61D-31ED6B719637}">
+      <Transport>WSD</Transport>
+      <Transport>SNMP</Transport>
+      <Query>\Printer.Status</Query>
+      <Trigger result="\Printer.Status.Summary:StateReason" comparison="EqualTo" value="AttentionRequired">
+         <StandardMessage resourceId="129" />
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Low Cyan Toner -->
+   <DriverEvent eventId="{F40C2D18-AAB8-48C5-AB25-68E39B599EC0}">
+      <Transport>WSD</Transport>
+      <Query>\Printer.Consumables</Query>
+      <Trigger result="\Printer.Consumables.Cyan Toner:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="132">
+            <StringParameter index="1" resourceId="2000" />
+         </StandardMessage>
+      </Trigger>
+      <Trigger result="\Printer.Consumables.Cyan Cartridge:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="132">
+            <StringParameter index="1" resourceId="2000" />
+         </StandardMessage>
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Low Magenta Toner -->
+   <DriverEvent eventId="{6EB7D726-E88B-4146-A2D1-53252F763B70}">
+      <Transport>WSD</Transport>
+      <Query>\Printer.Consumables</Query>
+      <Trigger result="\Printer.Consumables.Magenta Toner:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="132">
+            <StringParameter index="1" resourceId="2001" />
+         </StandardMessage>
+      </Trigger>
+      <Trigger result="\Printer.Consumables.Magenta Cartridge:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="132">
+            <StringParameter index="1" resourceId="2001" />
+         </StandardMessage>
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Low Yellow Toner -->
+   <DriverEvent eventId="{0F76B7BD-75D1-4E49-963F-18780F91F21B}">
+      <Transport>WSD</Transport>
+      <Query>\Printer.Consumables</Query>
+      <Trigger result="\Printer.Consumables.Yellow Toner:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="132">
+            <StringParameter index="1" resourceId="2002" />
+         </StandardMessage>
+      </Trigger>
+      <Trigger result="\Printer.Consumables.Yellow Cartridge:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="132">
+            <StringParameter index="1" resourceId="2002" />
+         </StandardMessage>
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Low Black Toner -->
+   <DriverEvent eventId="{D18DBA96-572E-490F-A294-7D40987EF2DD}">
+      <Transport>WSD</Transport>
+      <Query>\Printer.Consumables</Query>
+      <Trigger result="\Printer.Consumables.Black Toner:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="132">
+            <StringParameter index="1" resourceId="2003" />
+         </StandardMessage>
+      </Trigger>
+      <Trigger result="\Printer.Consumables.Black Cartridge:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="132">
+            <StringParameter index="1" resourceId="2003" />
+         </StandardMessage>
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Low Fuser -->
+   <DriverEvent eventId="{1FB556F1-94E5-4F8C-ACE1-00C9B30EAC29}">
+      <Transport>WSD</Transport>
+      <Query>\Printer.Consumables</Query>
+      <Trigger result="\Printer.Consumables.Fuser:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="131" />
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Low Waste Toner -->
+   <DriverEvent eventId="{F6ACDF56-65C2-4362-8DAC-1AD0E4702126}">
+      <Transport>WSD</Transport>
+      <Query>\Printer.Consumables</Query>
+      <Trigger result="\Printer.Consumables.Waste Toner Bottle:Level" comparison="LessThan" value="21">
+         <StandardMessage resourceId="131" />
+      </Trigger>
+   </DriverEvent>
+
+   <!-- Other Printer problems -->
+   <DriverEvent eventId="{48DA673A-083B-4AAD-987B-F2CF3FB73808}">
+      <Transport>WSD</Transport>
+      <Transport>SNMP</Transport>
+      <Query>\Printer.Status</Query>
+      <Trigger result="\Printer.Status.Summary:State" comparison="EqualTo" value="other">
+         <StandardMessage resourceId="129" />
+      </Trigger>
+      <Trigger result="\Printer.Status.Summary:State" comparison="EqualTo" value="unknown">
+         <StandardMessage resourceId="109" />
+      </Trigger>
+      <Trigger result="\Printer.Status.Summary:StateReason" comparison="EqualTo" value="DoorOpen">
+         <StandardMessage resourceId="107" />
+      </Trigger>
+      <Trigger result="\Printer.Status.Summary:StateReason" comparison="EqualTo" value="MediaNeeded">
+         <StandardMessage resourceId="125" />
+      </Trigger>
+      <Trigger result="\Printer.Status.Summary:StateReason" comparison="EqualTo" value="OutputAreaFull">
+         <StandardMessage resourceId="119" />
+      </Trigger>
+      <Trigger result="\Printer.Status.Summary:StateReason" comparison="EqualTo" value="Paused">
+         <StandardMessage resourceId="127" />
+      </Trigger>
+   </DriverEvent>
+</de:DriverEvents>

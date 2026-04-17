@@ -1,0 +1,413 @@
+*% Copyright 2017 Lexmark International, Inc. All rights reserved.
+*% Permission is granted for redistribution of this file as long as this copyright notice is intact and
+*% the content of the file is not altered in any way from its original form.
+*Macros: LxkHeader
+{
+         IDS_HEADER_PrintAndHold:      3517
+         IDS_HEADER_NotInstalled:      3504
+         IDS_HEADER_Installed:         3503
+         IDS_HEADER_OFF:               2031
+         IDS_HEADER_ON:                2030
+         IDS_HEADER_AccountTracking:   3518
+         IDS_HEADER_JobNaturalReadingOrder:2376
+         IDS_HEADER_LeftToRight:       2127
+         IDS_HEADER_RightToLeft:       2126
+}
+
+*Macros: LxkBIDIInstall
+{
+         IDS_BIDIINSTALL_BasicPrinting:3524
+         IDS_BIDIINSTALL_Off:          2031
+         IDS_BIDIINSTALL_Color:        2356
+         IDS_BIDIINSTALL_Mono:         3523
+         IDS_BIDIINSTALL_ON:           2030
+         IDS_BIDIINSTALL_OFF:          2031
+         IDS_BIDIINSTALL_ManualDuplexSupport:3507
+         IDS_BIDIINSTALL_NotInstalled: 3504
+         IDS_BIDIINSTALL_Installed:    3503
+         IDS_BIDIINSTALL_Glossy:       3220
+         IDS_BIDIINSTALL_HeavyGlossy:  3221
+         IDS_BIDIINSTALL_Vinyl:        3223
+         IDS_BIDIINSTALL_RoughEnvelope:3225
+         IDS_BIDIINSTALL_Recycled:     3213
+         IDS_BIDIINSTALL_Rough:        3226
+         IDS_BIDIINSTALL_Heavy:        3215
+         IDS_BIDIINSTALL_Light:        3214
+         IDS_BIDIINSTALL_StapleDual:   3510
+         IDS_BIDIINSTALL_StapleDoubleDual:3511
+         IDS_BIDIINSTALL_HolePunch2:   3512
+         IDS_BIDIINSTALL_HolePunch3:   3513
+         IDS_BIDIINSTALL_HolePunch4:   3514
+         IDS_BIDIINSTALL_TriFoldOption:3516
+         IDS_BIDIINSTALL_A3Printer:    3506
+         IDS_BIDIINSTALL_NotInstalled1:3501
+         IDS_BIDIINSTALL_Installed1:   3502
+         IDS_BIDIINSTALL_ColorPrinter: 3505
+         IDS_BIDIINSTALL_NotInstalled2:2253
+         IDS_BIDIINSTALL_Installed2:   2252
+         IDS_BIDIINSTALL_Resolution600DPI:3521
+         IDS_BIDIINSTALL_Resolution1200DPI:3522
+         IDS_BIDIINSTALL_Resolution1200IQ:2163
+         IDS_BIDIINSTALL_Resolution2400IQ:2165
+         IDS_BIDIINSTALL_Resolution4800CQ:2167
+}
+
+*Macros: LxkQuality
+{
+         IDS_QUALITY_Lxk600dpi:        2162
+         IDS_QUALITY_Lxk1200dpi:       2164
+         IDS_QUALITY_JobEnhancedResolution:2375
+         IDS_QUALITY_OFF:              2031
+         IDS_QUALITY_Lxk1200IQ:        2163
+         IDS_QUALITY_Lxk2400IQ:        2165
+         IDS_QUALITY_Lxk4800CQ:        2167
+         IDS_QUALITY_ColorMode:        2353
+         IDS_QUALITY_Mono:             2354
+         IDS_QUALITY_Grayscale:        2355
+         IDS_QUALITY_Color:            2356
+         IDS_QUALITY_JobTonerDarknessValue:2318
+         IDS_QUALITY_USEPRINTER:       2166
+         IDS_QUALITY_1:                2001
+         IDS_QUALITY_2:                2002
+         IDS_QUALITY_3:                2003
+         IDS_QUALITY_4:                2004
+         IDS_QUALITY_5:                2005
+         IDS_QUALITY_6:                2006
+         IDS_QUALITY_7:                2007
+         IDS_QUALITY_8:                2008
+         IDS_QUALITY_9:                2009
+         IDS_QUALITY_10:               2010
+         IDS_QUALITY_JobColorSaver:    2320
+         IDS_QUALITY_AUTO:             2166
+         IDS_QUALITY_ON:               2030
+         IDS_QUALITY_JobColorCorrection:2321
+         IDS_QUALITY_AUTO1:            2204
+         IDS_QUALITY_MANUAL:           2203
+         IDS_QUALITY_JobCCRgbGraphics: 2322
+         IDS_QUALITY_sRGB_DISPLAY:     2205
+         IDS_QUALITY_sRGB_VIVID:       2206
+         IDS_QUALITY_DISPLAY_TRUE_BLACK:2207
+         IDS_QUALITY_VIVID:            2208
+         IDS_QUALITY_JobCCRgbImages:   2323
+         IDS_QUALITY_JobCCRgbText:     2324
+         IDS_QUALITY_JobColorBalance:  2326
+         IDS_QUALITY_JobCyanColorBalance:2327
+         IDS_QUALITY_Neg5:             2013
+         IDS_QUALITY_Neg4:             2014
+         IDS_QUALITY_Neg3:             2015
+         IDS_QUALITY_Neg2:             2016
+         IDS_QUALITY_Neg1:             2017
+         IDS_QUALITY_0:                2018
+         IDS_QUALITY_JobMagentaColorBalance:2328
+         IDS_QUALITY_JobYellowColorBalance:2329
+         IDS_QUALITY_JobBlackColorBalance:2330
+         IDS_QUALITY_JobPrtTxtAsBlk:   2337
+         IDS_QUALITY_JobRGBCorrection: 2338
+         IDS_QUALITY_JobRGBImageBrightness:2339
+         IDS_QUALITY_Neg6:             2012
+         IDS_QUALITY_JobRGBImageContrast:2340
+         IDS_QUALITY_JobRGBImageSaturation:2341
+         IDS_QUALITY_JobEnhanceFineLines:2315
+         IDS_QUALITY_HALFTONE_NORMAL:  2379
+         IDS_QUALITY_HALFTONE_DETAIL:  2380
+         IDS_QUALITY_JobPixelBoost:    2316
+         IDS_QUALITY_FONT:             2212
+         IDS_QUALITY_HORIZONTALLY:     2213
+         IDS_QUALITY_VERTICALLY:       2214
+         IDS_QUALITY_BOTHDIRECTIONS:   2215
+         IDS_QUALITY_JobGreyCorrection:2342
+         IDS_QUALITY_JobGreyImageBrightness:2343
+         IDS_QUALITY_JobGreyImageContrast:2344
+         IDS_QUALITY_JobTonerSaver:    2345
+         IDS_QUALITY_USEPRINTERSETTING:2166
+         IDS_QUALITY_PrintQuality:     3314
+         IDS_QUALITY_FAX_QUALITY:      3316
+         IDS_QUALITY_DRAFT_QUALITY:    3315
+         IDS_QUALITY_NORMAL_QUALITY:   3318
+         IDS_QUALITY_BEST_QUALITY:     3317
+}
+
+*Macros: LxkPaperSizeNames
+{
+         IDS_PAPER_PN_PaperSize:       2357
+         IDS_PAPER_PN_LxkMexicanOficio:2957
+         IDS_PAPER_PN_Lxk12x18in:      2963
+         IDS_PAPER_PN_LxkSRA3:         2962
+         IDS_PAPER_PN_JAPANESE_POSTCARD:2720
+         IDS_PAPER_PN_UNIVERSAL:       2719
+         IDS_PAPER_PN_ENV_MONARCH:     2717
+         IDS_PAPER_PN_ENV_9:           2712
+         IDS_PAPER_PN_ENV_10:          2713
+         IDS_PAPER_PN_ENV_DL:          2714
+         IDS_PAPER_PN_ENV_C5:          2715
+         IDS_PAPER_PN_ENV_B5:          2716
+         IDS_PAPER_PN_JobDestinationPageSize:2276
+         IDS_PAPER_PN_SelectedSize:    2102
+         IDS_PAPER_PN_LETTER:          2701
+         IDS_PAPER_PN_LEGAL:           2703
+         IDS_PAPER_PN_EXECUTIVE:       2705
+         IDS_PAPER_PN_STATEMENT:       2704
+         IDS_PAPER_PN_FOLIO:           2711
+         IDS_PAPER_PN_TABLOID:         2702
+         IDS_PAPER_PN_A3:              2706
+         IDS_PAPER_PN_A4:              2707
+         IDS_PAPER_PN_B4:              2709
+         IDS_PAPER_PN_B5:              2710
+         IDS_PAPER_PN_A5:              2708
+         IDS_PAPER_PN_A6:              2718
+         IDS_PAPER_PN_JobUsePrinterMargins:2314
+         IDS_PAPER_PN_ON:              2030
+         IDS_PAPER_PN_OFF:             2031
+}
+
+*Macros: LxkDuplex
+{
+         IDS_DUPLEX_Duplexer:          2159
+         IDS_DUPLEX_NotInstalled:      2253
+         IDS_DUPLEX_Installed:         2252
+         IDS_DUPLEX_Duplex:            2019
+         IDS_DUPLEX_NONE:              2360
+         IDS_DUPLEX_VERTICAL:          2361
+         IDS_DUPLEX_HORIZONTAL:        2362
+         IDS_DUPLEX_JobLxkDuplexInstructions:2024
+         IDS_DUPLEX_OFF:               2031
+         IDS_DUPLEX_ON:                2030
+         IDS_DUPLEX_PageManualDuplexPause:2025
+         IDS_DUPLEX_JobUsePrinterDuplex:2020
+}
+
+*Macros: LxkInput
+{
+         IDS_INPUT_Tray2:              3306
+         IDS_INPUT_NotInstalled:       2253
+         IDS_INPUT_Installed:          2252
+         IDS_INPUT_Tray3:              3307
+         IDS_INPUT_Tray4:              3308
+         IDS_INPUT_Tray5:              3309
+         IDS_INPUT_ManualEnv:          3303
+         IDS_INPUT_Manual:             3301
+         IDS_INPUT_Multipurpose:       3310
+         IDS_INPUT_Envelope:           3302
+         IDS_INPUT_InputBin:           2359
+         IDS_INPUT_FORMSOURCE:         3304
+         IDS_INPUT_USEPRINTER:         3224
+         IDS_INPUT_LxkTray1:           3305
+         IDS_INPUT_LxkTray2:           3306
+         IDS_INPUT_LxkTray3:           3307
+         IDS_INPUT_LxkTray4:           3308
+         IDS_INPUT_LxkTray5:           3309
+         IDS_INPUT_LxkMultipurpose:    3310
+         IDS_INPUT_LxkManualEnv:       3303
+         IDS_INPUT_LxkFeeder1:         3302
+         IDS_INPUT_JobBookletCoverInputBin:2254
+         IDS_INPUT_JobFrontCoverInputBin:2255
+         IDS_INPUT_JobFirstPageInputBin:2256
+         IDS_INPUT_JobLastPageInputBin:2257
+         IDS_INPUT_JobBackCoverInputBin:2258
+}
+
+*Macros: LxkOutput
+{
+         IDS_OUTPUT_OutputExpander_1:  2170
+         IDS_OUTPUT_NotInstalled:      2253
+         IDS_OUTPUT_Installed:         2252
+         IDS_OUTPUT_OutputExpander_2:  2171
+         IDS_OUTPUT_OutputExpander_3:  2172
+         IDS_OUTPUT_OutputExpander_4:  2173
+         IDS_OUTPUT_OutputExpander_5:  2174
+         IDS_OUTPUT_OutputExpander_6:  2175
+         IDS_OUTPUT_OutputExpander_7:  2176
+         IDS_OUTPUT_OutputExpander_8:  2177
+         IDS_OUTPUT_OutputExpander_9:  2178
+         IDS_OUTPUT_OutputExpander_10: 2179
+         IDS_OUTPUT_OutputExpander_11: 2180
+         IDS_OUTPUT_OutputExpander_12: 2181
+         IDS_OUTPUT_OutputBin:         2363
+         IDS_OUTPUT_USEPRINTER:        2168
+         IDS_OUTPUT_LxkStandardOut:    2169
+         IDS_OUTPUT_LxkOutputBin1:     2170
+         IDS_OUTPUT_LxkOutputBin2:     2171
+         IDS_OUTPUT_LxkOutputBin3:     2172
+         IDS_OUTPUT_LxkOutputBin4:     2173
+         IDS_OUTPUT_LxkOutputBin5:     2174
+         IDS_OUTPUT_LxkOutputBin6:     2175
+         IDS_OUTPUT_LxkOutputBin7:     2176
+         IDS_OUTPUT_LxkOutputBin8:     2177
+         IDS_OUTPUT_LxkOutputBin9:     2178
+         IDS_OUTPUT_LxkOutputBin10:    2179
+         IDS_OUTPUT_LxkOutputBin11:    2180
+         IDS_OUTPUT_LxkOutputBin12:    2181
+         IDS_OUTPUT_Offset:            2190
+         IDS_OUTPUT_Staple:            2191
+         IDS_OUTPUT_HolePunch:         2192
+         IDS_OUTPUT_Fold:              2193
+         IDS_OUTPUT_Stapling:          2226
+         IDS_OUTPUT_NONE:              2031
+         IDS_OUTPUT_STAPLETOPLEFT:     2217
+         IDS_OUTPUT_STAPLETOPRIGHT:    2218
+         IDS_OUTPUT_STAPLEBOTTOMLEFT:  2219
+         IDS_OUTPUT_STAPLEBOTTOMRIGHT: 2220
+         IDS_OUTPUT_STAPLEDUALTOP:     2223
+         IDS_OUTPUT_STAPLEDUALLEFT:    2221
+         IDS_OUTPUT_STAPLEDUALBOTTOM:  2224
+         IDS_OUTPUT_STAPLEDUALRIGHT:   2222
+         IDS_OUTPUT_STAPLEDOUBLEDUALLEFT:2227
+         IDS_OUTPUT_JobHolePunch:      2265
+         IDS_OUTPUT_LEFTEDGE:          2231
+         IDS_OUTPUT_HolePunchLayout:   2266
+         IDS_OUTPUT_2:                 2200
+         IDS_OUTPUT_3:                 2201
+         IDS_OUTPUT_4:                 2202
+         IDS_OUTPUT_JobJobOffset:      2267
+         IDS_OUTPUT_BetweenCopies:     2030
+         IDS_OUTPUT_Off:               2031
+         IDS_OUTPUT_JobFinisherFoldValue:2194
+         IDS_OUTPUT_FOLD:              2194
+         IDS_OUTPUT_FOLDANDSTAPLE:     2195
+         IDS_OUTPUT_FOLDINDIVIDUALPAGES:2196
+         IDS_OUTPUT_TRIFOLDINDIVIDUALPAGES:2378
+}
+
+*Macros: LxkPageProcessing
+{
+         IDS_PAGEPROCESSING_PageRotate180:2269
+         IDS_PAGEPROCESSING_ON:        2030
+         IDS_PAGEPROCESSING_OFF:       2031
+         IDS_PAGEPROCESSING_JobCollationOrigin:2270
+         IDS_PAGEPROCESSING_PRINTER:   2271
+         IDS_PAGEPROCESSING_HOST:      2272
+         IDS_PAGEPROCESSING_Collate:   2273
+         IDS_PAGEPROCESSING_JobScalingMode:2377
+         IDS_PAGEPROCESSING_JobScaling:2364
+         IDS_PAGEPROCESSING_None:      2278
+         IDS_PAGEPROCESSING_Automatic: 2237
+         IDS_PAGEPROCESSING_Manual:    2203
+         IDS_PAGEPROCESSING_JobScalingPosition:2365
+         IDS_PAGEPROCESSING_TopLeft:   2366
+         IDS_PAGEPROCESSING_TopCenter: 2367
+         IDS_PAGEPROCESSING_TopRight:  2368
+         IDS_PAGEPROCESSING_CenterLeft:2369
+         IDS_PAGEPROCESSING_CenterCenter:2370
+         IDS_PAGEPROCESSING_CenterRight:2371
+         IDS_PAGEPROCESSING_BottomLeft:2372
+         IDS_PAGEPROCESSING_BottomCenter:2373
+         IDS_PAGEPROCESSING_BottomRight:2374
+         IDS_PAGEPROCESSING_JobBindAllDocuments:2279
+         IDS_PAGEPROCESSING_Fold:      2030
+         IDS_PAGEPROCESSING_NONE:      2031
+         IDS_PAGEPROCESSING_JobBindAllDocumentsSheetsPerBundle:2280
+         IDS_PAGEPROCESSING_1:         2001
+         IDS_PAGEPROCESSING_2:         2002
+         IDS_PAGEPROCESSING_3:         2003
+         IDS_PAGEPROCESSING_5:         2005
+         IDS_PAGEPROCESSING_8:         2008
+         IDS_PAGEPROCESSING_16:        2011
+         IDS_PAGEPROCESSING_Max:       2128
+         IDS_PAGEPROCESSING_JobBindAllDocumentsBindingEdge:2281
+         IDS_PAGEPROCESSING_AutoSelect:3304
+         IDS_PAGEPROCESSING_Left:      2032
+         IDS_PAGEPROCESSING_Right:     2033
+         IDS_PAGEPROCESSING_JobPrintFoldmark:2282
+         IDS_PAGEPROCESSING_PagePosterValue:2285
+         IDS_PAGEPROCESSING_11:        2031
+         IDS_PAGEPROCESSING_4:         2027
+         IDS_PAGEPROCESSING_9:         2028
+         IDS_PAGEPROCESSING_161:       2029
+         IDS_PAGEPROCESSING_PagePosterCropMarks:2286
+         IDS_PAGEPROCESSING_PagePosterOverlap:2287
+         IDS_PAGEPROCESSING_NONE1:     2101
+         IDS_PAGEPROCESSING_OVLP_5mm:  2083
+         IDS_PAGEPROCESSING_OVLP_25in: 2084
+         IDS_PAGEPROCESSING_OVLP_10mm: 2085
+         IDS_PAGEPROCESSING_OVLP_50in: 2086
+         IDS_PAGEPROCESSING_OVLP_15mm: 2087
+         IDS_PAGEPROCESSING_OVLP_75in: 2088
+         IDS_PAGEPROCESSING_OVLP_20mm: 2089
+         IDS_PAGEPROCESSING_OVLP_25mm: 2090
+         IDS_PAGEPROCESSING_OVLP_1in:  2091
+         IDS_PAGEPROCESSING_OVLP_30mm: 2092
+         IDS_PAGEPROCESSING_OVLP_1_25in:2093
+         IDS_PAGEPROCESSING_OVLP_35mm: 2094
+         IDS_PAGEPROCESSING_OVLP_1_50in:2095
+         IDS_PAGEPROCESSING_OVLP_40mm: 2096
+         IDS_PAGEPROCESSING_OVLP_1_75in:2097
+         IDS_PAGEPROCESSING_OVLP_45mm: 2098
+         IDS_PAGEPROCESSING_OVLP_50mm: 2099
+         IDS_PAGEPROCESSING_OVLP_2in:  2100
+         IDS_PAGEPROCESSING_JobNUpAllDocumentsContiguously:2288
+         IDS_PAGEPROCESSING_41:        2004
+         IDS_PAGEPROCESSING_6:         2006
+         IDS_PAGEPROCESSING_91:        2009
+         IDS_PAGEPROCESSING_JobNUpPresentationDirection:2289
+         IDS_PAGEPROCESSING_Automatic1:3304
+         IDS_PAGEPROCESSING_RightBottom:2294
+         IDS_PAGEPROCESSING_BottomRight1:2296
+         IDS_PAGEPROCESSING_LeftBottom:2295
+         IDS_PAGEPROCESSING_BottomLeft1:2297
+         IDS_PAGEPROCESSING_RightTop:  2290
+         IDS_PAGEPROCESSING_TopRight1: 2291
+         IDS_PAGEPROCESSING_LeftTop:   2292
+         IDS_PAGEPROCESSING_TopLeft1:  2293
+         IDS_PAGEPROCESSING_JobNUpBorders:2298
+         IDS_PAGEPROCESSING_Solid:     2299
+         IDS_PAGEPROCESSING_Shadow:    2300
+         IDS_PAGEPROCESSING_SolidShadow:2301
+         IDS_PAGEPROCESSING_JobBookletCover:2302
+         IDS_PAGEPROCESSING_JobBookletFFrontCover:2303
+         IDS_PAGEPROCESSING_JobBookletBFrontCover:2304
+         IDS_PAGEPROCESSING_JobBookletFBackCover:2305
+         IDS_PAGEPROCESSING_JobBookletBBackCover:2306
+         IDS_PAGEPROCESSING_JobBookletMaintain:2307
+         IDS_PAGEPROCESSING_JobMultipleInputOption:2309
+         IDS_PAGEPROCESSING_JobMIOFrontCover:2077
+         IDS_PAGEPROCESSING_JobMIOFirstPage:2078
+         IDS_PAGEPROCESSING_JobMIOLastPage:2079
+         IDS_PAGEPROCESSING_JobMIOBackCover:2080
+         IDS_PAGEPROCESSING_JobMIOEnableFrontAndBackCoverSelection:3412
+         IDS_PAGEPROCESSING_JobMIOEnableFirstAndLastPageSelection:3413
+}
+
+*Macros: LxkMediaTypes
+{
+         IDS_MEDIA_MediaType:          2358
+         IDS_MEDIA_AUTO:               3224
+         IDS_MEDIA_STANDARD:           3201
+         IDS_MEDIA_STATIONARY:         3218
+         IDS_MEDIA_LABEL:              3222
+         IDS_MEDIA_ENVELOPEPLAIN:      3219
+         IDS_MEDIA_LxkRecycled:        3213
+         IDS_MEDIA_GLOSSY:             3220
+         IDS_MEDIA_LxkHeavyGlossy:     3221
+         IDS_MEDIA_LxkVinyl:           3223
+         IDS_MEDIA_BOND:               3210
+         IDS_MEDIA_LxkRoughEnvelope:   3225
+         IDS_MEDIA_TRANSPARENCY:       3207
+         IDS_MEDIA_LxkPrePrinted:      3211
+         IDS_MEDIA_LxkColorPaper:      3212
+         IDS_MEDIA_LxkLight:           3214
+         IDS_MEDIA_LxkHeavy:           3215
+         IDS_MEDIA_LxkRough:           3226
+         IDS_MEDIA_CARDSTOCK:          3208
+         IDS_MEDIA_LxkCustom1:         3227
+         IDS_MEDIA_LxkCustom2:         3228
+         IDS_MEDIA_LxkCustom3:         3229
+         IDS_MEDIA_LxkCustom4:         3230
+         IDS_MEDIA_LxkCustom5:         3231
+         IDS_MEDIA_LxkCustom6:         3232
+         IDS_MEDIA_JobBookletCoverMediaType:2259
+         IDS_MEDIA_JobFrontCoverMediaType:2260
+         IDS_MEDIA_JobFirstPageMediaType:2261
+         IDS_MEDIA_JobLastPageMediaType:2262
+         IDS_MEDIA_JobBackCoverMediaType:2263
+}
+
+*Macros: LxkMemory
+{
+         IDS_MEMORY_Flash:             2081
+         IDS_MEMORY_NotInstalled:      2253
+         IDS_MEMORY_Installed:         2252
+         IDS_MEMORY_HardDisk:          2082
+         IDS_MEMORY_OFF:               2031
+         IDS_MEMORY_ON:                2030
+}
+

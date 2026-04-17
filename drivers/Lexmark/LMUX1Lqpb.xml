@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Properties xmlns= "http://schemas.microsoft.com/windows/2011/08/printing/queueproperties">
+  <Property Name="Watermarks.xml">
+   <String></String>
+  </Property>
+  <Property Name="Profiles.xml">
+    <String></String>
+  </Property>
+  <Property Name="Configuration.xml">
+    <String></String>
+  </Property>
+  <Property Name="ConfigurationUniqueKey">
+    <String></String>
+  </Property> 
+  <Property Name="ConfigurationUtilitySupported">
+    <String>true</String>
+  </Property>
+  <Property Name="ConfigProperties">
+    <String></String>
+  </Property>
+  <Property Name="PDCUVersionSupported">
+    <String>2.0</String>
+  </Property>
+</Properties>
