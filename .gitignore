@@ -1,0 +1,47 @@
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio / VS Code
+.vs/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+.vscode/*
+!.vscode/extensions.json
+
+## NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Test / coverage
+TestResults/
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+*.trx
+
+## OS / tooling
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Publish output (optional local drops)
+publish/

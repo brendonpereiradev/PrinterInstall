@@ -1,0 +1,50 @@
+﻿using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using PrinterInstall.App.Services;
+using PrinterInstall.App.ViewModels;
+using PrinterInstall.App.Views;
+using PrinterInstall.Core.Auth;
+using PrinterInstall.Core.Orchestration;
+using PrinterInstall.Core.Remote;
+
+namespace PrinterInstall.App;
+
+public partial class App : Application
+{
+    private IHost? _host;
+
+    private void App_OnStartup(object sender, StartupEventArgs e)
+    {
+        var builder = Host.CreateApplicationBuilder();
+        // appsettings.json is loaded by default from the app directory.
+
+        builder.Services.AddSingleton<ISessionContext, SessionContext>();
+        builder.Services.AddSingleton<ILdapCredentialValidator, LdapCredentialValidator>();
+        builder.Services.AddSingleton<IPowerShellInvoker, PowerShellInvoker>();
+        builder.Services.AddSingleton<WinRmRemotePrinterOperations>();
+        builder.Services.AddSingleton<CimRemotePrinterOperations>();
+        builder.Services.AddSingleton<IRemotePrinterOperations>(sp =>
+        {
+            var winRm = sp.GetRequiredService<WinRmRemotePrinterOperations>();
+            var cim = sp.GetRequiredService<CimRemotePrinterOperations>();
+            return new CompositeRemotePrinterOperations(winRm, cim);
+        });
+        builder.Services.AddSingleton<PrinterDeploymentOrchestrator>();
+        builder.Services.AddTransient<LoginViewModel>();
+        builder.Services.AddTransient<MainViewModel>();
+        builder.Services.AddTransient<LoginWindow>();
+        builder.Services.AddTransient<MainWindow>();
+
+        _host = builder.Build();
+
+        var login = _host.Services.GetRequiredService<LoginWindow>();
+        MainWindow = login;
+        login.Show();
+    }
+
+    private void App_OnExit(object sender, ExitEventArgs e)
+    {
+        _host?.Dispose();
+    }
+}
