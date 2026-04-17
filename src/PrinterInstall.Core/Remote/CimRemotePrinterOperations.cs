@@ -1,5 +1,6 @@
 using System.Management;
 using System.Net;
+using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
 
@@ -155,4 +156,82 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
     }
 
     private static string EscapeWql(string s) => s.Replace("\\", "\\\\").Replace("'", "\\'");
+
+    public Task<IReadOnlyList<RemotePrinterQueueInfo>> ListPrinterQueuesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
+    {
+        return Task.Run<IReadOnlyList<RemotePrinterQueueInfo>>(() =>
+        {
+            var scope = CreateScope(computerName, credential);
+            scope.Connect();
+            var query = new ObjectQuery("SELECT Name, PortName FROM Win32_Printer");
+            using var searcher = new ManagementObjectSearcher(scope, query);
+            var list = new List<RemotePrinterQueueInfo>();
+            foreach (ManagementObject mo in searcher.Get())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                using (mo)
+                {
+                    var name = mo["Name"]?.ToString() ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(name))
+                        continue;
+                    var port = mo["PortName"]?.ToString();
+                    list.Add(new RemotePrinterQueueInfo(name, port));
+                }
+            }
+            return list;
+        }, cancellationToken);
+    }
+
+    public Task RemovePrinterQueueAsync(string computerName, NetworkCredential credential, string printerName, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() =>
+        {
+            var scope = CreateScope(computerName, credential);
+            scope.Connect();
+            var query = new ObjectQuery($"SELECT * FROM Win32_Printer WHERE Name='{EscapeWql(printerName)}'");
+            using var searcher = new ManagementObjectSearcher(scope, query);
+            foreach (ManagementObject mo in searcher.Get())
+            {
+                using (mo)
+                {
+                    mo.Delete();
+                }
+            }
+        }, cancellationToken);
+    }
+
+    public Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() =>
+        {
+            var scope = CreateScope(computerName, credential);
+            scope.Connect();
+            var query = new ObjectQuery($"SELECT Name FROM Win32_Printer WHERE PortName='{EscapeWql(portName)}'");
+            using var searcher = new ManagementObjectSearcher(scope, query);
+            var count = 0;
+            foreach (ManagementObject mo in searcher.Get())
+            {
+                using (mo) { count++; }
+            }
+            return count;
+        }, cancellationToken);
+    }
+
+    public Task RemoveTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() =>
+        {
+            var scope = CreateScope(computerName, credential);
+            scope.Connect();
+            var query = new ObjectQuery($"SELECT * FROM Win32_TCPIPPrinterPort WHERE Name='{EscapeWql(portName)}'");
+            using var searcher = new ManagementObjectSearcher(scope, query);
+            foreach (ManagementObject mo in searcher.Get())
+            {
+                using (mo)
+                {
+                    mo.Delete();
+                }
+            }
+        }, cancellationToken);
+    }
 }

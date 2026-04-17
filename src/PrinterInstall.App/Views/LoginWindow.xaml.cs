@@ -29,6 +29,7 @@ public partial class LoginWindow
             return;
 
         var main = _serviceProvider.GetRequiredService<MainWindow>();
+        Application.Current.MainWindow = main;
         main.Show();
         Close();
     }

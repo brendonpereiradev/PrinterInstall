@@ -31,10 +31,13 @@ public partial class App : Application
             return new CompositeRemotePrinterOperations(winRm, cim);
         });
         builder.Services.AddSingleton<PrinterDeploymentOrchestrator>();
+        builder.Services.AddSingleton<PrinterRemovalOrchestrator>();
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<MainViewModel>();
+        builder.Services.AddTransient<RemovalWizardViewModel>();
         builder.Services.AddTransient<LoginWindow>();
         builder.Services.AddTransient<MainWindow>();
+        builder.Services.AddTransient<RemovalWizardWindow>();
 
         _host = builder.Build();
 

@@ -65,13 +65,8 @@
                 <TextBlock Text="Printer host (IP or DNS)"/>
                 <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
 
-                <TextBlock Text="Port"/>
-                <TextBox Text="{Binding PortNumber}" Margin="0,4,0,8"/>
-
-                <TextBlock Text="Protocol"/>
-                <ComboBox ItemsSource="{Binding Protocols}" SelectedItem="{Binding SelectedProtocol}" Margin="0,4,0,8"/>
-
                 <Button Content="Deploy" Command="{Binding DeployCommand}" Margin="0,16,0,0" Padding="12,6"/>
+                <Button Content="Remove printers…" Command="{Binding OpenRemovalWizardCommand}" Margin="0,8,0,0" Padding="12,6"/>
             </StackPanel>
         </Grid>
 
