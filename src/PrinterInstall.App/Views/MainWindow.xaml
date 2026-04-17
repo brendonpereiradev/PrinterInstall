@@ -1,0 +1,82 @@
+<Window x:Class="PrinterInstall.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Printer Install — Deployment"
+        Height="720" Width="1024"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="200"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="200"/>
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top" Text="Computer names (one per line)" Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                </DockPanel>
+
+                <GroupBox Grid.Row="2" Header="Status per machine">
+                    <DataGrid ItemsSource="{Binding Targets}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              HeadersVisibility="Column"
+                              CanUserAddRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Computer" Binding="{Binding ComputerName}" Width="*"/>
+                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="160"/>
+                            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="2*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+            </Grid>
+
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Brand"/>
+                <ComboBox ItemsSource="{Binding Brands}" SelectedItem="{Binding SelectedBrand}" Margin="0,4,0,8"/>
+
+                <TextBlock Text="Model"/>
+                <ComboBox ItemsSource="{Binding ModelsForBrand}"
+                          DisplayMemberPath="DisplayName"
+                          SelectedValuePath="Id"
+                          SelectedValue="{Binding SelectedModelId}"
+                          Margin="0,4,0,8"/>
+
+                <TextBlock Text="Display name (queue)"/>
+                <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
+
+                <TextBlock Text="Printer host (IP or DNS)"/>
+                <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
+
+                <TextBlock Text="Port"/>
+                <TextBox Text="{Binding PortNumber}" Margin="0,4,0,8"/>
+
+                <TextBlock Text="Protocol"/>
+                <ComboBox ItemsSource="{Binding Protocols}" SelectedItem="{Binding SelectedProtocol}" Margin="0,4,0,8"/>
+
+                <Button Content="Deploy" Command="{Binding DeployCommand}" Margin="0,16,0,0" Padding="12,6"/>
+            </StackPanel>
+        </Grid>
+
+        <GroupBox Grid.Row="1" Header="Log" Padding="8">
+            <TextBox Text="{Binding LogText}" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
+        </GroupBox>
+    </Grid>
+</Window>
