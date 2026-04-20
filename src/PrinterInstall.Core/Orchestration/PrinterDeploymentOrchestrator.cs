@@ -44,7 +44,23 @@ public sealed class PrinterDeploymentOrchestrator
                 await _remote.CreateTcpPrinterPortAsync(computer, request.DomainCredential, portName, request.PrinterHostAddress, request.PortNumber, protocol, cancellationToken).ConfigureAwait(false);
                 progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Configuring, "Adding printer..."));
                 await _remote.AddPrinterAsync(computer, request.DomainCredential, request.DisplayName, expected, portName, cancellationToken).ConfigureAwait(false);
-                progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.CompletedSuccess, "Done"));
+                if (request.PrintTestPage)
+                {
+                    progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Configuring, "Sending test page..."));
+                    try
+                    {
+                        await _remote.PrintTestPageAsync(computer, request.DomainCredential, request.DisplayName, cancellationToken).ConfigureAwait(false);
+                        progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.CompletedSuccess, "Done"));
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.CompletedSuccess, $"Done — test page failed: {Flatten(ex)}"));
+                    }
+                }
+                else
+                {
+                    progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.CompletedSuccess, "Done"));
+                }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

@@ -98,6 +98,9 @@
                     <TextBlock Text="{DynamicResource Main_PrinterHostLabel}" FontWeight="SemiBold"/>
                     <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
 
+                    <CheckBox Content="{DynamicResource Main_PrintTestPageLabel}" IsChecked="{Binding PrintTestPage}"
+                              Margin="0,8,0,0"/>
+
                     <ui:Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
                                Appearance="Primary" Margin="0,16,0,0"/>
                     <ui:Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}"

@@ -107,6 +107,30 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
         }, cancellationToken);
     }
 
+    public Task PrintTestPageAsync(string computerName, NetworkCredential credential, string printerQueueName, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() =>
+        {
+            var scope = CreateScope(computerName, credential);
+            scope.Connect();
+
+            var query = new ObjectQuery($"SELECT * FROM Win32_Printer WHERE Name='{EscapeWql(printerQueueName)}'");
+            using var searcher = new ManagementObjectSearcher(scope, query);
+
+            foreach (ManagementObject mo in searcher.Get())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                using (mo)
+                {
+                    mo.InvokeMethod("PrintTestPage", Array.Empty<object>());
+                    return;
+                }
+            }
+
+            throw new InvalidOperationException($"Printer queue not found for test page: {printerQueueName}");
+        }, cancellationToken);
+    }
+
     private static ManagementScope CreateScope(string computerName, NetworkCredential credential)
     {
         var options = new ConnectionOptions
