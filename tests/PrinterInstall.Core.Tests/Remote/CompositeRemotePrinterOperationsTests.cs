@@ -76,4 +76,21 @@ public class CompositeRemotePrinterOperationsTests
         Assert.Contains("WinRM", ex.Message);
         Assert.Contains("winrm down", ex.Message);
     }
+
+    [Fact]
+    public async Task PrintTestPageAsync_WhenPrimaryThrows_UsesFallback()
+    {
+        var primary = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        var fallback = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        primary.Setup(p => p.PrintTestPageAsync("pc", It.IsAny<NetworkCredential>(), "Q1", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("winrm down"));
+        fallback.Setup(p => p.PrintTestPageAsync("pc", It.IsAny<NetworkCredential>(), "Q1", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new CompositeRemotePrinterOperations(primary.Object, fallback.Object);
+        await sut.PrintTestPageAsync("pc", new NetworkCredential("u", "p"), "Q1");
+
+        primary.VerifyAll();
+        fallback.VerifyAll();
+    }
 }
