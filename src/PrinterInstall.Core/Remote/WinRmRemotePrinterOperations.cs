@@ -44,7 +44,7 @@ $printers = Get-Printer | Select-Object Name, PortName
 @($printers) | ConvertTo-Json -Compress -Depth 4
 """;
         var result = await _invoker.InvokeOnRemoteRunspaceAsync(computerName, credential, inner, cancellationToken).ConfigureAwait(false);
-        var json = result.Count > 0 ? result[0] : string.Empty;
+        var json = RemotePrinterQueueInfoJsonParser.NormalizeInvokerLinesToJson(result) ?? string.Empty;
         var parsed = RemotePrinterQueueInfoJsonParser.Parse(json);
         return parsed.Where(p => !string.IsNullOrWhiteSpace(p.Name)).ToList();
     }

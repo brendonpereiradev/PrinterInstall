@@ -3,69 +3,117 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
+        xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="{DynamicResource Main_WindowTitle}"
         Height="720" Width="1024"
         WindowStartupLocation="CenterScreen">
-    <Grid Margin="16">
+    <Window.Resources>
+        <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
+        <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+    <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="220" MinHeight="160"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition Width="280"/>
-            </Grid.ColumnDefinitions>
+        <DockPanel Grid.Row="0" LastChildFill="True">
+            <Border DockPanel.Dock="Top" Height="4" Background="{DynamicResource AppHeaderAccentBrush}"/>
+            <StackPanel Margin="16,12,16,8">
+                <TextBlock Text="{DynamicResource Main_WindowTitle}" FontSize="18" FontWeight="SemiBold"/>
+                <TextBlock Text="{DynamicResource Main_PageSubtitle}" FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
+        </DockPanel>
 
-            <Grid Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="200"/>
-                </Grid.RowDefinitions>
+        <Grid Grid.Row="1" Margin="16,0,16,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="220" MinHeight="160"/>
+            </Grid.RowDefinitions>
 
-                <DockPanel Grid.Row="0" LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Main_ComputersLabel}" Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
-                             AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
-                </DockPanel>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="280"/>
+                </Grid.ColumnDefinitions>
 
-                <GroupBox Grid.Row="2" Header="{DynamicResource Main_StatusGroupHeader}">
-                    <DataGrid ItemsSource="{Binding Targets}"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              HeadersVisibility="Column"
-                              CanUserAddRows="False">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerName}" Width="*"/>
-                            <DataGridTextColumn Header="{DynamicResource Main_ColumnState}" Binding="{Binding StateDisplay}" Width="160"/>
-                            <DataGridTextColumn Header="{DynamicResource Main_ColumnMessage}" Binding="{Binding Message}" Width="2*"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </GroupBox>
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="200"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                            BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8">
+                        <DockPanel LastChildFill="True">
+                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Main_ComputersLabel}"
+                                       FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
+                                     AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                        </DockPanel>
+                    </Border>
+
+                    <Border Grid.Row="2" Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                            BorderThickness="1" CornerRadius="4" Padding="8">
+                        <Grid>
+                            <TextBlock Text="{DynamicResource Main_StatusGroupHeader}" FontWeight="SemiBold" Margin="0,0,0,8"
+                                       VerticalAlignment="Top"/>
+                            <DataGrid ItemsSource="{Binding Targets}"
+                                      Margin="0,28,0,0"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      HeadersVisibility="Column"
+                                      CanUserAddRows="False"
+                                      GridLinesVisibility="Horizontal"
+                                      Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource InverseBoolToVis}}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerName}" Width="*"/>
+                                    <DataGridTextColumn Header="{DynamicResource Main_ColumnState}" Binding="{Binding StateDisplay}" Width="160"/>
+                                    <DataGridTextColumn Header="{DynamicResource Main_ColumnMessage}" Binding="{Binding Message}" Width="2*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock Text="{DynamicResource Main_StatusEmptyHint}"
+                                       TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="16"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource BoolToVis}}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="{DynamicResource Main_BrandLabel}" FontWeight="SemiBold"/>
+                    <ComboBox ItemsSource="{Binding Brands}" SelectedItem="{Binding SelectedBrand}" Margin="0,4,0,8"/>
+
+                    <TextBlock Text="{DynamicResource Main_DisplayNameLabel}" FontWeight="SemiBold"/>
+                    <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
+
+                    <TextBlock Text="{DynamicResource Main_PrinterHostLabel}" FontWeight="SemiBold"/>
+                    <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
+
+                    <ui:Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
+                               Appearance="Primary" Margin="0,16,0,0"/>
+                    <ui:Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}"
+                               Appearance="Secondary" Margin="0,8,0,0"/>
+                </StackPanel>
             </Grid>
 
-            <StackPanel Grid.Column="2">
-                <TextBlock Text="{DynamicResource Main_BrandLabel}"/>
-                <ComboBox ItemsSource="{Binding Brands}" SelectedItem="{Binding SelectedBrand}" Margin="0,4,0,8"/>
-
-                <TextBlock Text="{DynamicResource Main_DisplayNameLabel}"/>
-                <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-
-                <TextBlock Text="{DynamicResource Main_PrinterHostLabel}"/>
-                <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-
-                <Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
-                        Style="{DynamicResource PrimaryActionButton}" Margin="0,16,0,0"/>
-                <Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}" Margin="0,8,0,0"/>
-            </StackPanel>
+            <Border Grid.Row="1" Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Main_LogGroupHeader}" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding LogText}" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap" FontFamily="Consolas"/>
+                </DockPanel>
+            </Border>
         </Grid>
-
-        <GroupBox Grid.Row="1" Header="{DynamicResource Main_LogGroupHeader}" Padding="8">
-            <TextBox Text="{Binding LogText}" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
-        </GroupBox>
     </Grid>
 </Window>

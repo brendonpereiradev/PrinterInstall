@@ -1,5 +1,8 @@
 ﻿using System.Globalization;
 using System.Windows;
+using System.Windows.Media;
+using Wpf.Ui.Appearance;
+using Wpf.Ui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PrinterInstall.App.Services;
@@ -21,6 +24,11 @@ public partial class App : Application
         var ptBr = new CultureInfo("pt-BR");
         CultureInfo.DefaultThreadCurrentCulture = ptBr;
         CultureInfo.DefaultThreadCurrentUICulture = ptBr;
+
+        ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+        ApplicationAccentColorManager.Apply(
+            Color.FromRgb(61, 90, 128),
+            ApplicationTheme.Light);
 
         var builder = Host.CreateApplicationBuilder();
         // appsettings.json is loaded by default from the app directory.
