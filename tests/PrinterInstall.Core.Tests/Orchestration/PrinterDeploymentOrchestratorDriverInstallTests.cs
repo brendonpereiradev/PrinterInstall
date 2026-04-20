@@ -11,7 +11,7 @@ namespace PrinterInstall.Core.Tests.Orchestration;
 
 public class PrinterDeploymentOrchestratorDriverInstallTests
 {
-    private static PrinterDeploymentRequest MakeRequest(PrinterBrand brand = PrinterBrand.Gainscha, IReadOnlyList<string>? targets = null) => new()
+    private static PrinterDeploymentRequest MakeRequest(PrinterBrand brand = PrinterBrand.Gainscha, IReadOnlyList<string>? targets = null, bool printTestPage = false) => new()
     {
         TargetComputerNames = targets ?? new[] { "pc1" },
         Brand = brand,
@@ -19,7 +19,8 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         PrinterHostAddress = "10.0.0.10",
         PortNumber = 9100,
         Protocol = TcpPrinterProtocol.Raw,
-        DomainCredential = new NetworkCredential("u", "p")
+        DomainCredential = new NetworkCredential("u", "p"),
+        PrintTestPage = printTestPage
     };
 
     private static LocalDriverPackage MakePackage(PrinterBrand brand) =>
@@ -46,13 +47,15 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
               .Returns(Task.CompletedTask);
         remote.Setup(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "P1", expected, It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .Returns(Task.CompletedTask);
+        remote.Setup(m => m.PrintTestPageAsync("pc1", It.IsAny<NetworkCredential>(), "P1", It.IsAny<CancellationToken>()))
+              .Returns(Task.CompletedTask);
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
 
         var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
-        await sut.RunAsync(MakeRequest(), new InlineProgress<DeploymentProgressEvent>(events.Add));
+        await sut.RunAsync(MakeRequest(printTestPage: true), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         Assert.Contains(events, e => e.State == TargetMachineState.InstallingDriver);
         Assert.Contains(events, e => e.State == TargetMachineState.DriverInstalledReconfirming);
