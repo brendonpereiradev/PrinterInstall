@@ -24,7 +24,10 @@ public partial class MainViewModel : ObservableObject
         _orchestrator = orchestrator;
         _serviceProvider = serviceProvider;
         _selectedBrand = PrinterBrand.Epson;
+        Targets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowStatusEmptyHint));
     }
+
+    public bool ShowStatusEmptyHint => Targets.Count == 0;
 
     [ObservableProperty]
     private string _computersText = "";

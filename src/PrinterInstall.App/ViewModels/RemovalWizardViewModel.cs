@@ -30,6 +30,7 @@ public partial class RemovalWizardViewModel : ObservableObject
         _session = session;
         _remote = remote;
         _orchestrator = orchestrator;
+        QueuesForCurrentComputer.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowQueuesEmptyHint));
     }
 
     [ObservableProperty] private int _currentStepIndex;
@@ -43,6 +44,11 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     public ObservableCollection<SelectableQueueRow> QueuesForCurrentComputer { get; } = new();
 
+    public bool ShowQueuesEmptyHint =>
+        !IsLoadingQueues &&
+        string.IsNullOrEmpty(QueuesLoadError) &&
+        QueuesForCurrentComputer.Count == 0;
+
     [ObservableProperty] private string _reviewSummary = "";
 
     [ObservableProperty] private string _logText = "";
@@ -53,7 +59,13 @@ public partial class RemovalWizardViewModel : ObservableObject
     partial void OnIsExecutingChanged(bool value) => OnPropertyChanged(nameof(CanExecute));
     partial void OnCurrentStepIndexChanged(int value) => OnPropertyChanged(nameof(CanExecute));
 
-    partial void OnIsLoadingQueuesChanged(bool value) => NextQueueStepCommand.NotifyCanExecuteChanged();
+    partial void OnIsLoadingQueuesChanged(bool value)
+    {
+        NextQueueStepCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(ShowQueuesEmptyHint));
+    }
+
+    partial void OnQueuesLoadErrorChanged(string? value) => OnPropertyChanged(nameof(ShowQueuesEmptyHint));
 
     [RelayCommand]
     private async Task StartAsync()

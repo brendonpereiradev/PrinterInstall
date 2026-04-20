@@ -57,13 +57,40 @@ public sealed class CompositeRemotePrinterOperations : IRemotePrinterOperations
 
     public async Task<IReadOnlyList<RemotePrinterQueueInfo>> ListPrinterQueuesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
     {
+        IReadOnlyList<RemotePrinterQueueInfo>? primaryList = null;
+        Exception? primaryError = null;
+
         try
         {
-            return await _primary.ListPrinterQueuesAsync(computerName, credential, cancellationToken).ConfigureAwait(false);
+            primaryList = await _primary.ListPrinterQueuesAsync(computerName, credential, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            return await _fallback.ListPrinterQueuesAsync(computerName, credential, cancellationToken).ConfigureAwait(false);
+            primaryError = ex;
+        }
+
+        if (primaryList is { Count: > 0 })
+            return primaryList;
+
+        try
+        {
+            var fallbackList = await _fallback.ListPrinterQueuesAsync(computerName, credential, cancellationToken).ConfigureAwait(false);
+            if (fallbackList.Count > 0)
+                return fallbackList;
+
+            if (primaryError is not null)
+                throw new InvalidOperationException($"Failed to list printers via WinRM: {primaryError.Message}", primaryError);
+
+            return Array.Empty<RemotePrinterQueueInfo>();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            if (primaryError is not null)
+                throw new InvalidOperationException(
+                    $"Failed to list printers (WinRM: {primaryError.Message}; WMI: {ex.Message})",
+                    primaryError);
+
+            throw;
         }
     }
 

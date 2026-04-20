@@ -30,4 +30,25 @@ public class RemotePrinterQueueInfoJsonParserTests
         Assert.Single(list);
         Assert.Equal("Only", list[0].Name);
     }
+
+    [Fact]
+    public void NormalizeInvokerLinesToJson_SkipsLeadingNoiseLine()
+    {
+        var raw = RemotePrinterQueueInfoJsonParser.NormalizeInvokerLinesToJson(new[]
+        {
+            "VERBOSE: example",
+            """[{"Name":"A","PortName":"P"}]"""
+        });
+        Assert.NotNull(raw);
+        var list = RemotePrinterQueueInfoJsonParser.Parse(raw);
+        Assert.Single(list);
+        Assert.Equal("A", list[0].Name);
+    }
+
+    [Fact]
+    public void NormalizeInvokerLinesToJson_TrimsBom()
+    {
+        var raw = RemotePrinterQueueInfoJsonParser.NormalizeInvokerLinesToJson(new[] { "\uFEFF[]" });
+        Assert.Equal("[]", raw);
+    }
 }
