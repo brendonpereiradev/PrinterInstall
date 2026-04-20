@@ -1,4 +1,5 @@
 using System.Net;
+using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
@@ -100,5 +101,30 @@ public sealed class CompositeRemotePrinterOperations : IRemotePrinterOperations
         {
             await _fallback.RemoveTcpPrinterPortAsync(computerName, credential, portName, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    public async Task InstallPrinterDriverAsync(string computerName, NetworkCredential credential, LocalDriverPackage package, IProgress<string>? log, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _primary.InstallPrinterDriverAsync(computerName, credential, package, log, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Surface why the primary channel failed so the operator can tell
+            // the difference between "WinRM unavailable" and "Add-PrinterDriver
+            // refused the package". The exception message carries the captured
+            // PowerShell output from our updated PowerShellInvoker.
+            log?.Report("WINRM>> Primary install failed, falling back to CIM. " + Summarize(ex.Message));
+            await _fallback.InstallPrinterDriverAsync(computerName, credential, package, log, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static string Summarize(string message)
+    {
+        if (string.IsNullOrEmpty(message))
+            return string.Empty;
+        const int max = 800;
+        return message.Length <= max ? message : message[..max] + "…";
     }
 }

@@ -5,6 +5,8 @@ public enum TargetMachineState
     Pending,
     ContactingRemote,
     ValidatingDriver,
+    InstallingDriver,
+    DriverInstalledReconfirming,
     Configuring,
     CompletedSuccess,
     AbortedDriverMissing,

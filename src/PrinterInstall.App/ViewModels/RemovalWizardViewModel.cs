@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PrinterInstall.App.Resources;
 using PrinterInstall.App.Services;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Orchestration;
@@ -51,19 +53,21 @@ public partial class RemovalWizardViewModel : ObservableObject
     partial void OnIsExecutingChanged(bool value) => OnPropertyChanged(nameof(CanExecute));
     partial void OnCurrentStepIndexChanged(int value) => OnPropertyChanged(nameof(CanExecute));
 
+    partial void OnIsLoadingQueuesChanged(bool value) => NextQueueStepCommand.NotifyCanExecuteChanged();
+
     [RelayCommand]
     private async Task StartAsync()
     {
         if (_session.Credential is null)
         {
-            AppendLog("Not authenticated.");
+            AppendLog(UiStrings.Removal_NotAuthenticated);
             return;
         }
 
         var names = ComputerNameListParser.Parse(ComputersText);
         if (names.Count == 0)
         {
-            AppendLog("Enter at least one computer name.");
+            AppendLog(UiStrings.Removal_Validation_ComputersRequired);
             return;
         }
 
@@ -74,7 +78,7 @@ public partial class RemovalWizardViewModel : ObservableObject
         await LoadCurrentMachineAsync().ConfigureAwait(true);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanAdvanceQueueStep))]
     private async Task NextQueueStepAsync()
     {
         CaptureCurrentSelection();
@@ -89,12 +93,27 @@ public partial class RemovalWizardViewModel : ObservableObject
         CurrentStepIndex = 2;
     }
 
+    private bool CanAdvanceQueueStep()
+    {
+        if (IsLoadingQueues)
+            return false;
+        if (QueuesForCurrentComputer.Count == 0)
+            return true;
+        return QueuesForCurrentComputer.Any(r => r.IsSelected);
+    }
+
+    private void OnQueueRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SelectableQueueRow.IsSelected))
+            NextQueueStepCommand.NotifyCanExecuteChanged();
+    }
+
     [RelayCommand]
     private async Task ExecuteAsync()
     {
         if (_session.Credential is null)
         {
-            AppendLog("Not authenticated.");
+            AppendLog(UiStrings.Removal_NotAuthenticated);
             return;
         }
 
@@ -109,7 +128,7 @@ public partial class RemovalWizardViewModel : ObservableObject
 
             if (targets.Count == 0)
             {
-                AppendLog("No printers selected; nothing to do.");
+                AppendLog(UiStrings.Removal_NoPrintersSelected);
                 return;
             }
 
@@ -123,11 +142,11 @@ public partial class RemovalWizardViewModel : ObservableObject
                 AppendLog($"{ev.ComputerName}: {ev.State} - {ev.Message}"));
 
             await _orchestrator.RunAsync(request, progress).ConfigureAwait(true);
-            AppendLog("Removal finished.");
+            AppendLog(UiStrings.Removal_Finished);
         }
         catch (Exception ex)
         {
-            AppendLog($"Error: {ex.Message}");
+            AppendLog(string.Format(UiStrings.Removal_LogErrorFormat, ex.Message));
         }
         finally
         {
@@ -137,33 +156,45 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     private async Task LoadCurrentMachineAsync()
     {
+        IsLoadingQueues = true;
+        NextQueueStepCommand.NotifyCanExecuteChanged();
+
+        foreach (var row in QueuesForCurrentComputer.ToList())
+            row.PropertyChanged -= OnQueueRowPropertyChanged;
         QueuesForCurrentComputer.Clear();
+
         QueuesLoadError = null;
         CurrentComputerName = _machineOrder[_machineIndex];
-        CurrentStepLabel = $"Computer {_machineIndex + 1} of {_machineOrder.Count}: {CurrentComputerName}";
-        IsLoadingQueues = true;
+        CurrentStepLabel = string.Format(
+            UiStrings.Removal_StepLabelFormat,
+            _machineIndex + 1,
+            _machineOrder.Count,
+            CurrentComputerName);
         try
         {
             var cred = _session.Credential!;
             var list = await _remote.ListPrinterQueuesAsync(CurrentComputerName, cred).ConfigureAwait(true);
             foreach (var q in list.OrderBy(q => q.Name, StringComparer.OrdinalIgnoreCase))
             {
-                QueuesForCurrentComputer.Add(new SelectableQueueRow
+                var row = new SelectableQueueRow
                 {
                     Name = q.Name,
                     PortName = q.PortName,
                     IsSelected = false
-                });
+                };
+                row.PropertyChanged += OnQueueRowPropertyChanged;
+                QueuesForCurrentComputer.Add(row);
             }
         }
         catch (Exception ex)
         {
             QueuesLoadError = ex.Message;
-            AppendLog($"{CurrentComputerName}: failed to list printers - {ex.Message}");
+            AppendLog(string.Format(UiStrings.Removal_LogListPrintersFailedFormat, CurrentComputerName, ex.Message));
         }
         finally
         {
             IsLoadingQueues = false;
+            NextQueueStepCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -183,12 +214,16 @@ public partial class RemovalWizardViewModel : ObservableObject
         {
             if (!_selectionsByComputer.TryGetValue(computer, out var queues) || queues.Count == 0)
             {
-                lines.Add($"{computer}: (nothing to remove)");
+                lines.Add(string.Format(UiStrings.Removal_ReviewNothingFormat, computer));
                 continue;
             }
             foreach (var q in queues)
             {
-                lines.Add($"{computer}: remove '{q.PrinterName}' (port '{q.PortName ?? "-"}')");
+                lines.Add(string.Format(
+                    UiStrings.Removal_ReviewRemoveFormat,
+                    computer,
+                    q.PrinterName,
+                    q.PortName ?? "-"));
             }
         }
         ReviewSummary = string.Join(Environment.NewLine, lines);

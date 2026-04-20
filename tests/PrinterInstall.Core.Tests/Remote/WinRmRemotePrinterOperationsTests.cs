@@ -13,7 +13,8 @@ public class WinRmRemotePrinterOperationsTests
         mock.Setup(m => m.InvokeOnRemoteRunspaceAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { "EPSON Universal Print Driver" });
 
-        var sut = new WinRmRemotePrinterOperations(mock.Object);
+        var stager = new Mock<IRemoteDriverFileStager>().Object;
+        var sut = new WinRmRemotePrinterOperations(mock.Object, stager);
         var cred = new NetworkCredential("DOM\\admin", "x");
         var names = await sut.GetInstalledDriverNamesAsync("pc1", cred);
 

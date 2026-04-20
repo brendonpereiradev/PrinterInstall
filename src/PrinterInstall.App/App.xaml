@@ -4,5 +4,13 @@
              Startup="App_OnStartup"
              Exit="App_OnExit">
     <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/AdminToolTheme.xaml"/>
+                <ResourceDictionary Source="Strings/Main.pt-BR.xaml"/>
+                <ResourceDictionary Source="Strings/Login.pt-BR.xaml"/>
+                <ResourceDictionary Source="Strings/RemovalWizard.pt-BR.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A5F64748
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrinterInstall.Core.Tests", "tests\PrinterInstall.Core.Tests\PrinterInstall.Core.Tests.csproj", "{C4C6A022-0F4E-4041-8828-4B31E155757F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrinterInstall.App.Tests", "tests\PrinterInstall.App.Tests\PrinterInstall.App.Tests.csproj", "{07C0D01D-E337-4514-A04C-2CD38D6686C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,10 +36,15 @@ Global
 		{C4C6A022-0F4E-4041-8828-4B31E155757F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4C6A022-0F4E-4041-8828-4B31E155757F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4C6A022-0F4E-4041-8828-4B31E155757F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07C0D01D-E337-4514-A04C-2CD38D6686C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07C0D01D-E337-4514-A04C-2CD38D6686C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07C0D01D-E337-4514-A04C-2CD38D6686C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07C0D01D-E337-4514-A04C-2CD38D6686C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8C75D182-2108-44B8-92B3-AC3C3755B49A} = {2C9C9AD3-36AB-47F7-9976-A317E15EA685}
 		{056338BD-F066-4DED-977A-BFB039846B61} = {2C9C9AD3-36AB-47F7-9976-A317E15EA685}
 		{C4C6A022-0F4E-4041-8828-4B31E155757F} = {A5F64748-4C6D-43D8-974E-571EB2E394CD}
+		{07C0D01D-E337-4514-A04C-2CD38D6686C2} = {A5F64748-4C6D-43D8-974E-571EB2E394CD}
 	EndGlobalSection
 EndGlobal

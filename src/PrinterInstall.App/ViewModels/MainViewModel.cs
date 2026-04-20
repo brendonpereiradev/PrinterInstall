@@ -3,8 +3,9 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using PrinterInstall.App.Localization;
+using PrinterInstall.App.Resources;
 using PrinterInstall.App.Services;
-using PrinterInstall.Core.Catalog;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Orchestration;
 using PrinterInstall.Core.Validation;
@@ -23,7 +24,6 @@ public partial class MainViewModel : ObservableObject
         _orchestrator = orchestrator;
         _serviceProvider = serviceProvider;
         _selectedBrand = PrinterBrand.Epson;
-        _selectedModelId = PrinterCatalog.GetModels(PrinterBrand.Epson)[0].Id;
     }
 
     [ObservableProperty]
@@ -31,9 +31,6 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private PrinterBrand _selectedBrand;
-
-    [ObservableProperty]
-    private string _selectedModelId;
 
     [ObservableProperty]
     private string _displayName = "";
@@ -51,15 +48,6 @@ public partial class MainViewModel : ObservableObject
 
     public IEnumerable<PrinterBrand> Brands => Enum.GetValues<PrinterBrand>();
 
-    public IReadOnlyList<PrinterModelOption> ModelsForBrand => PrinterCatalog.GetModels(SelectedBrand);
-
-    partial void OnSelectedBrandChanged(PrinterBrand value)
-    {
-        var models = PrinterCatalog.GetModels(value);
-        SelectedModelId = models[0].Id;
-        OnPropertyChanged(nameof(ModelsForBrand));
-    }
-
     [RelayCommand]
     private async Task DeployAsync()
     {
@@ -69,26 +57,26 @@ public partial class MainViewModel : ObservableObject
         var cred = _session.Credential;
         if (cred == null)
         {
-            AppendLog("Not authenticated.");
+            AppendLog(UiStrings.Main_NotAuthenticated);
             return;
         }
 
         var rawNames = ComputerNameListParser.Parse(ComputersText);
         if (rawNames.Count == 0)
         {
-            AppendLog("Enter at least one computer name.");
+            AppendLog(UiStrings.Main_Validation_ComputersRequired);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(DisplayName))
         {
-            AppendLog("Display name is required.");
+            AppendLog(UiStrings.Main_Validation_DisplayNameRequired);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(PrinterHostAddress))
         {
-            AppendLog("Printer host address is required.");
+            AppendLog(UiStrings.Main_Validation_PrinterHostRequired);
             return;
         }
 
@@ -101,7 +89,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     ComputerName = n,
                     State = TargetMachineState.Error,
-                    Message = "Invalid computer name format"
+                    Message = UiStrings.Main_InvalidComputerNameFormat
                 });
                 continue;
             }
@@ -117,7 +105,6 @@ public partial class MainViewModel : ObservableObject
         {
             TargetComputerNames = validNames,
             Brand = SelectedBrand,
-            SelectedModelId = SelectedModelId,
             DisplayName = DisplayName.Trim(),
             PrinterHostAddress = PrinterHostAddress.Trim(),
             PortNumber = DefaultPortNumber,
@@ -136,7 +123,7 @@ public partial class MainViewModel : ObservableObject
                     row.Message = e.Message;
                 }
 
-                AppendLog($"{e.ComputerName}: {e.State} — {e.Message}");
+                AppendLog($"{e.ComputerName}: {TargetMachineStateDisplay.GetDisplay(e.State)} — {e.Message}");
             });
         });
 

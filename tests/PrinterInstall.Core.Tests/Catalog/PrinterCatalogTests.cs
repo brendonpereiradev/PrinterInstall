@@ -13,10 +13,9 @@ public class PrinterCatalogTests
     }
 
     [Fact]
-    public void GetModels_ContainsAtLeastOnePerBrand()
+    public void GetExpectedDriverName_LexmarkAndGainscha_ReturnsCatalogNames()
     {
-        Assert.NotEmpty(PrinterCatalog.GetModels(PrinterBrand.Epson));
-        Assert.NotEmpty(PrinterCatalog.GetModels(PrinterBrand.Lexmark));
-        Assert.NotEmpty(PrinterCatalog.GetModels(PrinterBrand.Gainscha));
+        Assert.Equal("Lexmark Universal v4 XL", PrinterCatalog.GetExpectedDriverName(PrinterBrand.Lexmark));
+        Assert.Equal("Gainscha GA-2408T", PrinterCatalog.GetExpectedDriverName(PrinterBrand.Gainscha));
     }
 }
