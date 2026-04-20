@@ -55,6 +55,18 @@ public sealed class CompositeRemotePrinterOperations : IRemotePrinterOperations
         }
     }
 
+    public async Task PrintTestPageAsync(string computerName, NetworkCredential credential, string printerQueueName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _primary.PrintTestPageAsync(computerName, credential, printerQueueName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await _fallback.PrintTestPageAsync(computerName, credential, printerQueueName, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
     public async Task<IReadOnlyList<RemotePrinterQueueInfo>> ListPrinterQueuesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
     {
         IReadOnlyList<RemotePrinterQueueInfo>? primaryList = null;

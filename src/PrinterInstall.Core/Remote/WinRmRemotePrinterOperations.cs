@@ -37,6 +37,15 @@ public sealed class WinRmRemotePrinterOperations : IRemotePrinterOperations
         return _invoker.InvokeOnRemoteRunspaceAsync(computerName, credential, inner, cancellationToken);
     }
 
+    public Task PrintTestPageAsync(string computerName, NetworkCredential credential, string printerQueueName, CancellationToken cancellationToken = default)
+    {
+        var inner = $"""
+Import-Module PrintManagement -ErrorAction Stop
+Print-TestPage -PrinterName '{Escape(printerQueueName)}'
+""";
+        return _invoker.InvokeOnRemoteRunspaceAsync(computerName, credential, inner, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<RemotePrinterQueueInfo>> ListPrinterQueuesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
     {
         const string inner = """

@@ -42,6 +42,9 @@ public partial class MainViewModel : ObservableObject
     private string _printerHostAddress = "";
 
     [ObservableProperty]
+    private bool _printTestPage;
+
+    [ObservableProperty]
     private string _logText = "";
 
     private const int DefaultPortNumber = 9100;
@@ -112,7 +115,8 @@ public partial class MainViewModel : ObservableObject
             PrinterHostAddress = PrinterHostAddress.Trim(),
             PortNumber = DefaultPortNumber,
             Protocol = DefaultProtocol,
-            DomainCredential = cred
+            DomainCredential = cred,
+            PrintTestPage = PrintTestPage
         };
 
         var progress = new Progress<DeploymentProgressEvent>(e =>
