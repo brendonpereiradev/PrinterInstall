@@ -1,4 +1,5 @@
 using System.Net;
+using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
@@ -21,5 +22,8 @@ public interface IRemotePrinterOperations
         => throw new NotImplementedException();
 
     Task RemoveTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
+
+    Task InstallPrinterDriverAsync(string computerName, NetworkCredential credential, LocalDriverPackage package, IProgress<string>? log, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 }

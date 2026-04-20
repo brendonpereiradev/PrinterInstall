@@ -28,13 +28,18 @@ public sealed class PowerShellInvoker : IPowerShellInvoker
 
         var output = await Task.Run(() => ps.Invoke(), cancellationToken).ConfigureAwait(false);
 
+        var returned = output.Select(o => o?.ToString() ?? string.Empty).Where(s => s.Length > 0).ToList();
+
         if (ps.HadErrors)
         {
             var err = string.Join("; ", ps.Streams.Error.ReadAll().Select(e => e.ToString()));
-            throw new InvalidOperationException($"Remote PowerShell failed: {err}");
+            // Preserve the partial output stream so callers can diagnose what
+            // succeeded before the terminating error (e.g. pnputil output).
+            var preview = returned.Count == 0 ? "" : " [Output: " + string.Join(" | ", returned) + "]";
+            throw new InvalidOperationException($"Remote PowerShell failed: {err}{preview}");
         }
 
-        return output.Select(o => o?.ToString() ?? string.Empty).Where(s => s.Length > 0).ToList();
+        return returned;
     }
 
     private static string BuildUserName(NetworkCredential credential)

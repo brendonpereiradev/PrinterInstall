@@ -1,7 +1,7 @@
 <Window x:Class="PrinterInstall.App.Views.RemovalWizardWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Remove printers"
+        Title="{DynamicResource Removal_WindowTitle}"
         Height="640" Width="900"
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
@@ -14,10 +14,10 @@
         <TabControl SelectedIndex="{Binding CurrentStepIndex}">
             <TabItem>
                 <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="Enter computer names (one per line). Wizard will load printers per machine and let you select what to remove."
+                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Removal_Step0Intro}"
                                TextWrapping="Wrap" Margin="0,0,0,8"/>
                     <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Padding="16,6"
-                            Content="Next" Command="{Binding StartCommand}" Margin="0,8,0,0"/>
+                            Content="{DynamicResource Removal_Next}" Command="{Binding StartCommand}" Margin="0,8,0,0"/>
                     <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
                              AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
                 </DockPanel>
@@ -28,15 +28,15 @@
                     <TextBlock DockPanel.Dock="Top" Text="{Binding CurrentStepLabel}" FontWeight="Bold" Margin="0,0,0,8"/>
                     <TextBlock DockPanel.Dock="Top" Text="{Binding QueuesLoadError}" Foreground="Red" TextWrapping="Wrap" Margin="0,0,0,8"/>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-                        <Button Content="Next" Command="{Binding NextQueueStepCommand}" Padding="16,6"/>
+                        <Button Content="{DynamicResource Removal_Next}" Command="{Binding NextQueueStepCommand}" Padding="16,6"/>
                     </StackPanel>
                     <DataGrid ItemsSource="{Binding QueuesForCurrentComputer}"
                               AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
                               SelectionMode="Extended" GridLinesVisibility="Horizontal">
                         <DataGrid.Columns>
-                            <DataGridCheckBoxColumn Header="Remove" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
-                            <DataGridTextColumn Header="Printer" Binding="{Binding Name}" Width="*" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Port" Binding="{Binding PortName}" Width="200" IsReadOnly="True"/>
+                            <DataGridCheckBoxColumn Header="{DynamicResource Removal_ColumnRemove}" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                            <DataGridTextColumn Header="{DynamicResource Removal_ColumnPrinter}" Binding="{Binding Name}" Width="*" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="{DynamicResource Removal_ColumnPort}" Binding="{Binding PortName}" Width="200" IsReadOnly="True"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
@@ -44,9 +44,9 @@
 
             <TabItem>
                 <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="Review the removal plan:" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Removal_ReviewHeader}" FontWeight="Bold" Margin="0,0,0,8"/>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,8,0,0">
-                        <Button Content="Execute removal" Command="{Binding ExecuteCommand}"
+                        <Button Content="{DynamicResource Removal_ExecuteButton}" Command="{Binding ExecuteCommand}"
                                 IsEnabled="{Binding CanExecute}" HorizontalAlignment="Right" Padding="16,6"/>
                     </StackPanel>
                     <TextBox Text="{Binding ReviewSummary, Mode=OneWay}" IsReadOnly="True"
@@ -56,7 +56,7 @@
 
             <TabItem>
                 <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="Execution log" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Removal_LogHeader}" FontWeight="Bold" Margin="0,0,0,8"/>
                     <TextBox Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True"
                              VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
                 </DockPanel>

@@ -21,7 +21,6 @@ public class PrinterDeploymentOrchestratorTests
         {
             TargetComputerNames = new[] { "pc1" },
             Brand = PrinterBrand.Epson,
-            SelectedModelId = "epson-default",
             DisplayName = "P1",
             PrinterHostAddress = "10.0.0.1",
             PortNumber = 9100,
@@ -55,7 +54,6 @@ public class PrinterDeploymentOrchestratorTests
         {
             TargetComputerNames = new[] { "pc1" },
             Brand = PrinterBrand.Lexmark,
-            SelectedModelId = "lexmark-default",
             DisplayName = "Office",
             PrinterHostAddress = "10.0.0.5",
             PortNumber = 9100,

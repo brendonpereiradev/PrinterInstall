@@ -1,0 +1,3 @@
+; Fake INF used only for unit tests; do not install.
+[Version]
+Signature="$Windows NT$"

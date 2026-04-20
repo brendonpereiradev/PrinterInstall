@@ -1,23 +1,23 @@
 <Window x:Class="PrinterInstall.App.Views.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Printer Install — Login"
+        Title="{DynamicResource Login_WindowTitle}"
         Height="360" Width="440"
         WindowStartupLocation="CenterScreen">
     <StackPanel Margin="20">
-        <TextBlock Text="Domain login" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+        <TextBlock Text="{DynamicResource Login_Header}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
 
-        <TextBlock Text="Domain (DNS)"/>
+        <TextBlock Text="{DynamicResource Login_DomainLabel}"/>
         <TextBox Text="{Binding DomainName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
 
-        <TextBlock Text="User name"/>
+        <TextBlock Text="{DynamicResource Login_UserLabel}"/>
         <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
 
-        <TextBlock Text="Password"/>
+        <TextBlock Text="{DynamicResource Login_PasswordLabel}"/>
         <PasswordBox x:Name="PasswordBox" PasswordChanged="PasswordBox_OnPasswordChanged" Margin="0,4,0,12"/>
 
         <TextBlock Text="{Binding ErrorMessage}" Foreground="DarkRed" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
-        <Button Content="Sign in" HorizontalAlignment="Right" Width="120" IsDefault="True" Click="SignIn_OnClick"/>
+        <Button Content="{DynamicResource Login_SignInButton}" HorizontalAlignment="Right" Width="120" IsDefault="True" Click="SignIn_OnClick"/>
     </StackPanel>
 </Window>

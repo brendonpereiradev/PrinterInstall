@@ -1,6 +1,7 @@
 using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Configuration;
+using PrinterInstall.App.Resources;
 using PrinterInstall.Core.Auth;
 using PrinterInstall.App.Services;
 
@@ -36,7 +37,7 @@ public partial class LoginViewModel : ObservableObject
         ErrorMessage = null;
         if (string.IsNullOrWhiteSpace(DomainName) || string.IsNullOrWhiteSpace(UserName))
         {
-            ErrorMessage = "Domain and user name are required.";
+            ErrorMessage = UiStrings.Login_Validation_DomainUserRequired;
             return (false, ErrorMessage);
         }
 

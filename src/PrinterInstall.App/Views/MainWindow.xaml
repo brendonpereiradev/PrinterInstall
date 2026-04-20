@@ -4,13 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Printer Install — Deployment"
+        Title="{DynamicResource Main_WindowTitle}"
         Height="720" Width="1024"
         WindowStartupLocation="CenterScreen">
-    <Grid Margin="12">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="200"/>
+            <RowDefinition Height="220" MinHeight="160"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
@@ -28,49 +28,43 @@
                 </Grid.RowDefinitions>
 
                 <DockPanel Grid.Row="0" LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="Computer names (one per line)" Margin="0,0,0,4"/>
+                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Main_ComputersLabel}" Margin="0,0,0,4"/>
                     <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
                              AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
                 </DockPanel>
 
-                <GroupBox Grid.Row="2" Header="Status per machine">
+                <GroupBox Grid.Row="2" Header="{DynamicResource Main_StatusGroupHeader}">
                     <DataGrid ItemsSource="{Binding Targets}"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
                               HeadersVisibility="Column"
                               CanUserAddRows="False">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Computer" Binding="{Binding ComputerName}" Width="*"/>
-                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="160"/>
-                            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="2*"/>
+                            <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerName}" Width="*"/>
+                            <DataGridTextColumn Header="{DynamicResource Main_ColumnState}" Binding="{Binding StateDisplay}" Width="160"/>
+                            <DataGridTextColumn Header="{DynamicResource Main_ColumnMessage}" Binding="{Binding Message}" Width="2*"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
             </Grid>
 
             <StackPanel Grid.Column="2">
-                <TextBlock Text="Brand"/>
+                <TextBlock Text="{DynamicResource Main_BrandLabel}"/>
                 <ComboBox ItemsSource="{Binding Brands}" SelectedItem="{Binding SelectedBrand}" Margin="0,4,0,8"/>
 
-                <TextBlock Text="Model"/>
-                <ComboBox ItemsSource="{Binding ModelsForBrand}"
-                          DisplayMemberPath="DisplayName"
-                          SelectedValuePath="Id"
-                          SelectedValue="{Binding SelectedModelId}"
-                          Margin="0,4,0,8"/>
-
-                <TextBlock Text="Display name (queue)"/>
+                <TextBlock Text="{DynamicResource Main_DisplayNameLabel}"/>
                 <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
 
-                <TextBlock Text="Printer host (IP or DNS)"/>
+                <TextBlock Text="{DynamicResource Main_PrinterHostLabel}"/>
                 <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
 
-                <Button Content="Deploy" Command="{Binding DeployCommand}" Margin="0,16,0,0" Padding="12,6"/>
-                <Button Content="Remove printers…" Command="{Binding OpenRemovalWizardCommand}" Margin="0,8,0,0" Padding="12,6"/>
+                <Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
+                        Style="{DynamicResource PrimaryActionButton}" Margin="0,16,0,0"/>
+                <Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}" Margin="0,8,0,0"/>
             </StackPanel>
         </Grid>
 
-        <GroupBox Grid.Row="1" Header="Log" Padding="8">
+        <GroupBox Grid.Row="1" Header="{DynamicResource Main_LogGroupHeader}" Padding="8">
             <TextBox Text="{Binding LogText}" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
         </GroupBox>
     </Grid>

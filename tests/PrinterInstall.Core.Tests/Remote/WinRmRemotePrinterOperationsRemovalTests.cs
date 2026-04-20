@@ -13,7 +13,8 @@ public class WinRmRemotePrinterOperationsRemovalTests
         mock.Setup(m => m.InvokeOnRemoteRunspaceAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { """[{"Name":"Q","PortName":"P"}]""" });
 
-        var sut = new WinRmRemotePrinterOperations(mock.Object);
+        var stager = new Mock<IRemoteDriverFileStager>().Object;
+        var sut = new WinRmRemotePrinterOperations(mock.Object, stager);
         var cred = new NetworkCredential("DOM\\u", "p");
         var list = await sut.ListPrinterQueuesAsync("pc1", cred);
 
@@ -29,7 +30,8 @@ public class WinRmRemotePrinterOperationsRemovalTests
         mock.Setup(m => m.InvokeOnRemoteRunspaceAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<string>());
 
-        var sut = new WinRmRemotePrinterOperations(mock.Object);
+        var stager = new Mock<IRemoteDriverFileStager>().Object;
+        var sut = new WinRmRemotePrinterOperations(mock.Object, stager);
         await sut.RemovePrinterQueueAsync("pc1", new NetworkCredential("u", "p"), "MyQueue");
 
         mock.Verify(m => m.InvokeOnRemoteRunspaceAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.Is<string>(s => s.Contains("Remove-Printer") && s.Contains("MyQueue")), It.IsAny<CancellationToken>()), Times.Once);
@@ -42,7 +44,8 @@ public class WinRmRemotePrinterOperationsRemovalTests
         mock.Setup(m => m.InvokeOnRemoteRunspaceAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { "3" });
 
-        var sut = new WinRmRemotePrinterOperations(mock.Object);
+        var stager = new Mock<IRemoteDriverFileStager>().Object;
+        var sut = new WinRmRemotePrinterOperations(mock.Object, stager);
         var count = await sut.CountPrintersUsingPortAsync("pc1", new NetworkCredential("u", "p"), "IP_10.0.0.1");
 
         Assert.Equal(3, count);
@@ -56,7 +59,8 @@ public class WinRmRemotePrinterOperationsRemovalTests
         mock.Setup(m => m.InvokeOnRemoteRunspaceAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<string>());
 
-        var sut = new WinRmRemotePrinterOperations(mock.Object);
+        var stager = new Mock<IRemoteDriverFileStager>().Object;
+        var sut = new WinRmRemotePrinterOperations(mock.Object, stager);
         await sut.RemoveTcpPrinterPortAsync("pc1", new NetworkCredential("u", "p"), "IP_10.0.0.1");
 
         mock.Verify(m => m.InvokeOnRemoteRunspaceAsync("pc1", It.IsAny<NetworkCredential>(), It.Is<string>(s => s.Contains("Remove-PrinterPort") && s.Contains("IP_10.0.0.1")), It.IsAny<CancellationToken>()), Times.Once);

@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="Main_WindowTitle">Instalação de impressoras — Implantação</sys:String>
+  <sys:String x:Key="Main_ComputersLabel">Nomes dos computadores (um por linha)</sys:String>
+  <sys:String x:Key="Main_StatusGroupHeader">Status por computador</sys:String>
+  <sys:String x:Key="Main_ColumnComputer">Computador</sys:String>
+  <sys:String x:Key="Main_ColumnState">Estado</sys:String>
+  <sys:String x:Key="Main_ColumnMessage">Mensagem</sys:String>
+  <sys:String x:Key="Main_BrandLabel">Marca</sys:String>
+  <sys:String x:Key="Main_DisplayNameLabel">Nome de exibição (fila)</sys:String>
+  <sys:String x:Key="Main_PrinterHostLabel">Host da impressora (IP ou DNS)</sys:String>
+  <sys:String x:Key="Main_DeployButton">Implantar</sys:String>
+  <sys:String x:Key="Main_RemovePrintersButton">Remover impressoras…</sys:String>
+  <sys:String x:Key="Main_LogGroupHeader">Log</sys:String>
+</ResourceDictionary>
