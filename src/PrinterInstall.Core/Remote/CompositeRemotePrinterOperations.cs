@@ -31,6 +31,18 @@ public sealed class CompositeRemotePrinterOperations : IRemotePrinterOperations
         }
     }
 
+    public async Task<bool> PrinterQueueExistsAsync(string computerName, NetworkCredential credential, string printerDisplayName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _primary.PrinterQueueExistsAsync(computerName, credential, printerDisplayName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return await _fallback.PrinterQueueExistsAsync(computerName, credential, printerDisplayName, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
     public async Task CreateTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, string printerHostAddress, int portNumber, string protocol, CancellationToken cancellationToken = default)
     {
         try

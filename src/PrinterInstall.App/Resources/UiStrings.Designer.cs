@@ -22,6 +22,11 @@ public class UiStrings
     public static string Main_Validation_DisplayNameRequired => ResourceManager.GetString(nameof(Main_Validation_DisplayNameRequired), ResourceCulture)!;
     public static string Main_Validation_PrinterHostRequired => ResourceManager.GetString(nameof(Main_Validation_PrinterHostRequired), ResourceCulture)!;
     public static string Main_InvalidComputerNameFormat => ResourceManager.GetString(nameof(Main_InvalidComputerNameFormat), ResourceCulture)!;
+    public static string Main_Validation_PortInvalid => ResourceManager.GetString(nameof(Main_Validation_PortInvalid), ResourceCulture)!;
+    public static string Main_SummaryLineFormat => ResourceManager.GetString(nameof(Main_SummaryLineFormat), ResourceCulture)!;
+    public static string Main_SummaryOtherFormat => ResourceManager.GetString(nameof(Main_SummaryOtherFormat), ResourceCulture)!;
+    public static string Main_SummaryFailureLineFormat => ResourceManager.GetString(nameof(Main_SummaryFailureLineFormat), ResourceCulture)!;
+    public static string Main_SummaryDialogTitle => ResourceManager.GetString(nameof(Main_SummaryDialogTitle), ResourceCulture)!;
     public static string Login_Validation_DomainUserRequired => ResourceManager.GetString(nameof(Login_Validation_DomainUserRequired), ResourceCulture)!;
     public static string Removal_NotAuthenticated => ResourceManager.GetString(nameof(Removal_NotAuthenticated), ResourceCulture)!;
     public static string Removal_Validation_ComputersRequired => ResourceManager.GetString(nameof(Removal_Validation_ComputersRequired), ResourceCulture)!;

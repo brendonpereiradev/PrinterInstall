@@ -6,9 +6,10 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
+        xmlns:vm="clr-namespace:PrinterInstall.App.ViewModels;assembly=PrinterInstall.App"
         mc:Ignorable="d"
         Title="{DynamicResource Main_WindowTitle}"
-        Height="720" Width="1024"
+        Height="800" Width="1100"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
@@ -76,6 +77,7 @@
                                       Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource InverseBoolToVis}}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerName}" Width="*"/>
+                                    <DataGridTextColumn Header="{DynamicResource Main_ColumnQueue}" Binding="{Binding PrinterQueueName}" Width="120"/>
                                     <DataGridTextColumn Header="{DynamicResource Main_ColumnState}" Binding="{Binding StateDisplay}" Width="160"/>
                                     <DataGridTextColumn Header="{DynamicResource Main_ColumnMessage}" Binding="{Binding Message}" Width="2*"/>
                                 </DataGrid.Columns>
@@ -89,22 +91,67 @@
                 </Grid>
 
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="{DynamicResource Main_BrandLabel}" FontWeight="SemiBold"/>
-                    <ComboBox ItemsSource="{Binding Brands}" SelectedItem="{Binding SelectedBrand}" Margin="0,4,0,8"/>
-
-                    <TextBlock Text="{DynamicResource Main_DisplayNameLabel}" FontWeight="SemiBold"/>
-                    <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-
-                    <TextBlock Text="{DynamicResource Main_PrinterHostLabel}" FontWeight="SemiBold"/>
-                    <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-
+                    <TextBlock Text="{DynamicResource Main_PrintersGroupHeader}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <ScrollViewer MaxHeight="280" VerticalScrollBarVisibility="Auto" Margin="0,4,0,8">
+                        <ItemsControl ItemsSource="{Binding PrinterRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                            BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,4,4">
+                                                <TextBlock Text="{DynamicResource Main_BrandLabel}" FontSize="11"/>
+                                                <ComboBox ItemsSource="{Binding Source={x:Static vm:PrinterFormRowViewModel.BrandChoices}}" SelectedItem="{Binding Brand}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="4,0,0,4">
+                                                <TextBlock Text="{DynamicResource Main_DisplayNameLabel}" FontSize="11"/>
+                                                <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,4,0">
+                                                <TextBlock Text="{DynamicResource Main_PrinterHostLabel}" FontSize="11"/>
+                                                <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}"/>
+                                            </StackPanel>
+                                            <Grid Grid.Row="1" Grid.Column="1" Margin="4,0,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Margin="0,0,4,0">
+                                                    <TextBlock Text="{DynamicResource Main_ColumnPort}" FontSize="11"/>
+                                                    <TextBox Text="{Binding PortText, UpdateSourceTrigger=PropertyChanged}"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                                                    <TextBlock Text="{DynamicResource Main_ColumnProtocol}" FontSize="11"/>
+                                                    <ComboBox ItemsSource="{Binding Source={x:Static vm:PrinterFormRowViewModel.ProtocolChoices}}" SelectedItem="{Binding Protocol}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <ui:Button Content="{DynamicResource Main_AddPrinterRow}" Command="{Binding AddPrinterRowCommand}" Appearance="Secondary" Margin="0,0,8,0"/>
+                        <ui:Button Content="{DynamicResource Main_RemovePrinterRow}" Command="{Binding RemovePrinterRowCommand}" CommandParameter="{x:Null}" Appearance="Secondary"/>
+                    </StackPanel>
                     <CheckBox Content="{DynamicResource Main_PrintTestPageLabel}" IsChecked="{Binding PrintTestPage}"
-                              Margin="0,8,0,0"/>
-
+                              Margin="0,0,0,8"/>
                     <ui:Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
-                               Appearance="Primary" Margin="0,16,0,0"/>
+                               Appearance="Primary" Margin="0,0,0,8"/>
                     <ui:Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}"
-                               Appearance="Secondary" Margin="0,8,0,0"/>
+                               Appearance="Secondary" Margin="0,0,0,8"/>
+                    <ui:Button Content="{DynamicResource Main_CopySummaryButton}" Command="{Binding CopySummaryToClipboardCommand}"
+                               Appearance="Secondary" Margin="0,0,0,0"/>
                 </StackPanel>
             </Grid>
 

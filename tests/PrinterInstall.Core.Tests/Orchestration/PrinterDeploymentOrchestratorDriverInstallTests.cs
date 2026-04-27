@@ -11,14 +11,19 @@ namespace PrinterInstall.Core.Tests.Orchestration;
 
 public class PrinterDeploymentOrchestratorDriverInstallTests
 {
-    private static PrinterDeploymentRequest MakeRequest(PrinterBrand brand = PrinterBrand.Gainscha, IReadOnlyList<string>? targets = null, bool printTestPage = false) => new()
+    private static PrinterQueueDefinition P(PrinterBrand brand) => new()
     {
-        TargetComputerNames = targets ?? new[] { "pc1" },
         Brand = brand,
         DisplayName = "P1",
         PrinterHostAddress = "10.0.0.10",
         PortNumber = 9100,
-        Protocol = TcpPrinterProtocol.Raw,
+        Protocol = TcpPrinterProtocol.Raw
+    };
+
+    private static PrinterDeploymentRequest MakeRequest(PrinterBrand brand = PrinterBrand.Gainscha, IReadOnlyList<string>? targets = null, bool printTestPage = false) => new()
+    {
+        TargetComputerNames = targets ?? new[] { "pc1" },
+        Printers = new[] { P(brand) },
         DomainCredential = new NetworkCredential("u", "p"),
         PrintTestPage = printTestPage
     };
@@ -41,6 +46,8 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var calls = 0;
         remote.Setup(m => m.GetInstalledDriverNamesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(() => ++calls == 1 ? (IReadOnlyList<string>)new[] { "Other" } : new[] { expected });
+        remote.Setup(m => m.PrinterQueueExistsAsync("pc1", It.IsAny<NetworkCredential>(), "P1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
         remote.Setup(m => m.InstallPrinterDriverAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<LocalDriverPackage>(), It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
               .Returns(Task.CompletedTask);
         remote.Setup(m => m.CreateTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<string>(), "10.0.0.10", 9100, "RAW", It.IsAny<CancellationToken>()))
@@ -69,6 +76,8 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var remote = new Mock<IRemotePrinterOperations>();
         remote.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(new[] { "Still Wrong" });
+        remote.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
         remote.Setup(m => m.InstallPrinterDriverAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<LocalDriverPackage>(), It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
               .Returns(Task.CompletedTask);
 
@@ -88,6 +97,8 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var remote = new Mock<IRemotePrinterOperations>();
         remote.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(new[] { "Other" });
+        remote.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, null);
         var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
@@ -105,6 +116,8 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var remote = new Mock<IRemotePrinterOperations>();
         remote.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(new[] { "Other" });
+        remote.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
         remote.Setup(m => m.InstallPrinterDriverAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<LocalDriverPackage>(), It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
               .ThrowsAsync(new NotImplementedException());
 
@@ -114,7 +127,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
 
         await sut.RunAsync(MakeRequest(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
-        var aborted = Assert.Single(events.Where(e => e.State == TargetMachineState.AbortedDriverMissing));
+        var aborted = Assert.Single(events.Where(e => e is { State: TargetMachineState.AbortedDriverMissing, PrinterQueueName: "P1" }));
         Assert.Contains("install unsupported on this channel", aborted.Message);
     }
 
@@ -124,6 +137,8 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var remote = new Mock<IRemotePrinterOperations>();
         remote.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(new[] { "Other" });
+        remote.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
         var seq = new Queue<Func<Task>>(new Func<Task>[]
         {
             () => throw new InvalidOperationException("boom"),
@@ -139,7 +154,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
 
         await sut.RunAsync(request, new InlineProgress<DeploymentProgressEvent>(events.Add));
 
-        Assert.Contains(events, e => e.ComputerName == "pc1" && e.State == TargetMachineState.Error);
-        Assert.Contains(events, e => e.ComputerName == "pc2" && e.State == TargetMachineState.InstallingDriver);
+        Assert.Contains(events, e => e is { ComputerName: "pc1", State: TargetMachineState.AbortedDriverMissing, PrinterQueueName: "P1" });
+        Assert.Contains(events, e => e is { ComputerName: "pc2", State: TargetMachineState.InstallingDriver } or { ComputerName: "pc2", State: TargetMachineState.CompletedSuccess });
     }
 }
