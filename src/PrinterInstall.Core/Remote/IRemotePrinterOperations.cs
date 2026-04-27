@@ -20,6 +20,9 @@ public interface IRemotePrinterOperations
     Task RemovePrinterQueueAsync(string computerName, NetworkCredential credential, string printerName, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 
+    Task RenamePrinterQueueAsync(string computerName, NetworkCredential credential, string currentName, string newName, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
+
     Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
 
