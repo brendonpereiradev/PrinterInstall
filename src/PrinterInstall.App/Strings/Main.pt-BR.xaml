@@ -12,8 +12,6 @@
   <sys:String x:Key="Main_BrandLabel">Marca</sys:String>
   <sys:String x:Key="Main_DisplayNameLabel">Nome da fila</sys:String>
   <sys:String x:Key="Main_PrinterHostLabel">Host (IP/DNS)</sys:String>
-  <sys:String x:Key="Main_ColumnPort">Porta</sys:String>
-  <sys:String x:Key="Main_ColumnProtocol">Protocolo</sys:String>
   <sys:String x:Key="Main_AddPrinterRow">+ Adicionar impressora</sys:String>
   <sys:String x:Key="Main_RemovePrinterRow">Remover</sys:String>
   <sys:String x:Key="Main_CopySummaryButton">Copiar resumo do lote</sys:String>

@@ -9,7 +9,6 @@
   <data name="Main_Validation_DisplayNameRequired" xml:space="preserve"><value>O nome de exibição (fila) é obrigatório.</value></data>
   <data name="Main_Validation_PrinterHostRequired" xml:space="preserve"><value>O endereço do host da impressora é obrigatório.</value></data>
   <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Formato de nome de computador inválido.</value></data>
-  <data name="Main_Validation_PortInvalid" xml:space="preserve"><value>Porta inválida. Use um número de 1 a 65535 em cada impressora.</value></data>
   <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} cancelado(s) — driver ausente.</value></data>
   <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>

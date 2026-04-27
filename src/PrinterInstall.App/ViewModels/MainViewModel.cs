@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Text;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -16,6 +15,9 @@ namespace PrinterInstall.App.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private const int DefaultDeployPort = 9100;
+    private const TcpPrinterProtocol DefaultDeployProtocol = TcpPrinterProtocol.Raw;
+
     private readonly ISessionContext _session;
     private readonly PrinterDeploymentOrchestrator _orchestrator;
     private readonly IServiceProvider _serviceProvider;
@@ -118,19 +120,13 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
-            if (!int.TryParse(row.PortText.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var port) || port is < 1 or > 65535)
-            {
-                AppendLog(UiStrings.Main_Validation_PortInvalid);
-                return;
-            }
-
             definitions.Add(new PrinterQueueDefinition
             {
                 Brand = row.Brand,
                 DisplayName = row.DisplayName.Trim(),
                 PrinterHostAddress = row.PrinterHostAddress.Trim(),
-                PortNumber = port,
-                Protocol = row.Protocol
+                PortNumber = DefaultDeployPort,
+                Protocol = DefaultDeployProtocol
             });
         }
 
