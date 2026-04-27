@@ -12,11 +12,12 @@
   <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>Domínio e nome de usuário são obrigatórios.</value></data>
   <data name="Removal_NotAuthenticated" xml:space="preserve"><value>Não autenticado.</value></data>
   <data name="Removal_Validation_ComputersRequired" xml:space="preserve"><value>Informe pelo menos um nome de computador.</value></data>
-  <data name="Removal_NoPrintersSelected" xml:space="preserve"><value>Nenhuma impressora selecionada; nada a fazer.</value></data>
-  <data name="Removal_Finished" xml:space="preserve"><value>Remoção concluída.</value></data>
+  <data name="Removal_NoPrintersSelected" xml:space="preserve"><value>Nenhuma ação (remoção ou renomeação) selecionada; nada a fazer.</value></data>
+  <data name="Removal_Finished" xml:space="preserve"><value>Operações concluídas.</value></data>
   <data name="Removal_StepLabelFormat" xml:space="preserve"><value>Computador {0} de {1}: {2}</value></data>
-  <data name="Removal_ReviewNothingFormat" xml:space="preserve"><value>{0}: (nada a remover)</value></data>
+  <data name="Removal_ReviewNothingFormat" xml:space="preserve"><value>{0}: (nenhuma ação)</value></data>
   <data name="Removal_ReviewRemoveFormat" xml:space="preserve"><value>{0}: remover '{1}' (porta '{2}')</value></data>
+  <data name="Removal_ReviewRenameFormat" xml:space="preserve"><value>{0}: renomear '{1}' → '{2}'</value></data>
   <data name="Removal_LogListPrintersFailedFormat" xml:space="preserve"><value>{0}: falha ao listar impressoras — {1}</value></data>
   <data name="Removal_LogErrorFormat" xml:space="preserve"><value>Erro: {0}</value></data>
 </root>

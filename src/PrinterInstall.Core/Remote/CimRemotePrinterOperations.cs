@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Management;
 using System.Net;
 using PrinterInstall.Core.Drivers;
@@ -16,6 +17,7 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
     // target. A short timeout prevents the UI from appearing frozen when
     // something hangs on the remote side (e.g. a session-0 MessageBox).
     private static readonly TimeSpan InstallTimeout = TimeSpan.FromMinutes(3);
+    private static readonly TimeSpan RenameOperationTimeout = TimeSpan.FromMinutes(2);
 
     private readonly IRemoteDriverFileStager _stager;
     private readonly IRemoteProcessRunner _processRunner;
@@ -240,6 +242,27 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
                 }
             }
         }, cancellationToken);
+    }
+
+    public async Task RenamePrinterQueueAsync(string computerName, NetworkCredential credential, string currentName, string newName, CancellationToken cancellationToken = default)
+    {
+        var cmd = BuildRenamePrinterCommandLine(currentName, newName);
+        var runResult = await _processRunner.RunAsync(computerName, credential, cmd, RenameOperationTimeout, cancellationToken).ConfigureAwait(false);
+        if (runResult.TimedOut)
+            throw new TimeoutException($"Renomear a fila em {computerName} excedeu o tempo de {RenameOperationTimeout}.");
+        if (runResult.ReturnValue != 0)
+            throw new InvalidOperationException($"Renomear a fila em {computerName} falhou (WMI return {runResult.ReturnValue}).");
+    }
+
+    private static string BuildRenamePrinterCommandLine(string currentName, string newName)
+    {
+        var n = EscapePs(currentName);
+        var m = EscapePs(newName);
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"Import-Module PrintManagement -ErrorAction Stop; $null = Get-Printer -Name '{0}' -ErrorAction Stop; Rename-Printer -Name '{0}' -NewName '{1}' -ErrorAction Stop\"",
+            n,
+            m);
     }
 
     public Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)

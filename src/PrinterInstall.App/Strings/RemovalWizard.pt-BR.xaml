@@ -1,15 +1,16 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
-  <sys:String x:Key="Removal_WindowTitle">Remover impressoras</sys:String>
-  <sys:String x:Key="Removal_Step0Intro">Informe os nomes dos computadores (um por linha). O assistente carregará as impressoras em cada máquina para você selecionar o que remover.</sys:String>
+  <sys:String x:Key="Removal_WindowTitle">Controle de impressoras</sys:String>
+  <sys:String x:Key="Removal_Step0Intro">Informe os nomes dos computadores (um por linha). O assistente carregará as impressoras em cada máquina. Por fila: marque Remover ou digite Novo nome — não use os dois na mesma linha.</sys:String>
   <sys:String x:Key="Removal_Next">Avançar</sys:String>
   <sys:String x:Key="Removal_ColumnRemove">Remover</sys:String>
   <sys:String x:Key="Removal_ColumnPrinter">Impressora</sys:String>
   <sys:String x:Key="Removal_ColumnPort">Porta</sys:String>
   <sys:String x:Key="Removal_LoadingPrinters">Carregando impressoras…</sys:String>
   <sys:String x:Key="Removal_NoPrintersFound">Nenhuma impressora encontrada neste computador.</sys:String>
-  <sys:String x:Key="Removal_ReviewHeader">Revise o plano de remoção:</sys:String>
-  <sys:String x:Key="Removal_ExecuteButton">Executar remoção</sys:String>
+  <sys:String x:Key="Removal_ReviewHeader">Revise o plano:</sys:String>
+  <sys:String x:Key="Removal_ExecuteButton">Executar alterações</sys:String>
+  <sys:String x:Key="Removal_ColumnNewName">Novo nome</sys:String>
   <sys:String x:Key="Removal_LogHeader">Log de execução</sys:String>
 </ResourceDictionary>

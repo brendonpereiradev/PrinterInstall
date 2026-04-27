@@ -118,6 +118,18 @@ public sealed class CompositeRemotePrinterOperations : IRemotePrinterOperations
         }
     }
 
+    public async Task RenamePrinterQueueAsync(string computerName, NetworkCredential credential, string currentName, string newName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _primary.RenamePrinterQueueAsync(computerName, credential, currentName, newName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await _fallback.RenamePrinterQueueAsync(computerName, credential, currentName, newName, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
     public async Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
     {
         try

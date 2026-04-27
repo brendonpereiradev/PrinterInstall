@@ -1,0 +1,31 @@
+<h2>Como implementar UI em pt-BR no WPF?</h2>
+<p class="subtitle">App só em português do Brasil — três caminhos típicos. Clique na opção que mais combina com o que você quer manter no código.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Dicionários XAML de recursos</h3>
+      <p>Strings como <code>DynamicResource</code> / <code>StaticResource</code> em arquivos <code>.xaml</code> (ex.: <code>Strings.pt-BR.xaml</code>). Um dicionário “ativo” carregado no <code>App.xaml</code>. Bom para labels em XAML; ViewModels podem receber textos via serviço ou chaves.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Arquivos .resx (satélite)</h3>
+      <p>Padrão .NET: <code>Resources.resx</code> + <code>Resources.pt-BR.resx</code> gera assembly satélite. Uso em código C# com <code>Resources.NomeDaString</code> ou extensão de markup. Forte para mensagens geradas no Core / ViewModels.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Híbrido</h3>
+      <p>XAML com dicionários para títulos, botões e rótulos; <code>.resx</code> (ou um pequeno catálogo de strings em C#) para logs, erros e textos montados em código no <code>PrinterInstall.Core</code>. Reduz duplicação e mantém parsing/invariant culture onde já existe.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section pros-cons">
+  <div class="pros"><h4>Recomendação rápida</h4><ul><li>Para um app WPF já com muito binding em XAML, <strong>C (híbrido)</strong> costuma equilibrar bem tela vs. mensagens de operação remota.</li></ul></div>
+  <div class="cons"><h4>Observação</h4><ul><li>Como o idioma é fixo, dá para simplificar: um único dicionário/recurso pt-BR sem cultura dinâmica, se preferir menos infraestrutura.</li></ul></div>
+</div>

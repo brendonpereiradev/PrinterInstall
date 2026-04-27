@@ -1,0 +1,81 @@
+<h2>Tela principal — hierarquia (estilo admin neutro)</h2>
+<p class="subtitle">Três esboços de organização. Escolha o que mais combina com A+B (visual + informação). Depois podemos repetir o mesmo exercício para o assistente de remoção.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Coluna de ação à direita (próximo do atual)</h3>
+      <p>Lista de máquinas + grade de status à esquerda; formulário (marca, fila, host) e botões à direita; log largo embaixo. Pouca mudança estrutural — ganhos vêm de alinhamento, rótulos e densidade.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Implantação</div>
+        <div class="mockup-body" style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+          <div style="display:flex;gap:8px;min-height:120px">
+            <div style="flex:2;display:flex;flex-direction:column;gap:4px">
+              <div class="label">Máquinas</div>
+              <div class="mock-content" style="min-height:56px">[ lista ]</div>
+              <div class="label">Status</div>
+              <div class="placeholder" style="height:40px">grade</div>
+            </div>
+            <div style="flex:1;min-width:140px;border-left:1px dashed #999;padding-left:8px">
+              <div class="label">Parâmetros</div>
+              <input class="mock-input" placeholder="marca / fila / host" style="width:100%;margin:4px 0">
+              <button class="mock-button" style="width:100%;margin-top:8px">Implantar</button>
+              <button class="mock-button" style="width:100%;margin-top:4px">Remover…</button>
+            </div>
+          </div>
+          <div class="label">Log</div>
+          <div class="placeholder" style="height:48px">saída técnica</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Barra superior + log compacto</h3>
+      <p>Ações principais e status resumido numa faixa no topo; área central só para máquinas + grade; log como faixa mais baixa ou recolhível. Dá hierarquia clara: “o que faço” primeiro, “detalhe” depois.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Implantação</div>
+        <div class="mockup-body" style="font-size:12px">
+          <div class="mock-nav" style="margin-bottom:8px">[ Marca ▾ ] [ Fila ] [ Host ] &nbsp;|&nbsp; <strong>Implantar</strong> &nbsp; Remover…</div>
+          <div style="display:flex;gap:8px;min-height:100px">
+            <div style="flex:1">
+              <div class="label">Máquinas</div>
+              <div class="mock-content" style="min-height:40px">[ lista ]</div>
+            </div>
+          </div>
+          <div class="label">Status por máquina</div>
+          <div class="placeholder" style="height:44px;margin-bottom:6px">grade</div>
+          <div class="label">Log (compacto)</div>
+          <div class="placeholder" style="height:32px">…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Abas: Implantação | Log</h3>
+      <p>Reduz a sensação de “tudo ao mesmo tempo”: na aba Implantação ficam máquinas, grade e parâmetros; Log isolado na segunda aba (ou painel lateral) para quem precisa do texto bruto sem comprimir a grade.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Implantação</div>
+        <div class="mockup-body" style="font-size:12px">
+          <div class="mock-nav" style="margin-bottom:6px"><strong>Implantação</strong> &nbsp;|&nbsp; Log</div>
+          <div style="display:flex;gap:8px">
+            <div style="flex:2">
+              <div class="mock-content" style="min-height:72px">máquinas + grade</div>
+            </div>
+            <div style="flex:1;border-left:1px dashed #999;padding-left:8px">
+              <div class="placeholder" style="height:90px">parâmetros</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">Abra <strong>http://localhost:51028</strong> — a página mais recente carrega automaticamente. Clique numa opção e me diga aqui a letra (A, B ou C), ou o que misturar.</p>

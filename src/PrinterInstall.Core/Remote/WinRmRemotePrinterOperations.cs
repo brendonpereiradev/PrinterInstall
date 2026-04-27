@@ -67,6 +67,16 @@ if ($null -ne $p) {{ Remove-Printer -Name '{Escape(printerName)}' -Confirm:$fals
         return _invoker.InvokeOnRemoteRunspaceAsync(computerName, credential, inner, cancellationToken);
     }
 
+    public Task RenamePrinterQueueAsync(string computerName, NetworkCredential credential, string currentName, string newName, CancellationToken cancellationToken = default)
+    {
+        var inner = $@"
+Import-Module PrintManagement -ErrorAction Stop
+$null = Get-Printer -Name '{Escape(currentName)}' -ErrorAction Stop
+Rename-Printer -Name '{Escape(currentName)}' -NewName '{Escape(newName)}' -ErrorAction Stop
+";
+        return _invoker.InvokeOnRemoteRunspaceAsync(computerName, credential, inner, cancellationToken);
+    }
+
     public async Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
     {
         var inner = $@"

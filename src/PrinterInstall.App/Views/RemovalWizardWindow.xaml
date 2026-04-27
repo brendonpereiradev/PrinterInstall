@@ -81,6 +81,15 @@
                                     </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource Removal_ColumnPrinter}" Binding="{Binding Name}" Width="*" IsReadOnly="True"/>
                                     <DataGridTextColumn Header="{DynamicResource Removal_ColumnPort}" Binding="{Binding PortName}" Width="200" IsReadOnly="True"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource Removal_ColumnNewName}" Width="220">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBox Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"
+                                                         IsEnabled="{Binding IsRenameEditable}"
+                                                         VerticalAlignment="Center" Margin="2,0"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
                             <TextBlock Text="{DynamicResource Removal_NoPrintersFound}" TextWrapping="Wrap" TextAlignment="Center"

@@ -61,6 +61,8 @@ public partial class App : Application
             new PrinterDeploymentOrchestrator(
                 sp.GetRequiredService<IRemotePrinterOperations>(),
                 sp.GetRequiredService<ILocalDriverPackageCatalog>()));
+        builder.Services.AddSingleton<PrinterControlOrchestrator>(sp =>
+            new PrinterControlOrchestrator(sp.GetRequiredService<IRemotePrinterOperations>()));
         builder.Services.AddSingleton<PrinterRemovalOrchestrator>();
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<MainViewModel>();

@@ -31,7 +31,7 @@ public class PrinterRemovalOrchestratorTests
     public async Task RunAsync_EmptyQueueList_ReportsNothingToDoAndSkipsRemote()
     {
         var mock = new Mock<IRemotePrinterOperations>();
-        var sut = new PrinterRemovalOrchestrator(mock.Object);
+        var sut = new PrinterRemovalOrchestrator(new PrinterControlOrchestrator(mock.Object));
 
         var events = new List<PrinterRemovalProgressEvent>();
         await sut.RunAsync(
@@ -55,7 +55,7 @@ public class PrinterRemovalOrchestratorTests
         mock.Setup(m => m.CountPrintersUsingPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
-        var sut = new PrinterRemovalOrchestrator(mock.Object);
+        var sut = new PrinterRemovalOrchestrator(new PrinterControlOrchestrator(mock.Object));
 
         var events = new List<PrinterRemovalProgressEvent>();
         await sut.RunAsync(
@@ -81,7 +81,7 @@ public class PrinterRemovalOrchestratorTests
         mock.Setup(m => m.RemoveTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), "IP_10.0.0.1", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterRemovalOrchestrator(mock.Object);
+        var sut = new PrinterRemovalOrchestrator(new PrinterControlOrchestrator(mock.Object));
         var events = new List<PrinterRemovalProgressEvent>();
         await sut.RunAsync(
             Request(Target("pc1", new PrinterRemovalQueueItem("Q", "IP_10.0.0.1"))),
@@ -100,7 +100,7 @@ public class PrinterRemovalOrchestratorTests
         mock.Setup(m => m.CountPrintersUsingPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), "IP_10.0.0.1", It.IsAny<CancellationToken>()))
             .ReturnsAsync(2);
 
-        var sut = new PrinterRemovalOrchestrator(mock.Object);
+        var sut = new PrinterRemovalOrchestrator(new PrinterControlOrchestrator(mock.Object));
         await sut.RunAsync(
             Request(Target("pc1", new PrinterRemovalQueueItem("Q", "IP_10.0.0.1"))),
             new SyncProgress<PrinterRemovalProgressEvent>(_ => { }));
@@ -119,7 +119,7 @@ public class PrinterRemovalOrchestratorTests
         mock.Setup(m => m.RemoveTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("nope"));
 
-        var sut = new PrinterRemovalOrchestrator(mock.Object);
+        var sut = new PrinterRemovalOrchestrator(new PrinterControlOrchestrator(mock.Object));
         var events = new List<PrinterRemovalProgressEvent>();
         await sut.RunAsync(
             Request(Target("pc1", new PrinterRemovalQueueItem("Q", "P"))),
@@ -136,7 +136,7 @@ public class PrinterRemovalOrchestratorTests
         mock.Setup(m => m.RemovePrinterQueueAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterRemovalOrchestrator(mock.Object);
+        var sut = new PrinterRemovalOrchestrator(new PrinterControlOrchestrator(mock.Object));
         await sut.RunAsync(
             Request(Target("pc1", new PrinterRemovalQueueItem("Q", null))),
             new SyncProgress<PrinterRemovalProgressEvent>(_ => { }));
@@ -152,7 +152,7 @@ public class PrinterRemovalOrchestratorTests
         mock.Setup(m => m.RemovePrinterQueueAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new OperationCanceledException());
 
-        var sut = new PrinterRemovalOrchestrator(mock.Object);
+        var sut = new PrinterRemovalOrchestrator(new PrinterControlOrchestrator(mock.Object));
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             await sut.RunAsync(
                 Request(Target("pc1", new PrinterRemovalQueueItem("Q", "P"))),

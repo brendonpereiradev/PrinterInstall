@@ -30,6 +30,7 @@ public class UiStrings
     public static string Removal_StepLabelFormat => ResourceManager.GetString(nameof(Removal_StepLabelFormat), ResourceCulture)!;
     public static string Removal_ReviewNothingFormat => ResourceManager.GetString(nameof(Removal_ReviewNothingFormat), ResourceCulture)!;
     public static string Removal_ReviewRemoveFormat => ResourceManager.GetString(nameof(Removal_ReviewRemoveFormat), ResourceCulture)!;
+    public static string Removal_ReviewRenameFormat => ResourceManager.GetString(nameof(Removal_ReviewRenameFormat), ResourceCulture)!;
     public static string Removal_LogListPrintersFailedFormat => ResourceManager.GetString(nameof(Removal_LogListPrintersFailedFormat), ResourceCulture)!;
     public static string Removal_LogErrorFormat => ResourceManager.GetString(nameof(Removal_LogErrorFormat), ResourceCulture)!;
 }

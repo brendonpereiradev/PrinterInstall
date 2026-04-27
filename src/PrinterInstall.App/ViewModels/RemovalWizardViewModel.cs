@@ -16,16 +16,17 @@ public partial class RemovalWizardViewModel : ObservableObject
 {
     private readonly ISessionContext _session;
     private readonly IRemotePrinterOperations _remote;
-    private readonly PrinterRemovalOrchestrator _orchestrator;
+    private readonly PrinterControlOrchestrator _orchestrator;
 
     private readonly Dictionary<string, List<PrinterRemovalQueueItem>> _selectionsByComputer = new();
+    private readonly Dictionary<string, List<PrinterRenameItem>> _renamesByComputer = new();
     private List<string> _machineOrder = new();
     private int _machineIndex;
 
     public RemovalWizardViewModel(
         ISessionContext session,
         IRemotePrinterOperations remote,
-        PrinterRemovalOrchestrator orchestrator)
+        PrinterControlOrchestrator orchestrator)
     {
         _session = session;
         _remote = remote;
@@ -85,6 +86,7 @@ public partial class RemovalWizardViewModel : ObservableObject
 
         _machineOrder = names.ToList();
         _selectionsByComputer.Clear();
+        _renamesByComputer.Clear();
         _machineIndex = 0;
         CurrentStepIndex = 1;
         await LoadCurrentMachineAsync().ConfigureAwait(true);
@@ -111,12 +113,18 @@ public partial class RemovalWizardViewModel : ObservableObject
             return false;
         if (QueuesForCurrentComputer.Count == 0)
             return true;
-        return QueuesForCurrentComputer.Any(r => r.IsSelected);
+        return QueuesForCurrentComputer.Any(r => r.IsSelected || HasMeaningfulRename(r));
+    }
+
+    private static bool HasMeaningfulRename(SelectableQueueRow r)
+    {
+        var t = r.NewName?.Trim() ?? "";
+        return t.Length > 0 && !string.Equals(t, r.Name, StringComparison.OrdinalIgnoreCase);
     }
 
     private void OnQueueRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(SelectableQueueRow.IsSelected))
+        if (e.PropertyName is nameof(SelectableQueueRow.IsSelected) or nameof(SelectableQueueRow.NewName))
             NextQueueStepCommand.NotifyCanExecuteChanged();
     }
 
@@ -133,10 +141,22 @@ public partial class RemovalWizardViewModel : ObservableObject
         CurrentStepIndex = 3;
         try
         {
-            var targets = _selectionsByComputer
-                .Where(kv => kv.Value.Count > 0)
-                .Select(kv => new PrinterRemovalTarget { ComputerName = kv.Key, QueuesToRemove = kv.Value })
-                .ToList();
+            var targets = new List<PrinterControlTarget>();
+            foreach (var computer in _machineOrder)
+            {
+                _selectionsByComputer.TryGetValue(computer, out var removes);
+                _renamesByComputer.TryGetValue(computer, out var renames);
+                removes ??= new List<PrinterRemovalQueueItem>();
+                renames ??= new List<PrinterRenameItem>();
+                if (removes.Count == 0 && renames.Count == 0)
+                    continue;
+                targets.Add(new PrinterControlTarget
+                {
+                    ComputerName = computer,
+                    QueuesToRemove = removes,
+                    Renames = renames
+                });
+            }
 
             if (targets.Count == 0)
             {
@@ -144,7 +164,7 @@ public partial class RemovalWizardViewModel : ObservableObject
                 return;
             }
 
-            var request = new PrinterRemovalRequest
+            var request = new PrinterControlRequest
             {
                 DomainCredential = _session.Credential,
                 Targets = targets
@@ -217,6 +237,12 @@ public partial class RemovalWizardViewModel : ObservableObject
             .Select(r => new PrinterRemovalQueueItem(r.Name, r.PortName))
             .ToList();
         _selectionsByComputer[CurrentComputerName] = chosen;
+
+        var renames = QueuesForCurrentComputer
+            .Where(HasMeaningfulRename)
+            .Select(r => new PrinterRenameItem(r.Name, r.NewName.Trim()))
+            .ToList();
+        _renamesByComputer[CurrentComputerName] = renames;
     }
 
     private void BuildReviewSummary()
@@ -224,10 +250,22 @@ public partial class RemovalWizardViewModel : ObservableObject
         var lines = new List<string>();
         foreach (var computer in _machineOrder)
         {
-            if (!_selectionsByComputer.TryGetValue(computer, out var queues) || queues.Count == 0)
+            _selectionsByComputer.TryGetValue(computer, out var queues);
+            _renamesByComputer.TryGetValue(computer, out var renames);
+            queues ??= new List<PrinterRemovalQueueItem>();
+            renames ??= new List<PrinterRenameItem>();
+            if (queues.Count == 0 && renames.Count == 0)
             {
                 lines.Add(string.Format(UiStrings.Removal_ReviewNothingFormat, computer));
                 continue;
+            }
+            foreach (var rename in renames)
+            {
+                lines.Add(string.Format(
+                    UiStrings.Removal_ReviewRenameFormat,
+                    computer,
+                    rename.CurrentName,
+                    rename.NewName));
             }
             foreach (var q in queues)
             {
