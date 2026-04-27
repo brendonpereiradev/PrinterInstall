@@ -9,6 +9,7 @@ public enum TargetMachineState
     DriverInstalledReconfirming,
     Configuring,
     CompletedSuccess,
+    SkippedAlreadyExists,
     AbortedDriverMissing,
     Error
 }

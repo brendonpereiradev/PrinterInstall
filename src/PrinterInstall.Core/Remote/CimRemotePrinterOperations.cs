@@ -84,6 +84,16 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
         }, cancellationToken);
     }
 
+    public Task<bool> PrinterQueueExistsAsync(string computerName, NetworkCredential credential, string printerDisplayName, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() =>
+        {
+            var scope = CreateScope(computerName, credential);
+            scope.Connect();
+            return PrinterExists(scope, printerDisplayName);
+        }, cancellationToken);
+    }
+
     public Task AddPrinterAsync(string computerName, NetworkCredential credential, string printerName, string driverName, string portName, CancellationToken cancellationToken = default)
     {
         return Task.Run(() =>

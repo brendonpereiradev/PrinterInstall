@@ -23,4 +23,10 @@ public class TargetMachineStateDisplayTests
     {
         Assert.Equal("Pendente", TargetMachineStateDisplay.GetDisplay(TargetMachineState.Pending));
     }
+
+    [Fact]
+    public void SkippedAlreadyExists_returns_Portuguese_label()
+    {
+        Assert.Equal("Ignorado (já existia)", TargetMachineStateDisplay.GetDisplay(TargetMachineState.SkippedAlreadyExists));
+    }
 }

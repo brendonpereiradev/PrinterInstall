@@ -25,6 +25,24 @@ public sealed class WinRmRemotePrinterOperations : IRemotePrinterOperations
         return _invoker.InvokeOnRemoteRunspaceAsync(computerName, credential, inner, cancellationToken);
     }
 
+    public async Task<bool> PrinterQueueExistsAsync(string computerName, NetworkCredential credential, string printerDisplayName, CancellationToken cancellationToken = default)
+    {
+        var inner = $@"
+$p = Get-Printer -Name '{Escape(printerDisplayName)}' -ErrorAction SilentlyContinue
+if ($null -ne $p) {{ 'true' }} else {{ 'false' }}
+";
+        var lines = await _invoker.InvokeOnRemoteRunspaceAsync(computerName, credential, inner, cancellationToken).ConfigureAwait(false);
+        for (var i = lines.Count - 1; i >= 0; i--)
+        {
+            var t = lines[i]?.Trim();
+            if (string.IsNullOrEmpty(t))
+                continue;
+            return string.Equals(t, "true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
     public Task CreateTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, string printerHostAddress, int portNumber, string protocol, CancellationToken cancellationToken = default)
     {
         var inner = $"Add-PrinterPort -Name '{Escape(portName)}' -PrinterHostAddress '{Escape(printerHostAddress)}' -PortNumber {portNumber}";

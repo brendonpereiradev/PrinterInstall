@@ -3,13 +3,20 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="Main_WindowTitle">Instalação de impressoras — Implantação</sys:String>
   <sys:String x:Key="Main_ComputersLabel">Nomes dos computadores (um por linha)</sys:String>
-  <sys:String x:Key="Main_StatusGroupHeader">Status por computador</sys:String>
+  <sys:String x:Key="Main_StatusGroupHeader">Status por computador e fila</sys:String>
   <sys:String x:Key="Main_ColumnComputer">Computador</sys:String>
+  <sys:String x:Key="Main_ColumnQueue">Fila</sys:String>
   <sys:String x:Key="Main_ColumnState">Estado</sys:String>
   <sys:String x:Key="Main_ColumnMessage">Mensagem</sys:String>
+  <sys:String x:Key="Main_PrintersGroupHeader">Impressoras deste lote (uma por linha)</sys:String>
   <sys:String x:Key="Main_BrandLabel">Marca</sys:String>
-  <sys:String x:Key="Main_DisplayNameLabel">Nome de exibição (fila)</sys:String>
-  <sys:String x:Key="Main_PrinterHostLabel">Host da impressora (IP ou DNS)</sys:String>
+  <sys:String x:Key="Main_DisplayNameLabel">Nome da fila</sys:String>
+  <sys:String x:Key="Main_PrinterHostLabel">Host (IP/DNS)</sys:String>
+  <sys:String x:Key="Main_ColumnPort">Porta</sys:String>
+  <sys:String x:Key="Main_ColumnProtocol">Protocolo</sys:String>
+  <sys:String x:Key="Main_AddPrinterRow">+ Adicionar impressora</sys:String>
+  <sys:String x:Key="Main_RemovePrinterRow">Remover</sys:String>
+  <sys:String x:Key="Main_CopySummaryButton">Copiar resumo do lote</sys:String>
   <sys:String x:Key="Main_PrintTestPageLabel">Imprimir página de teste após configurar</sys:String>
   <sys:String x:Key="Main_DeployButton">Implantar</sys:String>
   <sys:String x:Key="Main_RemovePrintersButton">Controle de impressoras…</sys:String>

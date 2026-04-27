@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Text;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -23,7 +25,7 @@ public partial class MainViewModel : ObservableObject
         _session = session;
         _orchestrator = orchestrator;
         _serviceProvider = serviceProvider;
-        _selectedBrand = PrinterBrand.Epson;
+        PrinterRows.Add(new PrinterFormRowViewModel());
         Targets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowStatusEmptyHint));
     }
 
@@ -33,35 +35,62 @@ public partial class MainViewModel : ObservableObject
     private string _computersText = "";
 
     [ObservableProperty]
-    private PrinterBrand _selectedBrand;
-
-    [ObservableProperty]
-    private string _displayName = "";
-
-    [ObservableProperty]
-    private string _printerHostAddress = "";
-
-    [ObservableProperty]
     private bool _printTestPage;
 
     [ObservableProperty]
     private string _logText = "";
 
-    private const int DefaultPortNumber = 9100;
-    private const TcpPrinterProtocol DefaultProtocol = TcpPrinterProtocol.Raw;
+    [ObservableProperty]
+    private string _lastSummaryText = "";
+
+    public ObservableCollection<PrinterFormRowViewModel> PrinterRows { get; } = new();
 
     public ObservableCollection<TargetRowViewModel> Targets { get; } = new();
 
-    public IEnumerable<PrinterBrand> Brands => Enum.GetValues<PrinterBrand>();
+    [RelayCommand]
+    private void AddPrinterRow()
+    {
+        PrinterRows.Add(new PrinterFormRowViewModel());
+    }
+
+    [RelayCommand]
+    private void RemovePrinterRow(PrinterFormRowViewModel? row)
+    {
+        if (PrinterRows.Count <= 1)
+            return;
+        if (row is not null && PrinterRows.Contains(row))
+        {
+            PrinterRows.Remove(row);
+            return;
+        }
+
+        PrinterRows.RemoveAt(PrinterRows.Count - 1);
+    }
+
+    [RelayCommand]
+    private void CopySummaryToClipboard()
+    {
+        if (string.IsNullOrEmpty(LastSummaryText))
+            return;
+        try
+        {
+            Clipboard.SetText(LastSummaryText);
+        }
+        catch
+        {
+            // Clipboard may fail in rare cases; ignore
+        }
+    }
 
     [RelayCommand]
     private async Task DeployAsync()
     {
         LogText = "";
         Targets.Clear();
+        LastSummaryText = "";
 
         var cred = _session.Credential;
-        if (cred == null)
+        if (cred is null)
         {
             AppendLog(UiStrings.Main_NotAuthenticated);
             return;
@@ -74,16 +103,35 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(DisplayName))
+        var definitions = new List<PrinterQueueDefinition>();
+        foreach (var row in PrinterRows)
         {
-            AppendLog(UiStrings.Main_Validation_DisplayNameRequired);
-            return;
-        }
+            if (string.IsNullOrWhiteSpace(row.DisplayName))
+            {
+                AppendLog(UiStrings.Main_Validation_DisplayNameRequired);
+                return;
+            }
 
-        if (string.IsNullOrWhiteSpace(PrinterHostAddress))
-        {
-            AppendLog(UiStrings.Main_Validation_PrinterHostRequired);
-            return;
+            if (string.IsNullOrWhiteSpace(row.PrinterHostAddress))
+            {
+                AppendLog(UiStrings.Main_Validation_PrinterHostRequired);
+                return;
+            }
+
+            if (!int.TryParse(row.PortText.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var port) || port is < 1 or > 65535)
+            {
+                AppendLog(UiStrings.Main_Validation_PortInvalid);
+                return;
+            }
+
+            definitions.Add(new PrinterQueueDefinition
+            {
+                Brand = row.Brand,
+                DisplayName = row.DisplayName.Trim(),
+                PrinterHostAddress = row.PrinterHostAddress.Trim(),
+                PortNumber = port,
+                Protocol = row.Protocol
+            });
         }
 
         var validNames = new List<string>();
@@ -91,30 +139,43 @@ public partial class MainViewModel : ObservableObject
         {
             if (!ComputerNameValidator.IsPlausibleComputerName(n))
             {
-                Targets.Add(new TargetRowViewModel
+                foreach (var def in definitions)
                 {
-                    ComputerName = n,
-                    State = TargetMachineState.Error,
-                    Message = UiStrings.Main_InvalidComputerNameFormat
-                });
+                    Targets.Add(new TargetRowViewModel
+                    {
+                        ComputerName = n,
+                        PrinterQueueName = def.DisplayName,
+                        State = TargetMachineState.Error,
+                        Message = UiStrings.Main_InvalidComputerNameFormat
+                    });
+                }
+
                 continue;
             }
 
             validNames.Add(n);
-            Targets.Add(new TargetRowViewModel { ComputerName = n, State = TargetMachineState.Pending });
         }
 
         if (validNames.Count == 0)
             return;
 
+        foreach (var n in validNames)
+        {
+            foreach (var def in definitions)
+            {
+                Targets.Add(new TargetRowViewModel
+                {
+                    ComputerName = n,
+                    PrinterQueueName = def.DisplayName,
+                    State = TargetMachineState.Pending
+                });
+            }
+        }
+
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = validNames,
-            Brand = SelectedBrand,
-            DisplayName = DisplayName.Trim(),
-            PrinterHostAddress = PrinterHostAddress.Trim(),
-            PortNumber = DefaultPortNumber,
-            Protocol = DefaultProtocol,
+            Printers = definitions,
             DomainCredential = cred,
             PrintTestPage = PrintTestPage
         };
@@ -123,18 +184,76 @@ public partial class MainViewModel : ObservableObject
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var row = Targets.FirstOrDefault(t => t.ComputerName == e.ComputerName);
-                if (row != null)
+                if (e.PrinterQueueName is null)
                 {
-                    row.State = e.State;
-                    row.Message = e.Message;
+                    foreach (var row in Targets.Where(t => t.ComputerName == e.ComputerName))
+                    {
+                        row.State = e.State;
+                        row.Message = e.Message;
+                    }
+                }
+                else
+                {
+                    var line = Targets.FirstOrDefault(
+                        t => t.ComputerName == e.ComputerName && t.PrinterQueueName == e.PrinterQueueName);
+                    if (line is not null)
+                    {
+                        line.State = e.State;
+                        line.Message = e.Message;
+                    }
                 }
 
-                AppendLog($"{e.ComputerName}: {TargetMachineStateDisplay.GetDisplay(e.State)} — {e.Message}");
+                var q = e.PrinterQueueName is null ? "—" : e.PrinterQueueName;
+                AppendLog($"{e.ComputerName} [{q}]: {TargetMachineStateDisplay.GetDisplay(e.State)} — {e.Message}");
             });
         });
 
         await _orchestrator.RunAsync(request, progress).ConfigureAwait(true);
+
+        LastSummaryText = BuildSummaryText();
+        if (!string.IsNullOrEmpty(LastSummaryText))
+        {
+            MessageBox.Show(LastSummaryText, UiStrings.Main_SummaryDialogTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    private string BuildSummaryText()
+    {
+        if (Targets.Count == 0)
+            return string.Empty;
+
+        var ok = 0;
+        var skipped = 0;
+        var err = 0;
+        var aborted = 0;
+        var other = 0;
+        foreach (var t in Targets)
+        {
+            switch (t.State)
+            {
+                case TargetMachineState.CompletedSuccess: ok++; break;
+                case TargetMachineState.SkippedAlreadyExists: skipped++; break;
+                case TargetMachineState.Error: err++; break;
+                case TargetMachineState.AbortedDriverMissing: aborted++; break;
+                default: other++; break;
+            }
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine(string.Format(UiStrings.Main_SummaryLineFormat, ok, skipped, err, aborted));
+        if (other > 0)
+            sb.AppendLine(string.Format(UiStrings.Main_SummaryOtherFormat, other));
+
+        if (err > 0 || aborted > 0)
+        {
+            foreach (var t in Targets.Where(x => x.State is TargetMachineState.Error or TargetMachineState.AbortedDriverMissing))
+            {
+                sb.AppendLine(
+                    string.Format(UiStrings.Main_SummaryFailureLineFormat, t.ComputerName, t.PrinterQueueName, t.Message));
+            }
+        }
+
+        return sb.ToString();
     }
 
     private void AppendLog(string line)
@@ -150,7 +269,7 @@ public partial class MainViewModel : ObservableObject
         var owner = Application.Current.Windows
             .OfType<Window>()
             .FirstOrDefault(w => w.IsLoaded && w.IsVisible && !ReferenceEquals(w, window));
-        if (owner != null)
+        if (owner is not null)
             window.Owner = owner;
         window.ShowDialog();
     }

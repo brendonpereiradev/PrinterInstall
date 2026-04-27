@@ -13,6 +13,7 @@ public static class TargetMachineStateDisplay
         TargetMachineState.DriverInstalledReconfirming => "Reconfirmando driver",
         TargetMachineState.Configuring => "Configurando impressora",
         TargetMachineState.CompletedSuccess => "Concluído com sucesso",
+        TargetMachineState.SkippedAlreadyExists => "Ignorado (já existia)",
         TargetMachineState.AbortedDriverMissing => "Cancelado — driver ausente",
         TargetMachineState.Error => "Erro",
         _ => state.ToString()

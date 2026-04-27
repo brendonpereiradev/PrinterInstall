@@ -10,27 +10,34 @@ namespace PrinterInstall.Core.Tests.Orchestration;
 
 public class PrinterDeploymentOrchestratorTests
 {
+    private static PrinterQueueDefinition OnePrinter(PrinterBrand brand, string name = "P1", string host = "10.0.0.1") => new()
+    {
+        Brand = brand,
+        DisplayName = name,
+        PrinterHostAddress = host,
+        PortNumber = 9100,
+        Protocol = TcpPrinterProtocol.Raw
+    };
+
     [Fact]
     public async Task RunAsync_DriverMissing_AbortsWithAbortedDriverMissing()
     {
         var mock = new Mock<IRemotePrinterOperations>();
         mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { "Some Other Driver" });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
         var sut = new PrinterDeploymentOrchestrator(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
-            Brand = PrinterBrand.Epson,
-            DisplayName = "P1",
-            PrinterHostAddress = "10.0.0.1",
-            PortNumber = 9100,
-            Protocol = TcpPrinterProtocol.Raw,
+            Printers = new[] { OnePrinter(PrinterBrand.Epson) },
             DomainCredential = new NetworkCredential("u", "p")
         };
 
         var events = new List<DeploymentProgressEvent>();
-        var progress = new Progress<DeploymentProgressEvent>(e => events.Add(e));
+        IProgress<DeploymentProgressEvent> progress = new InlineProgress<DeploymentProgressEvent>(events.Add);
 
         await sut.RunAsync(request, progress);
 
@@ -45,6 +52,8 @@ public class PrinterDeploymentOrchestratorTests
         var mock = new Mock<IRemotePrinterOperations>();
         mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { expectedDriver });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
         mock.Setup(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -56,17 +65,13 @@ public class PrinterDeploymentOrchestratorTests
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
-            Brand = PrinterBrand.Lexmark,
-            DisplayName = "Office",
-            PrinterHostAddress = "10.0.0.5",
-            PortNumber = 9100,
-            Protocol = TcpPrinterProtocol.Raw,
+            Printers = new[] { OnePrinter(PrinterBrand.Lexmark, "Office", "10.0.0.5") },
             DomainCredential = new NetworkCredential("u", "p"),
             PrintTestPage = true
         };
 
         var events = new List<DeploymentProgressEvent>();
-        await sut.RunAsync(request, new Progress<DeploymentProgressEvent>(e => events.Add(e)));
+        await sut.RunAsync(request, new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         mock.Verify(m => m.CreateTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<string>(), "10.0.0.5", 9100, "RAW", It.IsAny<CancellationToken>()), Times.Once);
         mock.Verify(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "Office", expectedDriver, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -81,6 +86,8 @@ public class PrinterDeploymentOrchestratorTests
         var mock = new Mock<IRemotePrinterOperations>();
         mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { expectedDriver });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
         mock.Setup(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -90,11 +97,7 @@ public class PrinterDeploymentOrchestratorTests
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
-            Brand = PrinterBrand.Lexmark,
-            DisplayName = "Office",
-            PrinterHostAddress = "10.0.0.5",
-            PortNumber = 9100,
-            Protocol = TcpPrinterProtocol.Raw,
+            Printers = new[] { OnePrinter(PrinterBrand.Lexmark, "Office", "10.0.0.5") },
             DomainCredential = new NetworkCredential("u", "p"),
             PrintTestPage = false
         };
@@ -113,6 +116,8 @@ public class PrinterDeploymentOrchestratorTests
         var mock = new Mock<IRemotePrinterOperations>();
         mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { expectedDriver });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
         mock.Setup(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -124,11 +129,7 @@ public class PrinterDeploymentOrchestratorTests
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
-            Brand = PrinterBrand.Lexmark,
-            DisplayName = "Office",
-            PrinterHostAddress = "10.0.0.5",
-            PortNumber = 9100,
-            Protocol = TcpPrinterProtocol.Raw,
+            Printers = new[] { OnePrinter(PrinterBrand.Lexmark, "Office", "10.0.0.5") },
             DomainCredential = new NetworkCredential("u", "p"),
             PrintTestPage = true
         };
@@ -136,7 +137,7 @@ public class PrinterDeploymentOrchestratorTests
         var events = new List<DeploymentProgressEvent>();
         await sut.RunAsync(request, new InlineProgress<DeploymentProgressEvent>(events.Add));
 
-        var done = Assert.Single(events.Where(e => e.State == TargetMachineState.CompletedSuccess));
+        var done = Assert.Single(events.Where(e => e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: "Office" }));
         Assert.Contains("test page failed", done.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("spooler", done.Message, StringComparison.OrdinalIgnoreCase);
     }

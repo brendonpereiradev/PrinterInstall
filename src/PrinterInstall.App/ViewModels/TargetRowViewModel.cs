@@ -10,6 +10,9 @@ public partial class TargetRowViewModel : ObservableObject
     private string _computerName = "";
 
     [ObservableProperty]
+    private string _printerQueueName = "";
+
+    [ObservableProperty]
     private TargetMachineState _state = TargetMachineState.Pending;
 
     [ObservableProperty]
