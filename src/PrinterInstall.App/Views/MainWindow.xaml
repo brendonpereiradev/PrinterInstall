@@ -116,24 +116,10 @@
                                                 <TextBlock Text="{DynamicResource Main_DisplayNameLabel}" FontSize="11"/>
                                                 <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,4,0">
+                                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0">
                                                 <TextBlock Text="{DynamicResource Main_PrinterHostLabel}" FontSize="11"/>
                                                 <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}"/>
                                             </StackPanel>
-                                            <Grid Grid.Row="1" Grid.Column="1" Margin="4,0,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0" Margin="0,0,4,0">
-                                                    <TextBlock Text="{DynamicResource Main_ColumnPort}" FontSize="11"/>
-                                                    <TextBox Text="{Binding PortText, UpdateSourceTrigger=PropertyChanged}"/>
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="1" Margin="4,0,0,0">
-                                                    <TextBlock Text="{DynamicResource Main_ColumnProtocol}" FontSize="11"/>
-                                                    <ComboBox ItemsSource="{Binding Source={x:Static vm:PrinterFormRowViewModel.ProtocolChoices}}" SelectedItem="{Binding Protocol}"/>
-                                                </StackPanel>
-                                            </Grid>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
