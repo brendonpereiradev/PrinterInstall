@@ -11,18 +11,16 @@ public partial class LoginViewModel : ObservableObject
 {
     private readonly ILdapCredentialValidator _ldap;
     private readonly ISessionContext _session;
-    private readonly IConfiguration _configuration;
+    private readonly string _domainName;
 
     public LoginViewModel(ILdapCredentialValidator ldap, ISessionContext session, IConfiguration configuration)
     {
         _ldap = ldap;
         _session = session;
-        _configuration = configuration;
-        _domainName = _configuration["DomainName"] ?? "preventsenior.local";
+        _domainName = (configuration["DomainName"] ?? "preventsenior.local").Trim();
     }
 
-    [ObservableProperty]
-    private string _domainName;
+    public string ConfiguredDomainName => _domainName;
 
     [ObservableProperty]
     private string _userName = "";
@@ -35,14 +33,14 @@ public partial class LoginViewModel : ObservableObject
     public async Task<(bool Success, string? Error)> TryLoginAsync(CancellationToken cancellationToken = default)
     {
         ErrorMessage = null;
-        if (string.IsNullOrWhiteSpace(DomainName) || string.IsNullOrWhiteSpace(UserName))
+        if (string.IsNullOrWhiteSpace(UserName))
         {
             ErrorMessage = UiStrings.Login_Validation_DomainUserRequired;
             return (false, ErrorMessage);
         }
 
-        var cred = new NetworkCredential(UserName, Password, DomainName);
-        var result = await _ldap.ValidateAsync(DomainName.Trim(), cred, cancellationToken).ConfigureAwait(false);
+        var cred = new NetworkCredential(UserName, Password, _domainName);
+        var result = await _ldap.ValidateAsync(_domainName, cred, cancellationToken).ConfigureAwait(false);
         if (!result.IsSuccess)
         {
             ErrorMessage = result.ErrorMessage;
@@ -50,7 +48,7 @@ public partial class LoginViewModel : ObservableObject
         }
 
         _session.Credential = cred;
-        _session.DomainName = DomainName.Trim();
+        _session.DomainName = _domainName;
         return (true, null);
     }
 }
