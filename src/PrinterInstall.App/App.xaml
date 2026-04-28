@@ -15,6 +15,9 @@
                 <ResourceDictionary Source="Strings/Login.pt-BR.xaml"/>
                 <ResourceDictionary Source="Strings/RemovalWizard.pt-BR.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="DataGrid">
+                <Setter Property="CanUserReorderColumns" Value="False"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

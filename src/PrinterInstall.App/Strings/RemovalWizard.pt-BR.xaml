@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="Removal_WindowTitle">Controle de impressoras</sys:String>
-  <sys:String x:Key="Removal_Step0Intro">Informe os nomes dos computadores (um por linha). O assistente carregará as impressoras em cada máquina. Por fila: marque Remover ou digite Novo nome — não use os dois na mesma linha.</sys:String>
+  <sys:String x:Key="Removal_Step0Intro">Um IP ou nome de computador por linha. Este assistente permite remover ou renomear impressoras remotamente.</sys:String>
   <sys:String x:Key="Removal_Next">Avançar</sys:String>
   <sys:String x:Key="Removal_ColumnRemove">Remover</sys:String>
   <sys:String x:Key="Removal_ColumnPrinter">Impressora</sys:String>
@@ -11,6 +11,7 @@
   <sys:String x:Key="Removal_NoPrintersFound">Nenhuma impressora encontrada neste computador.</sys:String>
   <sys:String x:Key="Removal_ReviewHeader">Revise o plano:</sys:String>
   <sys:String x:Key="Removal_ExecuteButton">Executar alterações</sys:String>
-  <sys:String x:Key="Removal_ColumnNewName">Novo nome</sys:String>
+  <sys:String x:Key="Removal_ColumnNewName">Renomear para</sys:String>
+  <sys:String x:Key="Removal_RenamePlaceholder">Digite o novo nome</sys:String>
   <sys:String x:Key="Removal_LogHeader">Log de execução</sys:String>
 </ResourceDictionary>

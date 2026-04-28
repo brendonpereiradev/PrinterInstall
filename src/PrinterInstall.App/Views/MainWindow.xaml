@@ -14,6 +14,8 @@
     <Window.Resources>
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:TargetMachineStateToBrushConverter x:Key="StateBrushConverter"/>
+        <conv:TargetMachineStateToIconConverter x:Key="StateIconConverter"/>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -74,11 +76,35 @@
                                       HeadersVisibility="Column"
                                       CanUserAddRows="False"
                                       GridLinesVisibility="Horizontal"
+                                      AlternatingRowBackground="{DynamicResource ControlFillColorTertiaryBrush}"
                                       Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource InverseBoolToVis}}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerName}" Width="*"/>
                                     <DataGridTextColumn Header="{DynamicResource Main_ColumnQueue}" Binding="{Binding PrinterQueueName}" Width="120"/>
-                                    <DataGridTextColumn Header="{DynamicResource Main_ColumnState}" Binding="{Binding StateDisplay}" Width="160"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource Main_ColumnState}" Width="220">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Padding="8,3"
+                                                        CornerRadius="10"
+                                                        HorizontalAlignment="Left"
+                                                        Background="{Binding State, Converter={StaticResource StateBrushConverter}}"
+                                                        BorderBrush="{Binding State, Converter={StaticResource StateBrushConverter}, ConverterParameter=Border}"
+                                                        BorderThickness="1">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontFamily="Segoe MDL2 Assets"
+                                                                   FontSize="12"
+                                                                   Margin="0,0,6,0"
+                                                                   VerticalAlignment="Center"
+                                                                   Text="{Binding State, Converter={StaticResource StateIconConverter}}"
+                                                                   Foreground="{Binding State, Converter={StaticResource StateBrushConverter}, ConverterParameter=Foreground}"/>
+                                                        <TextBlock Text="{Binding StateDisplay}"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{Binding State, Converter={StaticResource StateBrushConverter}, ConverterParameter=Foreground}"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTextColumn Header="{DynamicResource Main_ColumnMessage}" Binding="{Binding Message}" Width="2*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -135,8 +161,6 @@
                     <ui:Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
                                Appearance="Primary" Margin="0,0,0,8"/>
                     <ui:Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}"
-                               Appearance="Secondary" Margin="0,0,0,8"/>
-                    <ui:Button Content="{DynamicResource Main_CopySummaryButton}" Command="{Binding CopySummaryToClipboardCommand}"
                                Appearance="Secondary" Margin="0,0,0,0"/>
                 </StackPanel>
             </Grid>

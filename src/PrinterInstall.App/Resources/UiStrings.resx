@@ -13,7 +13,7 @@
   <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
   <data name="Main_SummaryDialogTitle" xml:space="preserve"><value>Resumo do lote</value></data>
-  <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>Domínio e nome de usuário são obrigatórios.</value></data>
+  <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>O nome de usuário é obrigatório.</value></data>
   <data name="Removal_NotAuthenticated" xml:space="preserve"><value>Não autenticado.</value></data>
   <data name="Removal_Validation_ComputersRequired" xml:space="preserve"><value>Informe pelo menos um nome de computador.</value></data>
   <data name="Removal_NoPrintersSelected" xml:space="preserve"><value>Nenhuma ação (remoção ou renomeação) selecionada; nada a fazer.</value></data>

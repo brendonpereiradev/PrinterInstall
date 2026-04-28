@@ -18,6 +18,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <RootNamespace>PrinterInstall.App</RootNamespace>
+    <AssemblyTitle>Printer Install</AssemblyTitle>
+    <Product>Printer Install</Product>
   </PropertyGroup>
 
   <ItemGroup>
