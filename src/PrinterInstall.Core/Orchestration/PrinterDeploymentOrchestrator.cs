@@ -50,13 +50,13 @@ public sealed class PrinterDeploymentOrchestrator
 
             foreach (var brand in brandOrder)
             {
-                var expected = PrinterCatalog.GetExpectedDriverName(brand);
-                if (DriverNameMatcher.IsDriverInstalled(drivers, expected))
+                var driverOrder = PrinterCatalog.GetDriverResolutionOrder(brand);
+                if (DriverNameMatcher.IsAnyAcceptedDriverInstalled(drivers, driverOrder))
                     continue;
 
                 try
                 {
-                    var (ok, errorDetail) = await TryInstallMissingDriverAsync(computer, request, brand, expected, progress, cancellationToken)
+                    var (ok, errorDetail) = await TryInstallMissingDriverAsync(computer, request, brand, progress, cancellationToken)
                         .ConfigureAwait(false);
                     if (!ok)
                     {
@@ -121,13 +121,15 @@ public sealed class PrinterDeploymentOrchestrator
                         continue;
                     }
 
-                    var expectedDriver = PrinterCatalog.GetExpectedDriverName(def.Brand);
-                    if (!DriverNameMatcher.IsDriverInstalled(drivers, expectedDriver))
+                    var driverOrder = PrinterCatalog.GetDriverResolutionOrder(def.Brand);
+                    var resolvedDriver = DriverNameMatcher.ResolveInstalledDriverName(drivers, driverOrder);
+                    if (resolvedDriver is null)
                     {
+                        var describe = PrinterCatalog.DescribeAcceptableDrivers(def.Brand);
                         progress.Report(new DeploymentProgressEvent(
                             computer,
                             TargetMachineState.AbortedDriverMissing,
-                            $"Driver not installed: {expectedDriver}",
+                            $"Driver not installed: {describe}",
                             displayName));
                         continue;
                     }
@@ -161,7 +163,7 @@ public sealed class PrinterDeploymentOrchestrator
                         computer,
                         request.DomainCredential,
                         displayName,
-                        expectedDriver,
+                        resolvedDriver,
                         portName,
                         cancellationToken).ConfigureAwait(false);
 
@@ -235,14 +237,16 @@ public sealed class PrinterDeploymentOrchestrator
         string computer,
         PrinterDeploymentRequest request,
         PrinterBrand brand,
-        string expected,
         IProgress<DeploymentProgressEvent> progress,
         CancellationToken cancellationToken)
     {
+        var acceptable = PrinterCatalog.GetDriverResolutionOrder(brand);
+        var describe = PrinterCatalog.DescribeAcceptableDrivers(brand);
+
         var package = _localDrivers.TryGet(brand);
         if (package is null)
         {
-            return (false, $"Driver not installed: {expected}. No local package available.");
+            return (false, $"Driver not installed: {describe}. No local package available.");
         }
 
         progress.Report(new DeploymentProgressEvent(
@@ -260,7 +264,7 @@ public sealed class PrinterDeploymentOrchestrator
         }
         catch (NotImplementedException)
         {
-            return (false, $"Driver not installed: {expected}. install unsupported on this channel.");
+            return (false, $"Driver not installed: {describe}. install unsupported on this channel.");
         }
 
         progress.Report(new DeploymentProgressEvent(
@@ -270,10 +274,10 @@ public sealed class PrinterDeploymentOrchestrator
             null));
 
         var drivers = await _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, cancellationToken).ConfigureAwait(false);
-        if (!DriverNameMatcher.IsDriverInstalled(drivers, expected))
+        if (!DriverNameMatcher.IsAnyAcceptedDriverInstalled(drivers, acceptable))
         {
             var sample = string.Join(" | ", drivers.Take(10));
-            return (false, $"Driver installed does not match expected. Expected: {expected}. Found: [{sample}]");
+            return (false, $"Driver installed does not match expected. Expected one of: {describe}. Found: [{sample}]");
         }
 
         return (true, null);
