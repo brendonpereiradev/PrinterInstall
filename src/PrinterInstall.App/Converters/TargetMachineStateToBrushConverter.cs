@@ -27,6 +27,10 @@ public sealed class TargetMachineStateToBrushConverter : IValueConverter
     private static readonly SolidColorBrush ErrorBorder = CreateBrush("#FFE59A9A");
     private static readonly SolidColorBrush ErrorForeground = CreateBrush("#FF8C1D1D");
 
+    private static readonly SolidColorBrush RolledBackBackground = CreateBrush("#FFE0F2F1");
+    private static readonly SolidColorBrush RolledBackBorder = CreateBrush("#FF4DB6AC");
+    private static readonly SolidColorBrush RolledBackForeground = CreateBrush("#FF004D40");
+
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         var state = value is TargetMachineState s ? s : TargetMachineState.Pending;
@@ -54,6 +58,10 @@ public sealed class TargetMachineStateToBrushConverter : IValueConverter
         TargetMachineState.InstallingDriver => ActiveBackground,
         TargetMachineState.DriverInstalledReconfirming => ActiveBackground,
         TargetMachineState.Configuring => ActiveBackground,
+        TargetMachineState.DeployCancelled => WarningBackground,
+        TargetMachineState.RollbackRemovingQueue => ActiveBackground,
+        TargetMachineState.RollbackRemovingPort => ActiveBackground,
+        TargetMachineState.RolledBack => RolledBackBackground,
         _ => PendingBackground
     };
 
@@ -68,6 +76,10 @@ public sealed class TargetMachineStateToBrushConverter : IValueConverter
         TargetMachineState.InstallingDriver => ActiveBorder,
         TargetMachineState.DriverInstalledReconfirming => ActiveBorder,
         TargetMachineState.Configuring => ActiveBorder,
+        TargetMachineState.DeployCancelled => WarningBorder,
+        TargetMachineState.RollbackRemovingQueue => ActiveBorder,
+        TargetMachineState.RollbackRemovingPort => ActiveBorder,
+        TargetMachineState.RolledBack => RolledBackBorder,
         _ => PendingBorder
     };
 
@@ -82,6 +94,10 @@ public sealed class TargetMachineStateToBrushConverter : IValueConverter
         TargetMachineState.InstallingDriver => ActiveForeground,
         TargetMachineState.DriverInstalledReconfirming => ActiveForeground,
         TargetMachineState.Configuring => ActiveForeground,
+        TargetMachineState.DeployCancelled => WarningForeground,
+        TargetMachineState.RollbackRemovingQueue => ActiveForeground,
+        TargetMachineState.RollbackRemovingPort => ActiveForeground,
+        TargetMachineState.RolledBack => RolledBackForeground,
         _ => PendingForeground
     };
 

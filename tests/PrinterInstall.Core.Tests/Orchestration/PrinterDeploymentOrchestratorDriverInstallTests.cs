@@ -62,7 +62,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
-        await sut.RunAsync(MakeRequest(printTestPage: true), new InlineProgress<DeploymentProgressEvent>(events.Add));
+        await sut.RunAsync(MakeRequest(printTestPage: true), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         Assert.Contains(events, e => e.State == TargetMachineState.InstallingDriver);
         Assert.Contains(events, e => e.State == TargetMachineState.DriverInstalledReconfirming);
@@ -85,7 +85,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
-        await sut.RunAsync(MakeRequest(), new InlineProgress<DeploymentProgressEvent>(events.Add));
+        await sut.RunAsync(MakeRequest(), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         Assert.Contains(events, e => e.State == TargetMachineState.AbortedDriverMissing);
         remote.Verify(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -104,7 +104,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
-        await sut.RunAsync(MakeRequest(), new InlineProgress<DeploymentProgressEvent>(events.Add));
+        await sut.RunAsync(MakeRequest(), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         Assert.Contains(events, e => e.State == TargetMachineState.AbortedDriverMissing);
         remote.Verify(m => m.InstallPrinterDriverAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<LocalDriverPackage>(), It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -125,7 +125,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
-        await sut.RunAsync(MakeRequest(), new InlineProgress<DeploymentProgressEvent>(events.Add));
+        await sut.RunAsync(MakeRequest(), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         var aborted = Assert.Single(events.Where(e => e is { State: TargetMachineState.AbortedDriverMissing, PrinterQueueName: "P1" }));
         Assert.Contains("install unsupported on this channel", aborted.Message);
@@ -152,7 +152,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var request = MakeRequest(targets: new[] { "pc1", "pc2" });
         var events = new List<DeploymentProgressEvent>();
 
-        await sut.RunAsync(request, new InlineProgress<DeploymentProgressEvent>(events.Add));
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         Assert.Contains(events, e => e is { ComputerName: "pc1", State: TargetMachineState.AbortedDriverMissing, PrinterQueueName: "P1" });
         Assert.Contains(events, e => e is { ComputerName: "pc2", State: TargetMachineState.InstallingDriver } or { ComputerName: "pc2", State: TargetMachineState.CompletedSuccess });

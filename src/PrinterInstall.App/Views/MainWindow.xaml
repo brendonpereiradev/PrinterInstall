@@ -158,8 +158,12 @@
                     </StackPanel>
                     <CheckBox Content="{DynamicResource Main_PrintTestPageLabel}" IsChecked="{Binding PrintTestPage}"
                               Margin="0,0,0,8"/>
-                    <ui:Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
-                               Appearance="Primary" Margin="0,0,0,8"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <ui:Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
+                                   Appearance="Primary"/>
+                        <ui:Button Content="{DynamicResource Main_CancelDeployButton}" Command="{Binding CancelDeployCommand}"
+                                   Appearance="Secondary" Margin="8,0,0,0"/>
+                    </StackPanel>
                     <ui:Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}"
                                Appearance="Secondary" Margin="0,0,0,0"/>
                 </StackPanel>

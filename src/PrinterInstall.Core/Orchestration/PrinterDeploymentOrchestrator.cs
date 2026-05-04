@@ -21,7 +21,11 @@ public sealed class PrinterDeploymentOrchestrator
         _localDrivers = localDrivers;
     }
 
-    public async Task RunAsync(PrinterDeploymentRequest request, IProgress<DeploymentProgressEvent> progress, CancellationToken cancellationToken = default)
+    public async Task RunAsync(
+        PrinterDeploymentRequest request,
+        DeploymentRollbackJournal rollbackJournal,
+        IProgress<DeploymentProgressEvent> progress,
+        CancellationToken cancellationToken = default)
     {
         foreach (var computer in request.TargetComputerNames)
         {
@@ -128,7 +132,7 @@ public sealed class PrinterDeploymentOrchestrator
                         continue;
                     }
 
-                    var portName = BuildPortName(def.PrinterHostAddress, def.PortNumber);
+                    var portName = PrinterPortNaming.BuildPortName(def.PrinterHostAddress, def.PortNumber);
                     var protocol = MapProtocol(def.Protocol);
                     progress.Report(new DeploymentProgressEvent(
                         computer,
@@ -144,6 +148,10 @@ public sealed class PrinterDeploymentOrchestrator
                         protocol,
                         cancellationToken).ConfigureAwait(false);
 
+                    rollbackJournal.RecordPortCreated(computer, portName);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     progress.Report(new DeploymentProgressEvent(
                         computer,
                         TargetMachineState.Configuring,
@@ -157,8 +165,11 @@ public sealed class PrinterDeploymentOrchestrator
                         portName,
                         cancellationToken).ConfigureAwait(false);
 
+                    rollbackJournal.RecordQueueCreated(computer, displayName, portName);
+
                     if (request.PrintTestPage)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         progress.Report(new DeploymentProgressEvent(
                             computer,
                             TargetMachineState.Configuring,
@@ -266,12 +277,6 @@ public sealed class PrinterDeploymentOrchestrator
         }
 
         return (true, null);
-    }
-
-    private static string BuildPortName(string printerHostAddress, int portNumber)
-    {
-        var host = printerHostAddress.Trim();
-        return portNumber == 9100 ? host : $"{host}_{portNumber}";
     }
 
     private static string Flatten(Exception ex)

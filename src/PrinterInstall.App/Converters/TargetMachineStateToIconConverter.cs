@@ -20,6 +20,10 @@ public sealed class TargetMachineStateToIconConverter : IValueConverter
             TargetMachineState.InstallingDriver => "\uE898",
             TargetMachineState.DriverInstalledReconfirming => "\uE895",
             TargetMachineState.Configuring => "\uE9F5",
+            TargetMachineState.DeployCancelled => "\uE71A",
+            TargetMachineState.RollbackRemovingQueue => "\uE7A7",
+            TargetMachineState.RollbackRemovingPort => "\uE704",
+            TargetMachineState.RolledBack => "\uEC61",
             _ => "\uE823"
         };
     }

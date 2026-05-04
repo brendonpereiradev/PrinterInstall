@@ -36,7 +36,10 @@ public sealed class PrinterControlOrchestrator
                 cancellationToken.ThrowIfCancellationRequested();
 
                 progress.Report(new PrinterRemovalProgressEvent(
-                    computer, PrinterRemovalProgressState.RenamingQueue, $"Renaming '{rename.CurrentName}' to '{rename.NewName}'..."));
+                    computer,
+                    PrinterRemovalProgressState.RenamingQueue,
+                    $"Renaming '{rename.CurrentName}' to '{rename.NewName}'...",
+                    PrinterQueueName: rename.CurrentName));
 
                 try
                 {
@@ -50,8 +53,10 @@ public sealed class PrinterControlOrchestrator
                 catch (Exception ex)
                 {
                     progress.Report(new PrinterRemovalProgressEvent(
-                        computer, PrinterRemovalProgressState.Error,
-                        $"Failed to rename '{rename.CurrentName}': {Flatten(ex)}"));
+                        computer,
+                        PrinterRemovalProgressState.Error,
+                        $"Failed to rename '{rename.CurrentName}': {Flatten(ex)}",
+                        PrinterQueueName: rename.CurrentName));
                 }
             }
 
@@ -64,7 +69,11 @@ public sealed class PrinterControlOrchestrator
                 cancellationToken.ThrowIfCancellationRequested();
 
                 progress.Report(new PrinterRemovalProgressEvent(
-                    computer, PrinterRemovalProgressState.RemovingQueue, $"Removing '{item.PrinterName}'..."));
+                    computer,
+                    PrinterRemovalProgressState.RemovingQueue,
+                    $"Removing '{item.PrinterName}'...",
+                    PrinterQueueName: item.PrinterName,
+                    PortName: item.PortName));
 
                 try
                 {
@@ -77,13 +86,23 @@ public sealed class PrinterControlOrchestrator
                 catch (Exception ex)
                 {
                     progress.Report(new PrinterRemovalProgressEvent(
-                        computer, PrinterRemovalProgressState.Error,
-                        $"Failed to remove '{item.PrinterName}': {Flatten(ex)}"));
+                        computer,
+                        PrinterRemovalProgressState.Error,
+                        $"Failed to remove '{item.PrinterName}': {Flatten(ex)}",
+                        PrinterQueueName: item.PrinterName,
+                        PortName: item.PortName));
                     continue;
                 }
 
                 if (string.IsNullOrWhiteSpace(item.PortName))
+                {
+                    progress.Report(new PrinterRemovalProgressEvent(
+                        computer,
+                        PrinterRemovalProgressState.RollbackSucceeded,
+                        "Queue removed.",
+                        PrinterQueueName: item.PrinterName));
                     continue;
+                }
 
                 int count;
                 try
@@ -97,21 +116,41 @@ public sealed class PrinterControlOrchestrator
                 catch (Exception ex)
                 {
                     progress.Report(new PrinterRemovalProgressEvent(
-                        computer, PrinterRemovalProgressState.Warning,
-                        $"Could not check port usage for '{item.PortName}': {Flatten(ex)}"));
+                        computer,
+                        PrinterRemovalProgressState.Warning,
+                        $"Could not check port usage for '{item.PortName}': {Flatten(ex)}",
+                        PrinterQueueName: item.PrinterName,
+                        PortName: item.PortName));
                     continue;
                 }
 
                 if (count != 0)
+                {
+                    progress.Report(new PrinterRemovalProgressEvent(
+                        computer,
+                        PrinterRemovalProgressState.RollbackSucceeded,
+                        "Queue removed; port still in use.",
+                        PrinterQueueName: item.PrinterName,
+                        PortName: item.PortName));
                     continue;
+                }
 
                 progress.Report(new PrinterRemovalProgressEvent(
-                    computer, PrinterRemovalProgressState.RemovingOrphanPort,
-                    $"Removing orphan port '{item.PortName}'..."));
+                    computer,
+                    PrinterRemovalProgressState.RemovingOrphanPort,
+                    $"Removing orphan port '{item.PortName}'...",
+                    PrinterQueueName: item.PrinterName,
+                    PortName: item.PortName));
 
                 try
                 {
                     await _remote.RemoveTcpPrinterPortAsync(computer, request.DomainCredential, item.PortName!, cancellationToken).ConfigureAwait(false);
+                    progress.Report(new PrinterRemovalProgressEvent(
+                        computer,
+                        PrinterRemovalProgressState.RollbackSucceeded,
+                        "Queue and port removed.",
+                        PrinterQueueName: item.PrinterName,
+                        PortName: item.PortName));
                 }
                 catch (OperationCanceledException)
                 {
@@ -120,8 +159,11 @@ public sealed class PrinterControlOrchestrator
                 catch (Exception ex)
                 {
                     progress.Report(new PrinterRemovalProgressEvent(
-                        computer, PrinterRemovalProgressState.Warning,
-                        $"Could not remove orphan port '{item.PortName}': {Flatten(ex)}"));
+                        computer,
+                        PrinterRemovalProgressState.Warning,
+                        $"Could not remove orphan port '{item.PortName}': {Flatten(ex)}",
+                        PrinterQueueName: item.PrinterName,
+                        PortName: item.PortName));
                 }
             }
 

@@ -53,7 +53,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
             },
             DomainCredential = new NetworkCredential("u", "p")
         };
-        await sut.RunAsync(request, new InlineProgress<DeploymentProgressEvent>(events.Add));
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         m.Verify(
             x => x.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), "10.0.0.1", It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
@@ -110,6 +110,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
         var doneOrder = new List<(string Pc, string Q)>();
         await sut.RunAsync(
             request,
+            new DeploymentRollbackJournal(),
             new Progress<DeploymentProgressEvent>(e =>
             {
                 if (e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: { } n })
@@ -168,7 +169,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
 
         var sut = new PrinterDeploymentOrchestrator(m.Object);
         var events = new List<DeploymentProgressEvent>();
-        await sut.RunAsync(request, new InlineProgress<DeploymentProgressEvent>(events.Add));
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         Assert.Contains(events, e => e is { PrinterQueueName: "Bad", State: TargetMachineState.Error });
         Assert.Contains(events, e => e is { PrinterQueueName: "Good", State: TargetMachineState.CompletedSuccess });

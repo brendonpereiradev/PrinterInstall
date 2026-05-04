@@ -29,4 +29,10 @@ public class TargetMachineStateDisplayTests
     {
         Assert.Equal("Ignorado (já existia)", TargetMachineStateDisplay.GetDisplay(TargetMachineState.SkippedAlreadyExists));
     }
+
+    [Fact]
+    public void RolledBack_returns_Portuguese_label()
+    {
+        Assert.Equal("Revertido", TargetMachineStateDisplay.GetDisplay(TargetMachineState.RolledBack));
+    }
 }

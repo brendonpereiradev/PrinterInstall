@@ -63,6 +63,10 @@ public partial class App : Application
                 sp.GetRequiredService<ILocalDriverPackageCatalog>()));
         builder.Services.AddSingleton<PrinterControlOrchestrator>(sp =>
             new PrinterControlOrchestrator(sp.GetRequiredService<IRemotePrinterOperations>()));
+        builder.Services.AddSingleton<DeploymentRollbackRunner>(sp =>
+            new DeploymentRollbackRunner(
+                sp.GetRequiredService<IRemotePrinterOperations>(),
+                sp.GetRequiredService<PrinterControlOrchestrator>()));
         builder.Services.AddSingleton<PrinterRemovalOrchestrator>();
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<MainViewModel>();

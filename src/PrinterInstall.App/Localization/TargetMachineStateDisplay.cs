@@ -16,6 +16,10 @@ public static class TargetMachineStateDisplay
         TargetMachineState.SkippedAlreadyExists => "Ignorado (já existia)",
         TargetMachineState.AbortedDriverMissing => "Cancelado — driver ausente",
         TargetMachineState.Error => "Erro",
+        TargetMachineState.DeployCancelled => "Deploy cancelado",
+        TargetMachineState.RollbackRemovingQueue => "A remover fila (reversão)",
+        TargetMachineState.RollbackRemovingPort => "A remover porta (reversão)",
+        TargetMachineState.RolledBack => "Revertido",
         _ => state.ToString()
     };
 }

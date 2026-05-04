@@ -6,6 +6,7 @@ public enum PrinterRemovalProgressState
     RenamingQueue,
     RemovingQueue,
     RemovingOrphanPort,
+    RollbackSucceeded,
     TargetCompleted,
     Warning,
     Error

@@ -11,5 +11,9 @@ public enum TargetMachineState
     CompletedSuccess,
     SkippedAlreadyExists,
     AbortedDriverMissing,
-    Error
+    Error,
+    DeployCancelled,
+    RollbackRemovingQueue,
+    RollbackRemovingPort,
+    RolledBack
 }
