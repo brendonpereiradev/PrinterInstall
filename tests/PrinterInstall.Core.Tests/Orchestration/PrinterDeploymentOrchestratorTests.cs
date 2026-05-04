@@ -207,4 +207,61 @@ public class PrinterDeploymentOrchestratorTests
         Assert.Single(journal.PortOnlyEntries);
         Assert.Contains(journal.PortOnlyEntries, t => t.Computer == "pc1" && t.PortName == "10.0.0.5");
     }
+
+    [Fact]
+    public async Task RunAsync_LexmarkV2Only_UsesV2ForAddPrinter()
+    {
+        var v2 = "Lexmark Universal v2 XL";
+        var mock = new Mock<IRemotePrinterOperations>();
+        mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { v2 });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        mock.Setup(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = new[] { "pc1" },
+            Printers = new[] { OnePrinter(PrinterBrand.Lexmark, "Office", "10.0.0.5") },
+            DomainCredential = new NetworkCredential("u", "p"),
+            PrintTestPage = false
+        };
+
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), new Progress<DeploymentProgressEvent>(_ => { }));
+
+        mock.Verify(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "Office", v2, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RunAsync_LexmarkBothV2AndV4_UsesV4ForAddPrinter()
+    {
+        var v4 = "Lexmark Universal v4 XL";
+        var v2 = "Lexmark Universal v2 XL";
+        var mock = new Mock<IRemotePrinterOperations>();
+        mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { v2, v4 });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        mock.Setup(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = new[] { "pc1" },
+            Printers = new[] { OnePrinter(PrinterBrand.Lexmark, "Office", "10.0.0.5") },
+            DomainCredential = new NetworkCredential("u", "p"),
+            PrintTestPage = false
+        };
+
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), new Progress<DeploymentProgressEvent>(_ => { }));
+
+        mock.Verify(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "Office", v4, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

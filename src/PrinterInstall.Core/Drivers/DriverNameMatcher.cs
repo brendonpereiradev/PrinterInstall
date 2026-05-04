@@ -12,4 +12,24 @@ public static class DriverNameMatcher
         }
         return false;
     }
+
+    public static bool IsAnyAcceptedDriverInstalled(IEnumerable<string> installedDriverNames, IReadOnlyList<string> preferenceOrder)
+    {
+        foreach (var candidate in preferenceOrder)
+        {
+            if (IsDriverInstalled(installedDriverNames, candidate))
+                return true;
+        }
+        return false;
+    }
+
+    public static string? ResolveInstalledDriverName(IEnumerable<string> installedDriverNames, IReadOnlyList<string> preferenceOrder)
+    {
+        foreach (var candidate in preferenceOrder)
+        {
+            if (IsDriverInstalled(installedDriverNames, candidate))
+                return candidate.Trim();
+        }
+        return null;
+    }
 }
