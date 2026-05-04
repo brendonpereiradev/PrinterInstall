@@ -26,6 +26,15 @@ public class UiStrings
     public static string Main_SummaryOtherFormat => ResourceManager.GetString(nameof(Main_SummaryOtherFormat), ResourceCulture)!;
     public static string Main_SummaryFailureLineFormat => ResourceManager.GetString(nameof(Main_SummaryFailureLineFormat), ResourceCulture)!;
     public static string Main_SummaryDialogTitle => ResourceManager.GetString(nameof(Main_SummaryDialogTitle), ResourceCulture)!;
+    public static string Main_DeployCancelRequested => ResourceManager.GetString(nameof(Main_DeployCancelRequested), ResourceCulture)!;
+    public static string Main_DeployRollbackStarting => ResourceManager.GetString(nameof(Main_DeployRollbackStarting), ResourceCulture)!;
+    public static string Main_DeployRollbackFinished => ResourceManager.GetString(nameof(Main_DeployRollbackFinished), ResourceCulture)!;
+    public static string Main_DeployRollbackErrorFormat => ResourceManager.GetString(nameof(Main_DeployRollbackErrorFormat), ResourceCulture)!;
+    public static string Main_DeployCooperativeCancelHint => ResourceManager.GetString(nameof(Main_DeployCooperativeCancelHint), ResourceCulture)!;
+    public static string Main_DeployCancelledRowMessage => ResourceManager.GetString(nameof(Main_DeployCancelledRowMessage), ResourceCulture)!;
+    public static string Main_RollbackPreparingOnHost => ResourceManager.GetString(nameof(Main_RollbackPreparingOnHost), ResourceCulture)!;
+    public static string Main_SummaryRolledBackFormat => ResourceManager.GetString(nameof(Main_SummaryRolledBackFormat), ResourceCulture)!;
+    public static string Main_SummaryDeployCancelledFormat => ResourceManager.GetString(nameof(Main_SummaryDeployCancelledFormat), ResourceCulture)!;
     public static string Login_Validation_DomainUserRequired => ResourceManager.GetString(nameof(Login_Validation_DomainUserRequired), ResourceCulture)!;
     public static string Removal_NotAuthenticated => ResourceManager.GetString(nameof(Removal_NotAuthenticated), ResourceCulture)!;
     public static string Removal_Validation_ComputersRequired => ResourceManager.GetString(nameof(Removal_Validation_ComputersRequired), ResourceCulture)!;

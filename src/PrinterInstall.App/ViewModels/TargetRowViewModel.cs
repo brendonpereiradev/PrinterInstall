@@ -13,6 +13,9 @@ public partial class TargetRowViewModel : ObservableObject
     private string _printerQueueName = "";
 
     [ObservableProperty]
+    private string _expectedPortName = "";
+
+    [ObservableProperty]
     private TargetMachineState _state = TargetMachineState.Pending;
 
     [ObservableProperty]

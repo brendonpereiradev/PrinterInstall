@@ -13,6 +13,15 @@
   <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
   <data name="Main_SummaryDialogTitle" xml:space="preserve"><value>Resumo do lote</value></data>
+  <data name="Main_DeployCancelRequested" xml:space="preserve"><value>Cancelamento pedido pelo utilizador.</value></data>
+  <data name="Main_DeployRollbackStarting" xml:space="preserve"><value>A reverter alterações criadas nesta execução…</value></data>
+  <data name="Main_DeployRollbackFinished" xml:space="preserve"><value>Reversão concluída (ver log).</value></data>
+  <data name="Main_DeployRollbackErrorFormat" xml:space="preserve"><value>Erro durante a reversão: {0}</value></data>
+  <data name="Main_DeployCooperativeCancelHint" xml:space="preserve"><value>Se uma fila tiver sido criada no alvo após o pedido de cancelamento, use Controle de impressoras para concluir a limpeza.</value></data>
+  <data name="Main_DeployCancelledRowMessage" xml:space="preserve"><value>Operação cancelada pelo utilizador.</value></data>
+  <data name="Main_RollbackPreparingOnHost" xml:space="preserve"><value>A preparar reversão neste computador…</value></data>
+  <data name="Main_SummaryRolledBackFormat" xml:space="preserve"><value>Revertido(s) nesta execução: {0}</value></data>
+  <data name="Main_SummaryDeployCancelledFormat" xml:space="preserve"><value>Interrompido(s) após cancelamento (sem reversão ou antes da reversão): {0}</value></data>
   <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>O nome de usuário é obrigatório.</value></data>
   <data name="Removal_NotAuthenticated" xml:space="preserve"><value>Não autenticado.</value></data>
   <data name="Removal_Validation_ComputersRequired" xml:space="preserve"><value>Informe pelo menos um nome de computador.</value></data>

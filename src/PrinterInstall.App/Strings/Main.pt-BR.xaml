@@ -16,6 +16,7 @@
   <sys:String x:Key="Main_RemovePrinterRow">Remover</sys:String>
   <sys:String x:Key="Main_PrintTestPageLabel">Imprimir teste</sys:String>
   <sys:String x:Key="Main_DeployButton">Implantar</sys:String>
+  <sys:String x:Key="Main_CancelDeployButton">Cancelar deploy</sys:String>
   <sys:String x:Key="Main_RemovePrintersButton">Controle de impressoras</sys:String>
   <sys:String x:Key="Main_LogGroupHeader">Log</sys:String>
   <sys:String x:Key="Main_StatusEmptyHint">Nenhum computador na lista. Adicione nomes à esquerda e clique em Implantar para ver o progresso aqui.</sys:String>
