@@ -28,13 +28,17 @@
             <TabControl SelectedIndex="{Binding CurrentStepIndex}">
                 <TabItem>
                     <DockPanel LastChildFill="True">
-                        <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Removal_Step0Intro}"
-                                   TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <TextBlock Text="{DynamicResource Removal_Step0Intro}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{DynamicResource Removal_Step0KeyboardHint}"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
                         <ui:Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Padding="16,6"
                                 Content="{DynamicResource Removal_Next}" Command="{Binding StartCommand}" Margin="0,8,0,0" Appearance="Primary" IsDefault="True"/>
                         <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
-                                 AcceptsReturn="False"
-                                 PreviewKeyDown="Step0Computers_OnPreviewKeyDown"
+                                 AcceptsReturn="True"
                                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
                     </DockPanel>
                 </TabItem>
@@ -197,6 +201,9 @@
                 <TabItem>
                     <DockPanel LastChildFill="True">
                         <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Removal_LogHeader}" FontWeight="Bold" Margin="0,0,0,8"/>
+                        <ui:Button DockPanel.Dock="Bottom" Content="{DynamicResource Removal_CloseButton}"
+                                     Command="{Binding CloseCommand}" IsEnabled="{Binding CanClose}"
+                                     HorizontalAlignment="Right" Padding="16,6" Margin="0,8,0,0" Appearance="Primary"/>
                         <TextBox Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True"
                                  VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
                     </DockPanel>

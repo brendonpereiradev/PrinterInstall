@@ -1,0 +1,76 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using PrinterInstall.App.Resources;
+using PrinterInstall.Core.Models;
+using PrinterInstall.Core.Network;
+
+namespace PrinterInstall.App.ViewModels;
+
+public partial class PrinterNetworkTestViewModel : ObservableObject
+{
+    private readonly IDirectRawPrinterTestService _testService;
+    private CancellationTokenSource? _cts;
+
+    public PrinterNetworkTestViewModel(IDirectRawPrinterTestService testService)
+    {
+        _testService = testService;
+    }
+
+    [ObservableProperty] private PrinterBrand _selectedBrand = PrinterBrand.Epson;
+    [ObservableProperty] private string _hostAddress = "";
+    [ObservableProperty] private string _statusMessage = "";
+    [ObservableProperty] private bool _isRunning;
+
+    public IEnumerable<PrinterBrand> BrandChoices => Enum.GetValues<PrinterBrand>();
+
+    public bool CanRun => !IsRunning && !string.IsNullOrWhiteSpace(HostAddress);
+
+    partial void OnHostAddressChanged(string value) => RunTestCommand.NotifyCanExecuteChanged();
+
+    partial void OnIsRunningChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanRun));
+        RunTestCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRun))]
+    private async Task RunTestAsync()
+    {
+        if (string.IsNullOrWhiteSpace(HostAddress))
+        {
+            StatusMessage = UiStrings.NetworkTest_Validation_HostRequired;
+            return;
+        }
+
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        IsRunning = true;
+        StatusMessage = UiStrings.NetworkTest_Progress_Connectivity;
+
+        try
+        {
+            await Task.Yield();
+            StatusMessage = UiStrings.NetworkTest_Progress_Sending;
+            var result = await _testService.RunAsync(
+                HostAddress.Trim(),
+                SelectedBrand,
+                _cts.Token).ConfigureAwait(true);
+            StatusMessage = result.Message;
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = UiStrings.NetworkTest_Cancelled;
+        }
+        finally
+        {
+            IsRunning = false;
+        }
+    }
+
+    [RelayCommand]
+    private void CancelTest()
+    {
+        _cts?.Cancel();
+    }
+}

@@ -56,8 +56,18 @@
                             BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                             BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8">
                         <DockPanel LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Main_ComputersLabel}"
-                                       FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{DynamicResource Main_ComputersLabel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <ui:Button Grid.Column="1"
+                                           Content="{DynamicResource Main_AddThisComputer}"
+                                           Command="{Binding AddThisComputerCommand}"
+                                           Appearance="Secondary"
+                                           Padding="8,4"/>
+                            </Grid>
                             <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
                                      AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
                         </DockPanel>
@@ -79,7 +89,7 @@
                                       AlternatingRowBackground="{DynamicResource ControlFillColorTertiaryBrush}"
                                       Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource InverseBoolToVis}}">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerName}" Width="*"/>
+                                    <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerNameDisplay}" Width="*"/>
                                     <DataGridTextColumn Header="{DynamicResource Main_ColumnQueue}" Binding="{Binding PrinterQueueName}" Width="120"/>
                                     <DataGridTemplateColumn Header="{DynamicResource Main_ColumnState}" Width="220">
                                         <DataGridTemplateColumn.CellTemplate>
@@ -166,6 +176,9 @@
                     </StackPanel>
                     <ui:Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}"
                                Appearance="Secondary" Margin="0,0,0,0"/>
+                    <ui:Button Content="{DynamicResource Main_TestPrinterButton}"
+                               Command="{Binding OpenPrinterNetworkTestCommand}"
+                               Appearance="Secondary" Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
 

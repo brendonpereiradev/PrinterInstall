@@ -3,7 +3,6 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="Login_WindowTitle">Printer Install</sys:String>
   <sys:String x:Key="Login_Header">Entrar no domínio</sys:String>
-  <sys:String x:Key="Login_DomainLabel">Domínio (DNS)</sys:String>
   <sys:String x:Key="Login_UserLabel">Usuário</sys:String>
   <sys:String x:Key="Login_PasswordLabel">Senha</sys:String>
   <sys:String x:Key="Login_SignInButton">Entrar</sys:String>

@@ -3,6 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="Main_WindowTitle">Printer Install</sys:String>
   <sys:String x:Key="Main_ComputersLabel">Computadores alvo</sys:String>
+  <sys:String x:Key="Main_AddThisComputer">Adicionar este PC</sys:String>
   <sys:String x:Key="Main_StatusGroupHeader">Status</sys:String>
   <sys:String x:Key="Main_ColumnComputer">Computador</sys:String>
   <sys:String x:Key="Main_ColumnQueue">Fila</sys:String>
@@ -18,6 +19,7 @@
   <sys:String x:Key="Main_DeployButton">Implantar</sys:String>
   <sys:String x:Key="Main_CancelDeployButton">Cancelar deploy</sys:String>
   <sys:String x:Key="Main_RemovePrintersButton">Controle de impressoras</sys:String>
+  <sys:String x:Key="Main_TestPrinterButton">Testar impressora…</sys:String>
   <sys:String x:Key="Main_LogGroupHeader">Log</sys:String>
   <sys:String x:Key="Main_StatusEmptyHint">Nenhum computador na lista. Adicione nomes à esquerda e clique em Implantar para ver o progresso aqui.</sys:String>
   <sys:String x:Key="Main_PageSubtitle">Implantação remota de impressoras</sys:String>

@@ -10,6 +10,7 @@ using PrinterInstall.App.ViewModels;
 using PrinterInstall.App.Views;
 using PrinterInstall.Core.Auth;
 using PrinterInstall.Core.Drivers;
+using PrinterInstall.Core.Network;
 using PrinterInstall.Core.Orchestration;
 using PrinterInstall.Core.Remote;
 
@@ -35,27 +36,26 @@ public partial class App : Application
 
         builder.Services.AddSingleton<ISessionContext, SessionContext>();
         builder.Services.AddSingleton<ILdapCredentialValidator, LdapCredentialValidator>();
-        builder.Services.AddSingleton<IPowerShellInvoker, PowerShellInvoker>();
 
         builder.Services.AddSingleton<IRemoteDriverFileStager, SmbRemoteDriverFileStager>();
-        builder.Services.AddSingleton<IRemoteProcessRunner, WmiRemoteProcessRunner>();
+        builder.Services.AddSingleton<WmiRemoteProcessRunner>();
+        builder.Services.AddSingleton<IRemoteWmiProcessRunner>(sp => sp.GetRequiredService<WmiRemoteProcessRunner>());
+        builder.Services.AddSingleton<RemoteHostSessionFactory>();
+        builder.Services.AddSingleton<ElevatedRemoteProcessRunner>();
+        builder.Services.AddSingleton<IRemoteProcessRunner>(sp => sp.GetRequiredService<WmiRemoteProcessRunner>());
         builder.Services.AddSingleton<ILocalDriverPackageCatalog>(_ => new LocalDriverPackageCatalog());
 
-        builder.Services.AddSingleton<WinRmRemotePrinterOperations>(sp =>
-            new WinRmRemotePrinterOperations(
-                sp.GetRequiredService<IPowerShellInvoker>(),
-                sp.GetRequiredService<IRemoteDriverFileStager>()));
-        builder.Services.AddSingleton<CimRemotePrinterOperations>(sp =>
-            new CimRemotePrinterOperations(
-                sp.GetRequiredService<IRemoteDriverFileStager>(),
-                sp.GetRequiredService<IRemoteProcessRunner>()));
-
+        // Printer operations: local WMI fast-path + remote WMI/DCOM (CimRemotePrinterOperations).
+        builder.Services.AddSingleton<LocalMachineIdentity>();
+        builder.Services.AddSingleton<LocalPrinterOperations>();
+        builder.Services.AddSingleton<CimRemotePrinterOperations>();
         builder.Services.AddSingleton<IRemotePrinterOperations>(sp =>
-        {
-            var winRm = sp.GetRequiredService<WinRmRemotePrinterOperations>();
-            var cim = sp.GetRequiredService<CimRemotePrinterOperations>();
-            return new CompositeRemotePrinterOperations(winRm, cim);
-        });
+            new RoutingRemotePrinterOperations(
+                sp.GetRequiredService<LocalMachineIdentity>(),
+                sp.GetRequiredService<LocalPrinterOperations>(),
+                sp.GetRequiredService<CimRemotePrinterOperations>()));
+
+        builder.Services.AddSingleton<IDirectRawPrinterTestService, DirectRawPrinterTestService>();
 
         builder.Services.AddSingleton<PrinterDeploymentOrchestrator>(sp =>
             new PrinterDeploymentOrchestrator(
@@ -71,9 +71,11 @@ public partial class App : Application
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<MainViewModel>();
         builder.Services.AddTransient<RemovalWizardViewModel>();
+        builder.Services.AddTransient<PrinterNetworkTestViewModel>();
         builder.Services.AddTransient<LoginWindow>();
         builder.Services.AddTransient<MainWindow>();
         builder.Services.AddTransient<RemovalWizardWindow>();
+        builder.Services.AddTransient<PrinterNetworkTestWindow>();
 
         _host = builder.Build();
 
