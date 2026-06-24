@@ -20,8 +20,6 @@ public partial class LoginViewModel : ObservableObject
         _domainName = (configuration["DomainName"] ?? "preventsenior.local").Trim();
     }
 
-    public string ConfiguredDomainName => _domainName;
-
     [ObservableProperty]
     private string _userName = "";
 

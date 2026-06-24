@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         Title="{DynamicResource Login_WindowTitle}"
-        Height="480" Width="472"
-        MinHeight="480" MaxHeight="480" MinWidth="472" MaxWidth="472"
+        Height="408" Width="472"
+        MinHeight="408" MaxHeight="408" MinWidth="472" MaxWidth="472"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="White"
@@ -40,31 +40,10 @@
                 Margin="0,0,0,28"/>
 
             <TextBlock
-                Text="{DynamicResource Login_DomainLabel}"
-                Foreground="#FF444444"
-                FontSize="13"
-                Margin="0,0,0,6"/>
-            <Border
-                Height="40"
-                CornerRadius="8"
-                BorderBrush="{DynamicResource LoginFieldBorderBrush}"
-                BorderThickness="1"
-                Background="{DynamicResource LoginFieldReadOnlyBackgroundBrush}"
-                SnapsToDevicePixels="True">
-                <TextBlock
-                    Text="{Binding ConfiguredDomainName}"
-                    VerticalAlignment="Center"
-                    Margin="12,0,12,0"
-                    Foreground="#FF333333"
-                    FontSize="14"
-                    TextTrimming="CharacterEllipsis"/>
-            </Border>
-
-            <TextBlock
                 Text="{DynamicResource Login_UserLabel}"
                 Foreground="#FF444444"
                 FontSize="13"
-                Margin="0,16,0,6"/>
+                Margin="0,0,0,6"/>
             <Border
                 Height="40"
                 CornerRadius="8"

@@ -22,6 +22,7 @@ public class UiStrings
     public static string Main_Validation_DisplayNameRequired => ResourceManager.GetString(nameof(Main_Validation_DisplayNameRequired), ResourceCulture)!;
     public static string Main_Validation_PrinterHostRequired => ResourceManager.GetString(nameof(Main_Validation_PrinterHostRequired), ResourceCulture)!;
     public static string Main_InvalidComputerNameFormat => ResourceManager.GetString(nameof(Main_InvalidComputerNameFormat), ResourceCulture)!;
+    public static string Main_LocalComputerSuffix => ResourceManager.GetString(nameof(Main_LocalComputerSuffix), ResourceCulture)!;
     public static string Main_SummaryLineFormat => ResourceManager.GetString(nameof(Main_SummaryLineFormat), ResourceCulture)!;
     public static string Main_SummaryOtherFormat => ResourceManager.GetString(nameof(Main_SummaryOtherFormat), ResourceCulture)!;
     public static string Main_SummaryFailureLineFormat => ResourceManager.GetString(nameof(Main_SummaryFailureLineFormat), ResourceCulture)!;
@@ -46,4 +47,8 @@ public class UiStrings
     public static string Removal_ReviewRenameFormat => ResourceManager.GetString(nameof(Removal_ReviewRenameFormat), ResourceCulture)!;
     public static string Removal_LogListPrintersFailedFormat => ResourceManager.GetString(nameof(Removal_LogListPrintersFailedFormat), ResourceCulture)!;
     public static string Removal_LogErrorFormat => ResourceManager.GetString(nameof(Removal_LogErrorFormat), ResourceCulture)!;
+    public static string NetworkTest_Validation_HostRequired => ResourceManager.GetString(nameof(NetworkTest_Validation_HostRequired), ResourceCulture)!;
+    public static string NetworkTest_Progress_Connectivity => ResourceManager.GetString(nameof(NetworkTest_Progress_Connectivity), ResourceCulture)!;
+    public static string NetworkTest_Progress_Sending => ResourceManager.GetString(nameof(NetworkTest_Progress_Sending), ResourceCulture)!;
+    public static string NetworkTest_Cancelled => ResourceManager.GetString(nameof(NetworkTest_Cancelled), ResourceCulture)!;
 }

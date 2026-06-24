@@ -33,12 +33,41 @@ public class PnputilOutputParserTests
     }
 
     [Fact]
-    public void ExtractLastUsefulLine_WorksWithLfOnlyNewlines()
+    public void ExtractFailureDetail_SkipsLocalizedHeader()
     {
-        var log = "first\nsecond\nthird\n";
+        const string log = """
+            Utilitário PnP da Microsoft
 
-        var line = PnputilOutputParser.ExtractLastUsefulLine(log);
+            Adicionando pacote de driver:  LMUX1l50.inf
+            Falha ao adicionar pacote de driver: Acesso negado.
+            """;
 
-        Assert.Equal("third", line);
+        var line = PnputilOutputParser.ExtractFailureDetail(log);
+
+        Assert.Equal("Falha ao adicionar pacote de driver: Acesso negado.", line);
+    }
+
+    [Fact]
+    public void LooksSuccessful_PortugueseSuccess_ReturnsTrue()
+    {
+        const string log = """
+            Utilitário PnP da Microsoft
+            Pacote de driver adicionado com êxito.
+            Pacotes de driver adicionados:  1
+            """;
+
+        Assert.True(PnputilOutputParser.LooksSuccessful(log, 0));
+    }
+
+    [Fact]
+    public void LooksSuccessful_AccessDenied_ReturnsFalse()
+    {
+        const string log = """
+            Utilitário PnP da Microsoft
+            Falha ao adicionar pacote de driver: Acesso negado.
+            Pacotes de driver adicionados:  0
+            """;
+
+        Assert.False(PnputilOutputParser.LooksSuccessful(log, 5));
     }
 }

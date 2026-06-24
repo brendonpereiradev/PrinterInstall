@@ -3,6 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="Removal_WindowTitle">Controle de impressoras</sys:String>
   <sys:String x:Key="Removal_Step0Intro">Um IP ou nome de computador por linha. Este assistente permite remover ou renomear impressoras remotamente.</sys:String>
+  <sys:String x:Key="Removal_Step0KeyboardHint">Pressione Enter para adicionar outro host na lista.</sys:String>
   <sys:String x:Key="Removal_Next">Avançar</sys:String>
   <sys:String x:Key="Removal_ColumnRemove">Remover</sys:String>
   <sys:String x:Key="Removal_ColumnPrinter">Impressora</sys:String>
@@ -14,4 +15,5 @@
   <sys:String x:Key="Removal_ColumnNewName">Renomear para</sys:String>
   <sys:String x:Key="Removal_RenamePlaceholder">Digite o novo nome</sys:String>
   <sys:String x:Key="Removal_LogHeader">Log de execução</sys:String>
+  <sys:String x:Key="Removal_CloseButton">Fechar</sys:String>
 </ResourceDictionary>

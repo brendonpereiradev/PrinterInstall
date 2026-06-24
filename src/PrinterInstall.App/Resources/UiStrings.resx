@@ -9,6 +9,7 @@
   <data name="Main_Validation_DisplayNameRequired" xml:space="preserve"><value>O nome de exibição (fila) é obrigatório.</value></data>
   <data name="Main_Validation_PrinterHostRequired" xml:space="preserve"><value>O endereço do host da impressora é obrigatório.</value></data>
   <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Formato de nome de computador inválido.</value></data>
+  <data name="Main_LocalComputerSuffix" xml:space="preserve"><value>(este PC)</value></data>
   <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} cancelado(s) — driver ausente.</value></data>
   <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
@@ -33,4 +34,8 @@
   <data name="Removal_ReviewRenameFormat" xml:space="preserve"><value>{0}: renomear '{1}' → '{2}'</value></data>
   <data name="Removal_LogListPrintersFailedFormat" xml:space="preserve"><value>{0}: falha ao listar impressoras — {1}</value></data>
   <data name="Removal_LogErrorFormat" xml:space="preserve"><value>Erro: {0}</value></data>
+  <data name="NetworkTest_Validation_HostRequired" xml:space="preserve"><value>O endereço IP ou hostname é obrigatório.</value></data>
+  <data name="NetworkTest_Progress_Connectivity" xml:space="preserve"><value>A testar conectividade…</value></data>
+  <data name="NetworkTest_Progress_Sending" xml:space="preserve"><value>A enviar página de teste…</value></data>
+  <data name="NetworkTest_Cancelled" xml:space="preserve"><value>Teste cancelado.</value></data>
 </root>

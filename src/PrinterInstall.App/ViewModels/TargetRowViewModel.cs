@@ -10,6 +10,12 @@ public partial class TargetRowViewModel : ObservableObject
     private string _computerName = "";
 
     [ObservableProperty]
+    private bool _isLocalMachine;
+
+    [ObservableProperty]
+    private string _computerNameDisplay = "";
+
+    [ObservableProperty]
     private string _printerQueueName = "";
 
     [ObservableProperty]

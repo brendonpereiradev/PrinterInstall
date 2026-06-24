@@ -1,0 +1,40 @@
+<Window x:Class="PrinterInstall.App.Views.PrinterNetworkTestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="{DynamicResource NetworkTest_WindowTitle}"
+        Height="320" Width="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{DynamicResource NetworkTest_Hint}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+        <StackPanel Grid.Row="1" Margin="0,0,0,8">
+            <TextBlock Text="{DynamicResource NetworkTest_BrandLabel}" Margin="0,0,0,4"/>
+            <ComboBox ItemsSource="{Binding BrandChoices}" SelectedItem="{Binding SelectedBrand}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Margin="0,0,0,8">
+            <TextBlock Text="{DynamicResource NetworkTest_HostLabel}" Margin="0,0,0,4"/>
+            <TextBox Text="{Binding HostAddress, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,8,0,8"/>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <ui:Button Content="{DynamicResource NetworkTest_RunButton}"
+                       Command="{Binding RunTestCommand}"
+                       Appearance="Primary" Margin="0,0,8,0"/>
+            <ui:Button Content="{DynamicResource NetworkTest_CloseButton}"
+                       IsCancel="True" Appearance="Secondary"/>
+        </StackPanel>
+    </Grid>
+</Window>

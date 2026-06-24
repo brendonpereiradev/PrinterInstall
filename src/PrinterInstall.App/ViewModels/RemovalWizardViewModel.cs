@@ -57,8 +57,23 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     public bool CanExecute => CurrentStepIndex == 2 && !IsExecuting;
 
-    partial void OnIsExecutingChanged(bool value) => OnPropertyChanged(nameof(CanExecute));
-    partial void OnCurrentStepIndexChanged(int value) => OnPropertyChanged(nameof(CanExecute));
+    public bool CanClose => CurrentStepIndex == 3 && !IsExecuting;
+
+    public event EventHandler? CloseRequested;
+
+    partial void OnIsExecutingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanExecute));
+        OnPropertyChanged(nameof(CanClose));
+        CloseCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnCurrentStepIndexChanged(int value)
+    {
+        OnPropertyChanged(nameof(CanExecute));
+        OnPropertyChanged(nameof(CanClose));
+        CloseCommand.NotifyCanExecuteChanged();
+    }
 
     partial void OnIsLoadingQueuesChanged(bool value)
     {
@@ -277,6 +292,12 @@ public partial class RemovalWizardViewModel : ObservableObject
             }
         }
         ReviewSummary = string.Join(Environment.NewLine, lines);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanClose))]
+    private void Close()
+    {
+        CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void AppendLog(string line)

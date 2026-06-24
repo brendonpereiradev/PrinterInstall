@@ -9,6 +9,7 @@ using PrinterInstall.App.Resources;
 using PrinterInstall.App.Services;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Orchestration;
+using PrinterInstall.Core.Remote;
 using PrinterInstall.Core.Validation;
 
 namespace PrinterInstall.App.ViewModels;
@@ -22,18 +23,21 @@ public partial class MainViewModel : ObservableObject
     private readonly PrinterDeploymentOrchestrator _orchestrator;
     private readonly DeploymentRollbackRunner _rollbackRunner;
     private readonly IServiceProvider _serviceProvider;
+    private readonly LocalMachineIdentity _localMachineIdentity;
     private CancellationTokenSource? _deployCts;
 
     public MainViewModel(
         ISessionContext session,
         PrinterDeploymentOrchestrator orchestrator,
         DeploymentRollbackRunner rollbackRunner,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        LocalMachineIdentity localMachineIdentity)
     {
         _session = session;
         _orchestrator = orchestrator;
         _rollbackRunner = rollbackRunner;
         _serviceProvider = serviceProvider;
+        _localMachineIdentity = localMachineIdentity;
         PrinterRows.Add(new PrinterFormRowViewModel());
         Targets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowStatusEmptyHint));
     }
@@ -64,6 +68,19 @@ public partial class MainViewModel : ObservableObject
     public ObservableCollection<PrinterFormRowViewModel> PrinterRows { get; } = new();
 
     public ObservableCollection<TargetRowViewModel> Targets { get; } = new();
+
+    [RelayCommand]
+    private void AddThisComputer()
+    {
+        var existing = ComputerNameListParser.Parse(ComputersText);
+        if (existing.Any(_localMachineIdentity.IsLocalMachine))
+            return;
+
+        var name = _localMachineIdentity.GetPrimaryLocalName();
+        ComputersText = string.IsNullOrWhiteSpace(ComputersText)
+            ? name
+            : ComputersText.TrimEnd() + Environment.NewLine + name;
+    }
 
     [RelayCommand]
     private void AddPrinterRow()
@@ -153,14 +170,16 @@ public partial class MainViewModel : ObservableObject
             {
                 foreach (var def in definitions)
                 {
-                    Targets.Add(new TargetRowViewModel
+                    var row = new TargetRowViewModel
                     {
                         ComputerName = n,
                         PrinterQueueName = def.DisplayName,
                         ExpectedPortName = PrinterPortNaming.BuildPortName(def.PrinterHostAddress, DefaultDeployPort),
                         State = TargetMachineState.Error,
                         Message = UiStrings.Main_InvalidComputerNameFormat
-                    });
+                    };
+                    Targets.Add(row);
+                    ConfigureTargetRowDisplay(row, n);
                 }
 
                 continue;
@@ -176,13 +195,15 @@ public partial class MainViewModel : ObservableObject
         {
             foreach (var def in definitions)
             {
-                Targets.Add(new TargetRowViewModel
+                var row = new TargetRowViewModel
                 {
                     ComputerName = n,
                     PrinterQueueName = def.DisplayName,
                     ExpectedPortName = PrinterPortNaming.BuildPortName(def.PrinterHostAddress, DefaultDeployPort),
                     State = TargetMachineState.Pending
-                });
+                };
+                Targets.Add(row);
+                ConfigureTargetRowDisplay(row, n);
             }
         }
 
@@ -357,6 +378,15 @@ public partial class MainViewModel : ObservableObject
         || journal.PortOnlyEntries.Any(p => string.Equals(p.Computer, row.ComputerName, StringComparison.OrdinalIgnoreCase)
                                             && string.Equals(p.PortName, row.ExpectedPortName, StringComparison.OrdinalIgnoreCase));
 
+    private void ConfigureTargetRowDisplay(TargetRowViewModel row, string computerName)
+    {
+        var isLocal = _localMachineIdentity.IsLocalMachine(computerName);
+        row.IsLocalMachine = isLocal;
+        row.ComputerNameDisplay = isLocal
+            ? $"{computerName} {UiStrings.Main_LocalComputerSuffix}"
+            : computerName;
+    }
+
     private TargetRowViewModel? FindTargetRow(string computer, string? printerQueue)
     {
         if (string.IsNullOrEmpty(printerQueue))
@@ -435,6 +465,18 @@ public partial class MainViewModel : ObservableObject
     private void OpenRemovalWizard()
     {
         var window = _serviceProvider.GetRequiredService<Views.RemovalWizardWindow>();
+        var owner = Application.Current.Windows
+            .OfType<Window>()
+            .FirstOrDefault(w => w.IsLoaded && w.IsVisible && !ReferenceEquals(w, window));
+        if (owner is not null)
+            window.Owner = owner;
+        window.ShowDialog();
+    }
+
+    [RelayCommand]
+    private void OpenPrinterNetworkTest()
+    {
+        var window = _serviceProvider.GetRequiredService<Views.PrinterNetworkTestWindow>();
         var owner = Application.Current.Windows
             .OfType<Window>()
             .FirstOrDefault(w => w.IsLoaded && w.IsVisible && !ReferenceEquals(w, window));

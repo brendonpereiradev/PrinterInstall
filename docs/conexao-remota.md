@@ -4,116 +4,113 @@ Este documento descreve como o aplicativo se conecta aos computadores alvo para 
 
 ## Visão geral
 
-O núcleo remoto está em `PrinterInstall.Core`, na pasta `Remote`. Duas implementações de `IRemotePrinterOperations` coexistem:
+O núcleo remoto está em `PrinterInstall.Core/Remote`. `IRemotePrinterOperations` é implementado por `RoutingRemotePrinterOperations`, que escolhe automaticamente entre caminho **local** e **remoto**:
 
+| Alvo | Implementação | Tecnologia |
+| ---- | ------------- | ---------- |
+| **Máquina local** (hostname, IP ou literais) | `LocalPrinterOperations` | WMI `root\cimv2` sem credencial alternativa; driver via `%TEMP%` + `install.ps1` local |
+| **PC remoto** | `CimRemotePrinterOperations` (+ `RemoteHostSessionFactory`, `ElevatedRemoteProcessRunner`) | WMI `\\host\root\cimv2` + SMB `ADMIN$`; mutações elevadas via schtasks quando UAC remoto filtra o token |
 
-| Canal        | Tecnologia                                             | Uso típico                                                                        |
-| ------------ | ------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| **Primário** | WinRM (PowerShell remoto sobre WS-Management)          | Preferido quando o serviço WinRM está ativo no alvo (porta HTTP 5985 por padrão). |
-| **Fallback** | WMI/DCOM (`System.Management`, namespace `root\cimv2`) | Usado quando o canal WinRM falha (serviço parado, firewall, política, etc.).      |
+Registo em `App.xaml.cs`: `IRemotePrinterOperations` → `RoutingRemotePrinterOperations` → (`LocalPrinterOperations` | `CimRemotePrinterOperations`).
 
+No caminho remoto, `CimRemotePrinterOperations` coordena leituras WMI directas e mutações privilegiadas. `RemoteHostSessionFactory` faz preflight (IPC$, WMI, probe de elevação) e cacheia o estado por host; `ElevatedRemoteProcessRunner` executa mutações via tarefa agendada efémera (`schtasks /RU SYSTEM /RL HIGHEST`) quando o token administrativo está filtrado.
 
-A classe `CompositeRemotePrinterOperations` encadeia os dois: **tenta sempre o primário** e, em caso de exceção (exceto cancelamento), **repete a mesma operação pelo fallback**.
+**WinRM / PowerShell Remoting não faz parte do produto.** Não é necessário o serviço WinRM nem a porta **5985** nos alvos.
 
-A aplicação WPF registra isso em `App.xaml.cs`: `WinRmRemotePrinterOperations` como primário, `CimRemotePrinterOperations` como fallback, ambos encapsulados em `CompositeRemotePrinterOperations`.
+## Máquina local
+
+Quando o operador inclui na lista o hostname ou IP do PC onde o app está a correr, `LocalMachineIdentity` detecta o alvo e usa WMI local — evitando falhas de loopback WMI/SMB com credenciais alternativas.
+
+Identificadores reconhecidos (case-insensitive):
+
+- `Environment.MachineName` e aliases DNS/FQDN
+- Endereços IP das interfaces de rede locais
+- Literais: `localhost`, `.`, `127.0.0.1`, `::1`
+
+### Configurar este PC (fluxo recomendado)
+
+1. Faça login LDAP (obrigatório em todos os cenários).
+2. Na tela principal, clique em **Adicionar este PC** — insere o hostname curto desta máquina na lista de alvos (sem duplicar se já estiver presente como hostname, IP ou literal local).
+3. Preencha a impressora e, se desejar, marque **Imprimir teste**.
+4. Clique em **Implantar**.
+
+O mesmo fluxo serve para operações mistas: adicione este PC e outros hosts do domínio na mesma lista. A grelha de status mostra **(este PC)** nas linhas do alvo local.
+
+Requisitos na máquina de execução: perfil com privilégios de administrador local (WMI, `pnputil`, página de teste). Login LDAP permanece obrigatório mesmo quando todos os alvos são locais.
 
 ## Credenciais
 
-1. **Login na interface**
-  O usuário informa domínio, usuário e senha. O `LdapCredentialValidator` valida com **LDAP bind** ao controlador (porta **389**, sem SSL, no código atual), usando as mesmas credenciais.
-2. **Operações remotas**
-  Todas as chamadas WinRM e WMI usam `System.Net.NetworkCredential` com `Domínio\Usuário` (ou apenas usuário, se o domínio vier vazio). A senha é convertida para `SecureString` apenas no caminho WinRM (`PowerShellInvoker`), nunca embutida em scripts como texto claro.
+1. **Login na interface** — `LdapCredentialValidator` valida domínio, usuário e senha via LDAP (porta **389**).
+2. **Operações remotas** — `System.Net.NetworkCredential` (`Domínio\Usuário`) em todas as chamadas WMI e montagem SMB.
 
-**Requisito prático:** a conta precisa ter permissão de administrador (ou equivalente) no computador alvo para criar portas, filas e consultar drivers via WMI/Print Management.
+A conta precisa ser **administrador no computador alvo** e ter permissão para WMI remoto e DCOM. Sem isso, operações falham com `Access is denied`.
 
-## Canal WinRM (primário)
+## UAC remoto e elevação automática
 
-### Como a sessão é aberta
+Em PCs de domínio com UAC activo, ligações WMI/SMB recebem frequentemente um **token administrativo filtrado**. Leituras (listar drivers, filas) funcionam; mutações (porta, fila, driver, remoção) podem falhar com *Acesso negado*.
 
-`PowerShellInvoker` cria um runspace remoto com:
+Antes de mutar cada alvo remoto, o app executa **preflight**:
 
-- URI: `http://<computador>:5985/wsman` (WinRM HTTP padrão).
-- Endpoint de shell: `http://schemas.microsoft.com/powershell/Microsoft.PowerShell`.
-- Credencial: `PSCredential` com o mesmo utilizador do domínio.
+1. Autentica `\\host\IPC$` e `\\host\ADMIN$`
+2. Testa WMI (`Win32_PrinterDriver`)
+3. Probe de elevação (processo remoto escreve `ELEVATION_PROBE>> TRUE|FALSE` em ficheiro temp)
 
-O **nome do computador** pode ser hostname NetBIOS, FQDN ou endereço IP, desde que o cliente consiga resolver e alcançar o WinRM nesse host.
+Se o token estiver filtrado, mutações passam por **tarefa agendada efémera** (`schtasks /RU SYSTEM /RL HIGHEST`). A tarefa e a pasta temp são removidas no `finally`. Nenhuma alteração permanente de registo.
 
-### O que é executado remotamente (`WinRmRemotePrinterOperations`)
+Mensagens na UI: *Autenticando sessão remota*, *Token administrativo filtrado detectado*, *Executando via tarefa agendada elevada*.
 
-Em linhas gerais, o primário usa cmdlets do subsistema de impressão:
+## Ligação WMI
 
-- **Drivers instalados:** `Get-PrinterDriver` (nomes devolvidos pela API de impressão).
-- **Porta TCP/IP:** `Add-PrinterPort` com nome, endereço do host da impressora e número da porta.
-- **Fila:** `Add-Printer` com nome da fila, nome do driver e nome da porta.
-- **Listagem / remoção:** `Get-Printer`, `Remove-Printer`, `Get-PrinterPort`, `Remove-PrinterPort`, contagens por porta.
-- **Página de teste:** módulo `PrintManagement`, `Print-TestPage`.
-- **Instalação de driver (quando habilitada):** cópia dos ficheiros do pacote para o alvo (via `IRemoteDriverFileStager`, tipicamente **ADMIN$**) e execução remota de `pnputil` / `Add-PrinterDriver` via PowerShell, com timeouts definidos no código.
-
-Erros do PowerShell são agregados e lançados como exceção; o composite pode então acionar o fallback.
-
-## Canal WMI (fallback)
-
-### Ligação
-
-`CimRemotePrinterOperations` usa `ManagementScope` para:
-
-`\\<computador>\root\cimv2`
-
-com:
+`CimRemotePrinterOperations` usa `ManagementScope` para `\\<computador>\root\cimv2` com:
 
 - `Impersonation = Impersonate`
 - `Authentication = PacketPrivacy`
 - `EnablePrivileges = true`
-- utilizador no formato `DOMÍNIO\utilizador`
 
-Isto corresponde a **WMI remoto sobre DCOM**, não a WinRM. Na rede Windows, costuma implicar **RPC** (porta **135** e intervalo dinâmico de RPC) e regras de firewall que permitam **WMI** no alvo.
+Na rede: RPC (porta **135/TCP** e portas dinâmicas DCOM) e firewall **WMI-In** no perfil em uso.
 
-### Classes WMI usadas (exemplos)
+### Classes WMI (exemplos)
 
-- `Win32_PrinterDriver` — lista de drivers; o campo `Name` muitas vezes vem como `NomeDoDriver,Versão,Ambiente`; o código **normaliza** para ficar só o nome do driver antes de comparar com o catálogo.
-- `Win32_TCPIPPrinterPort` — criação de porta TCP/IP (RAW/LPR conforme mapeamento numérico no código).
-- `Win32_Printer` — criação da fila, listagem com `Name`/`PortName`, remoção quando aplicável.
-- Métodos como `PrintTestPage` em `Win32_Printer` no caminho de teste de impressão.
+- `Win32_PrinterDriver` — drivers instalados (nome normalizado)
+- `Win32_TCPIPPrinterPort` — portas TCP/IP
+- `Win32_Printer` — filas, listagem, remoção, `PrintTestPage`
+- `Win32_Process.Create` — execução remota de `install.ps1` (instalação de driver)
 
-Operações idempotentes: antes de criar porta ou fila, o código verifica se já existe com o mesmo nome.
+### Instalação de driver
 
-### Instalação de driver no fallback
+1. Cópia do pacote para `\\host\ADMIN$\...` (`SmbRemoteDriverFileStager`)
+2. Script `install.ps1` no alvo via `WmiRemoteProcessRunner`
+3. Progresso na UI: mensagens com `via WMI` quando aplicável
 
-Quando o primário falha na instalação do driver, o composite regista no log que o WinRM falhou e delega ao CIM. O caminho WMI pode executar scripts remotos via `IRemoteProcessRunner` (por exemplo `Win32_Process.Create`) após staging dos ficheiros, com timeouts distintos dos do WinRM — ver implementação em `CimRemotePrinterOperations` para detalhes e limites.
+## Identificação do alvo
 
-## Comportamento do `CompositeRemotePrinterOperations`
+Nomes **um por linha** (hostname, FQDN ou IP), passados tal como estão para `\\host\root\cimv2` e `\\host\ADMIN$`.
 
-- **Maioria das operações:** `try { primário } catch (não cancelamento) { fallback }`.
-- **ListPrinterQueuesAsync:** tenta o primário; se devolver lista **vazia** ou falhar, tenta o fallback; mensagens de erro podem combinar falhas de ambos os canais para diagnóstico.
-- **InstallPrinterDriverAsync:** tenta WinRM; em falha, reporta um resumo da mensagem de erro no progresso (`WINRM>> ...`) e tenta o caminho CIM.
+## Requisitos de rede (resumo)
 
-Cancelamento (`OperationCanceledException`) **não** dispara fallback: a operação propaga-se.
+| Requisito | Detalhe |
+| --------- | ------- |
+| RPC | **135/TCP** + DCOM dinâmico |
+| Firewall | **WMI-In** habilitado |
+| Conta | Admin local no alvo + WMI remoto |
+| SMB | `\\host\ADMIN$` para drivers |
 
-## Identificação do computador alvo
+## Ficheiros principais
 
-O utilizador introduz nomes **um por linha**. O valor é passado tal como está para WinRM e WMI (`\\host\...` no WMI, URI WinRM com o mesmo host). Recomenda-se consistência com o DNS/rede (FQDN ou IP que o cliente resolve para a máquina certa).
+- `Remote/RoutingRemotePrinterOperations.cs` — roteamento local vs remoto
+- `Remote/LocalMachineIdentity.cs` — detecção da máquina local
+- `Remote/LocalPrinterOperations.cs` — operações WMI locais
+- `Remote/CimRemotePrinterOperations.cs` — operações WMI remotas
+- `Remote/RemoteHostSessionFactory.cs` — preflight IPC$/WMI e probe de elevação
+- `Remote/ElevatedRemoteProcessRunner.cs` — mutações via schtasks efémera
+- `Remote/RemoteElevatedScriptBuilder.cs` — scripts PowerShell para mutações elevadas
+- `Remote/AccessDeniedDetector.cs` — detecção de *Access Denied* / token filtrado
+- `Remote/WmiPrinterOperationsCore.cs` — helpers WMI partilhados
+- `Remote/WmiRemoteProcessRunner.cs` — `Win32_Process` (remoto)
+- `Remote/SmbRemoteDriverFileStager.cs` — staging SMB (remoto)
+- `Remote/IRemotePrinterOperations.cs` — contrato
+- `Auth/LdapCredentialValidator.cs` — login (independente de WMI por host)
 
-## Requisitos de rede e serviços (resumo)
+## LDAP vs WMI por máquina
 
-
-| Para WinRM                                                | Para WMI fallback                          |
-| --------------------------------------------------------- | ------------------------------------------ |
-| Serviço WinRM no alvo, escuta típica **5985/TCP** (HTTP). | Firewall a permitir **WMI** / RPC ao alvo. |
-| Firewall cliente e servidor; perfil de rede adequado.     | Conta com direitos remotos WMI.            |
-| Políticas de grupo podem restringir remoting.             |                                            |
-
-
-Em ambientes onde WinRM **não** está configurado mas **WMI remoto** está permitido para administradores, o aplicativo ainda pode concluir deploy e outras operações pelo fallback — como observado em testes reais.
-
-## Ficheiros de código principais
-
-- `Remote/IPowerShellInvoker.cs`, `Remote/PowerShellInvoker.cs` — sessão WinRM e execução de script.
-- `Remote/WinRmRemotePrinterOperations.cs` — operações via PowerShell remoto.
-- `Remote/CimRemotePrinterOperations.cs` — operações via WMI e rotinas auxiliares (staging/processo remoto).
-- `Remote/CompositeRemotePrinterOperations.cs` — estratégia primário + fallback.
-- `Remote/IRemotePrinterOperations.cs` — contrato unificado.
-- `Auth/LdapCredentialValidator.cs` — validação inicial no domínio (LDAP), independente do WinRM/WMI.
-
-## Nota sobre LDAP e remoting
-
-A validação **LDAP** no login confirma que as credenciais são aceites pelo Active Directory. **Não** substitui a necessidade de WinRM ou WMI estar acessível até cada **host** alvo: cada máquina é contactada individualmente com as mesmas credenciais de sessão.
+LDAP no login só confirma credenciais no Active Directory. **Cada host alvo** é contactado individualmente via WMI com as mesmas credenciais de sessão.

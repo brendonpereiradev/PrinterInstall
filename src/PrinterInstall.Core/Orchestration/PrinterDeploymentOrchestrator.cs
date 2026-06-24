@@ -187,7 +187,7 @@ public sealed class PrinterDeploymentOrchestrator
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 TargetMachineState.CompletedSuccess,
-                                "Done",
+                                "Done — test page queued",
                                 displayName));
                         }
                         catch (Exception ex) when (ex is not OperationCanceledException)
