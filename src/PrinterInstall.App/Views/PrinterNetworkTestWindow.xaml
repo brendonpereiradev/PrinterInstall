@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         Title="{DynamicResource NetworkTest_WindowTitle}"
-        Height="320" Width="480"
+        Height="360" Width="480"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <Grid Margin="16">
@@ -11,9 +11,12 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
         <TextBlock Grid.Row="0" Text="{DynamicResource NetworkTest_Hint}" TextWrapping="Wrap" Margin="0,0,0,12"/>
 
@@ -27,7 +30,13 @@
             <TextBox Text="{Binding HostAddress, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
 
-        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,8,0,8"/>
+        <ScrollViewer Grid.Row="3"
+                      VerticalScrollBarVisibility="Auto"
+                      MaxHeight="72"
+                      Margin="0,8,0,8">
+            <TextBlock Text="{Binding StatusMessage}"
+                       TextWrapping="Wrap"/>
+        </ScrollViewer>
 
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
             <ui:Button Content="{DynamicResource NetworkTest_RunButton}"
