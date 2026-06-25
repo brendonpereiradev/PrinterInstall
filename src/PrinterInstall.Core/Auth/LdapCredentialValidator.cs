@@ -8,7 +8,7 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
     public Task<LdapValidationResult> ValidateAsync(string domainName, NetworkCredential credential, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(domainName))
-            return Task.FromResult(LdapValidationResult.Failure("Domain name is required."));
+            return Task.FromResult(LdapValidationResult.Failure(LdapLoginErrorMessages.DomainNameRequired));
 
         try
         {
@@ -28,11 +28,11 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
         }
         catch (LdapException ex)
         {
-            return Task.FromResult(LdapValidationResult.Failure($"LDAP error: {ex.Message} (0x{ex.ErrorCode:X})"));
+            return Task.FromResult(LdapValidationResult.Failure(LdapLoginErrorMessages.FromLdapException(ex)));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return Task.FromResult(LdapValidationResult.Failure(ex.Message));
+            return Task.FromResult(LdapValidationResult.Failure(LdapLoginErrorMessages.AuthenticationFailed));
         }
     }
 }

@@ -6,4 +6,5 @@
   <sys:String x:Key="Login_UserLabel">Usuário</sys:String>
   <sys:String x:Key="Login_PasswordLabel">Senha</sys:String>
   <sys:String x:Key="Login_SignInButton">Entrar</sys:String>
+  <sys:String x:Key="Login_RememberMeLabel">Lembrar-me</sys:String>
 </ResourceDictionary>

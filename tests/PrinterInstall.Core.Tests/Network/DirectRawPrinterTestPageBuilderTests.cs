@@ -1,3 +1,4 @@
+using System.Text;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Network;
 
@@ -16,27 +17,44 @@ public class DirectRawPrinterTestPageBuilderTests
     }
 
     [Fact]
-    public void ForBrand_Gainscha_ReturnsEscPosPayload()
+    public void ForBrand_Gainscha_ReturnsTsplPayload()
     {
         var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.51");
+        var text = Encoding.ASCII.GetString(payload);
         Assert.NotEmpty(payload);
-        Assert.Equal(0x1B, payload[0]); // ESC
-        Assert.Equal((byte)'@', payload[1]); // ESC @ init
+        Assert.StartsWith("SIZE 89 mm, 36 mm", text);
+        Assert.Contains("BOX", text);
+        Assert.Contains(",180,", text);
+        Assert.Contains("PRINT 1,1", text);
     }
 
     [Fact]
     public void ForBrand_Gainscha_DiffersFromEpson()
     {
         var pcl = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Epson, "10.0.0.50");
-        var escPos = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.50");
-        Assert.NotEqual(pcl, escPos);
+        var tspl = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.50");
+        Assert.NotEqual(pcl, tspl);
     }
 
     [Fact]
     public void ForBrand_IncludesHostInPayload()
     {
         var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Epson, "192.168.1.99");
-        var text = System.Text.Encoding.ASCII.GetString(payload);
+        var text = Encoding.ASCII.GetString(payload);
         Assert.Contains("192.168.1.99", text);
+        Assert.Contains("Pagina de teste", text);
+        Assert.Contains("a conectividade desta impressora esta OK", text);
+        Assert.All(payload, b => Assert.InRange(b, (byte)0, (byte)127));
+    }
+
+    [Fact]
+    public void ForBrand_Gainscha_IncludesHostAndTimestampWithoutConnectivityLine()
+    {
+        var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.50");
+        var text = Encoding.ASCII.GetString(payload);
+        Assert.Contains("Host: 10.0.0.50", text);
+        Assert.Contains("TEST", text);
+        Assert.DoesNotContain("Conectividade OK", text);
+        Assert.All(payload, b => Assert.InRange(b, (byte)0, (byte)127));
     }
 }

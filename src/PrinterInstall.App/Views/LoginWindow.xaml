@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         Title="{DynamicResource Login_WindowTitle}"
-        Height="408" Width="472"
-        MinHeight="408" MaxHeight="408" MinWidth="472" MaxWidth="472"
+        Height="440" Width="472"
+        MinHeight="440" MaxHeight="440" MinWidth="472" MaxWidth="472"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="White"
@@ -108,6 +108,13 @@
                         Margin="0,0,12,0"/>
                 </Grid>
             </Border>
+
+            <CheckBox
+                Content="{DynamicResource Login_RememberMeLabel}"
+                IsChecked="{Binding RememberMe}"
+                Margin="0,12,0,0"
+                FontSize="13"
+                Foreground="#FF444444"/>
 
             <TextBlock
                 Text="{Binding ErrorMessage}"
