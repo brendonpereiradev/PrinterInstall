@@ -15,6 +15,13 @@ public partial class LoginWindow
         _serviceProvider = serviceProvider;
         DataContext = _viewModel;
         InitializeComponent();
+        Loaded += OnLoaded;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        _viewModel.LoadRememberedUser();
+        PasswordBox.Focus();
     }
 
     private void PasswordBox_OnPasswordChanged(object sender, RoutedEventArgs e)

@@ -11,12 +11,18 @@ public partial class LoginViewModel : ObservableObject
 {
     private readonly ILdapCredentialValidator _ldap;
     private readonly ISessionContext _session;
+    private readonly IRememberedUserStore _rememberedUserStore;
     private readonly string _domainName;
 
-    public LoginViewModel(ILdapCredentialValidator ldap, ISessionContext session, IConfiguration configuration)
+    public LoginViewModel(
+        ILdapCredentialValidator ldap,
+        ISessionContext session,
+        IConfiguration configuration,
+        IRememberedUserStore rememberedUserStore)
     {
         _ldap = ldap;
         _session = session;
+        _rememberedUserStore = rememberedUserStore;
         _domainName = (configuration["DomainName"] ?? "preventsenior.local").Trim();
     }
 
@@ -26,7 +32,20 @@ public partial class LoginViewModel : ObservableObject
     public string Password { get; set; } = "";
 
     [ObservableProperty]
+    private bool _rememberMe;
+
+    [ObservableProperty]
     private string? _errorMessage;
+
+    public void LoadRememberedUser()
+    {
+        var remembered = _rememberedUserStore.Load();
+        if (remembered is null)
+            return;
+
+        UserName = remembered.UserName;
+        RememberMe = true;
+    }
 
     public async Task<(bool Success, string? Error)> TryLoginAsync(CancellationToken cancellationToken = default)
     {
@@ -44,6 +63,11 @@ public partial class LoginViewModel : ObservableObject
             ErrorMessage = result.ErrorMessage;
             return (false, result.ErrorMessage);
         }
+
+        if (RememberMe)
+            _rememberedUserStore.Save(new RememberedUser(_domainName, UserName));
+        else
+            _rememberedUserStore.Clear();
 
         _session.Credential = cred;
         _session.DomainName = _domainName;

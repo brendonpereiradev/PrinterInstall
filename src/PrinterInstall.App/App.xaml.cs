@@ -35,6 +35,7 @@ public partial class App : Application
         // appsettings.json is loaded by default from the app directory.
 
         builder.Services.AddSingleton<ISessionContext, SessionContext>();
+        builder.Services.AddSingleton<IRememberedUserStore, RememberedUserStore>();
         builder.Services.AddSingleton<ILdapCredentialValidator, LdapCredentialValidator>();
 
         builder.Services.AddSingleton<IRemoteDriverFileStager, SmbRemoteDriverFileStager>();
