@@ -7,4 +7,5 @@ public sealed class PrinterQueueDefinition
     public required string PrinterHostAddress { get; init; }
     public required int PortNumber { get; init; }
     public required TcpPrinterProtocol Protocol { get; init; }
+    public GainschaLabelPreset? GainschaLabelPreset { get; init; }
 }
