@@ -1,7 +1,7 @@
 # Preferências de tamanho de etiqueta Gainscha no deploy remoto
 
 **Data:** 2026-06-25  
-**Status:** Para revisão do proprietário do produto  
+**Status:** Aprovado para plano de implementação  
 **Relacionado:** `2026-04-16-printer-remote-config-design.md`, `2026-04-29-deploy-cancel-rollback-design.md`, `2026-04-17-printer-driver-install-design.md`
 
 ## Objetivo
