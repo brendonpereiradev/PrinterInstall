@@ -11,11 +11,19 @@ public sealed record GainschaLabelPresetDefinition(
 
 public static class GainschaLabelPresetCatalog
 {
+    public static IReadOnlyList<GainschaLabelPreset> UiDisplayOrder { get; } =
+    [
+        GainschaLabelPreset.Paciente,
+        GainschaLabelPreset.Matrix,
+        GainschaLabelPreset.Pulseira,
+        GainschaLabelPreset.Dupla,
+    ];
+
     public static IReadOnlyList<GainschaLabelPresetDefinition> All { get; } =
     [
-        Def(GainschaLabelPreset.Pulseira, 25, 270, "Pulseira"),
-        Def(GainschaLabelPreset.Matrix, 50, 30, "Matrix"),
         Def(GainschaLabelPreset.Paciente, 89, 36, "Paciente"),
+        Def(GainschaLabelPreset.Matrix, 50, 30, "Matrix"),
+        Def(GainschaLabelPreset.Pulseira, 25, 270, "Pulseira"),
         Def(GainschaLabelPreset.Dupla, 45, 13, "Dupla"),
     ];
 

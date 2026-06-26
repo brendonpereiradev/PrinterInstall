@@ -139,6 +139,7 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -152,9 +153,15 @@
                                                 <TextBlock Text="{DynamicResource Main_DisplayNameLabel}" FontSize="11"/>
                                                 <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0">
+                                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,4">
                                                 <TextBlock Text="{DynamicResource Main_PrinterHostLabel}" FontSize="11"/>
                                                 <TextBox Text="{Binding PrinterHostAddress, UpdateSourceTrigger=PropertyChanged}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0"
+                                                        Visibility="{Binding IsGainschaBrand, Converter={StaticResource BoolToVis}}">
+                                                <TextBlock Text="{DynamicResource Main_GainschaLabelPresetLabel}" FontSize="11"/>
+                                                <ComboBox ItemsSource="{Binding Source={x:Static vm:PrinterFormRowViewModel.GainschaLabelPresetChoices}}"
+                                                          SelectedItem="{Binding GainschaLabelPreset}"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>

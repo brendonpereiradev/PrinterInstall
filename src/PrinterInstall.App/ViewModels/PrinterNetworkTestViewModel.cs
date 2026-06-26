@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PrinterInstall.App.Resources;
+using PrinterInstall.Core.Gainscha;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Network;
 
@@ -20,12 +21,24 @@ public partial class PrinterNetworkTestViewModel : ObservableObject
     [ObservableProperty] private string _hostAddress = "";
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private bool _isRunning;
+    [ObservableProperty] private GainschaLabelPreset _selectedGainschaLabelPreset = GainschaLabelPreset.Paciente;
 
     public IEnumerable<PrinterBrand> BrandChoices => Enum.GetValues<PrinterBrand>();
+
+    public IEnumerable<GainschaLabelPreset> GainschaLabelPresetChoices =>
+        GainschaLabelPresetCatalog.UiDisplayOrder;
+
+    public bool IsGainschaBrand => SelectedBrand == PrinterBrand.Gainscha;
 
     public bool CanRun => !IsRunning && !string.IsNullOrWhiteSpace(HostAddress);
 
     partial void OnHostAddressChanged(string value) => RunTestCommand.NotifyCanExecuteChanged();
+
+    partial void OnSelectedBrandChanged(PrinterBrand value)
+    {
+        OnPropertyChanged(nameof(IsGainschaBrand));
+        RunTestCommand.NotifyCanExecuteChanged();
+    }
 
     partial void OnIsRunningChanged(bool value)
     {
@@ -52,9 +65,13 @@ public partial class PrinterNetworkTestViewModel : ObservableObject
         {
             await Task.Yield();
             StatusMessage = UiStrings.NetworkTest_Progress_Sending;
+            var gainschaPreset = SelectedBrand == PrinterBrand.Gainscha
+                ? SelectedGainschaLabelPreset
+                : (GainschaLabelPreset?)null;
             var result = await _testService.RunAsync(
                 HostAddress.Trim(),
                 SelectedBrand,
+                gainschaPreset,
                 _cts.Token).ConfigureAwait(true);
             StatusMessage = result.Message;
         }

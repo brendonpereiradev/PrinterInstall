@@ -87,6 +87,6 @@ public class DirectRawPrinterTestServiceTests
         cts.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => sut.RunAsync("10.0.0.4", PrinterBrand.Gainscha, cts.Token));
+            () => sut.RunAsync("10.0.0.4", PrinterBrand.Gainscha, cancellationToken: cts.Token));
     }
 }

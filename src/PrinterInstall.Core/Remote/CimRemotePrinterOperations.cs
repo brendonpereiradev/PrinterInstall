@@ -170,6 +170,69 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
             });
     }
 
+    public Task ConfigureGainschaLabelPresetAsync(
+        string computerName,
+        NetworkCredential credential,
+        string printerQueueName,
+        GainschaLabelPreset preset,
+        CancellationToken cancellationToken = default)
+    {
+        return ExecuteMutationAsync(
+            computerName,
+            credential,
+            log: null,
+            cancellationToken,
+            direct: () => ApplyGainschaLabelPresetOnRemoteAsync(computerName, credential, printerQueueName, preset, useElevatedRunner: false, cancellationToken),
+            elevated: () => ApplyGainschaLabelPresetOnRemoteAsync(computerName, credential, printerQueueName, preset, useElevatedRunner: true, cancellationToken));
+    }
+
+    private async Task ApplyGainschaLabelPresetOnRemoteAsync(
+        string computerName,
+        NetworkCredential credential,
+        string printerQueueName,
+        GainschaLabelPreset preset,
+        bool useElevatedRunner,
+        CancellationToken cancellationToken)
+    {
+        var (paths, sdsFileName) = await GainschaLabelPresetRemoteStager
+            .StageAsync(computerName, credential, preset, cancellationToken)
+            .ConfigureAwait(false);
+
+        try
+        {
+            var sdsLocal = paths.LocalInfPath(sdsFileName);
+            var script = RemoteElevatedScriptBuilder.BuildApplyGainschaLabelPresetScript(printerQueueName, sdsLocal);
+
+            if (useElevatedRunner)
+            {
+                await _elevatedRunner.RunElevatedScriptAsync(
+                    computerName,
+                    credential,
+                    script,
+                    InstallTimeout,
+                    null,
+                    cancellationToken).ConfigureAwait(false);
+                return;
+            }
+
+            await _stager.WriteTextFileAsync(computerName, credential, paths, "apply-label.ps1", script, cancellationToken)
+                .ConfigureAwait(false);
+            var cmd = $"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{paths.LocalInfPath("apply-label.ps1")}\"";
+            var runResult = await _processRunner.RunAsync(computerName, credential, cmd, InstallTimeout, cancellationToken)
+                .ConfigureAwait(false);
+            if (runResult.TimedOut)
+                throw new TimeoutException($"Configurar etiqueta Gainscha em {computerName} excedeu o tempo de {InstallTimeout}.");
+            if (runResult.ReturnValue != 0)
+                throw new InvalidOperationException($"Configurar etiqueta Gainscha em {computerName} falhou (WMI return {runResult.ReturnValue}).");
+        }
+        finally
+        {
+            await GainschaLabelPresetRemoteStager
+                .CleanupAsync(computerName, credential, paths, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+    }
+
     public Task<IReadOnlyList<RemotePrinterQueueInfo>> ListPrinterQueuesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
     {
         return Task.Run<IReadOnlyList<RemotePrinterQueueInfo>>(() =>

@@ -16,23 +16,36 @@ public class DirectRawPrinterTestPageBuilderTests
         Assert.Contains((byte)0x1B, payload); // ESC — PCL reset
     }
 
-    [Fact]
-    public void ForBrand_Gainscha_ReturnsTsplPayload()
+    [Theory]
+    [InlineData(GainschaLabelPreset.Paciente, "SIZE 89 mm, 36 mm", "Paciente")]
+    [InlineData(GainschaLabelPreset.Matrix, "SIZE 50 mm, 30 mm", "Matrix")]
+    [InlineData(GainschaLabelPreset.Dupla, "SIZE 45 mm, 13 mm", "Dupla")]
+    [InlineData(GainschaLabelPreset.Pulseira, "SIZE 25 mm, 270 mm", "Pulseira")]
+    public void ForBrand_Gainscha_UsesPresetDimensions(
+        GainschaLabelPreset preset, string expectedSizeLine, string expectedPresetLabel)
     {
-        var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.51");
+        var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.51", preset);
         var text = Encoding.ASCII.GetString(payload);
         Assert.NotEmpty(payload);
-        Assert.StartsWith("SIZE 89 mm, 36 mm", text);
-        Assert.Contains("BOX", text);
-        Assert.Contains(",180,", text);
+        Assert.StartsWith(expectedSizeLine, text);
         Assert.Contains("PRINT 1,1", text);
+        Assert.Contains(expectedPresetLabel, text);
+        Assert.Contains("Host: 10.0.0.51", text);
+    }
+
+    [Fact]
+    public void ForBrand_Gainscha_DefaultsToPacienteWhenPresetNull()
+    {
+        var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.50");
+        var text = Encoding.ASCII.GetString(payload);
+        Assert.StartsWith("SIZE 89 mm, 36 mm", text);
     }
 
     [Fact]
     public void ForBrand_Gainscha_DiffersFromEpson()
     {
         var pcl = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Epson, "10.0.0.50");
-        var tspl = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.50");
+        var tspl = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.50", GainschaLabelPreset.Paciente);
         Assert.NotEqual(pcl, tspl);
     }
 
@@ -50,7 +63,8 @@ public class DirectRawPrinterTestPageBuilderTests
     [Fact]
     public void ForBrand_Gainscha_IncludesHostAndTimestampWithoutConnectivityLine()
     {
-        var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.50");
+        var payload = DirectRawPrinterTestPageBuilder.ForBrand(
+            PrinterBrand.Gainscha, "10.0.0.50", GainschaLabelPreset.Paciente);
         var text = Encoding.ASCII.GetString(payload);
         Assert.Contains("Host: 10.0.0.50", text);
         Assert.Contains("TEST", text);

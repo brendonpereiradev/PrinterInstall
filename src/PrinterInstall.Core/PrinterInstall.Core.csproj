@@ -15,4 +15,8 @@
     <InternalsVisibleTo Include="PrinterInstall.Core.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Gainscha\Templates\*.sds" />
+  </ItemGroup>
+
 </Project>

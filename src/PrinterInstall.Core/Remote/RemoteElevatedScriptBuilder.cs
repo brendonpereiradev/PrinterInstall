@@ -69,6 +69,35 @@ try {{
         return WrapWithResultHandling(body);
     }
 
+    public static string BuildApplyGainschaLabelPresetScript(string printerQueueName, string sdsPathOnTarget)
+    {
+        var printer = EscapePs(printerQueueName);
+        var sds = EscapePs(sdsPathOnTarget);
+        var body = $@"
+    Import-Module PrintManagement -ErrorAction Stop
+    $null = Get-Printer -Name '{printer}' -ErrorAction Stop
+    function Find-Ssdal {{
+        $roots = @(
+            Join-Path $env:ProgramFiles 'Seagull',
+            Join-Path $env:ProgramFiles 'Seagull Scientific',
+            Join-Path ${{env:ProgramFiles(x86)}} 'Seagull',
+            Join-Path ${{env:ProgramFiles(x86)}} 'Seagull Scientific'
+        )
+        foreach ($root in $roots) {{
+            if (-not (Test-Path $root)) {{ continue }}
+            $hit = Get-ChildItem -Path $root -Filter ssdal.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($hit) {{ return $hit.FullName }}
+        }}
+        throw 'Seagull ssdal.exe not found on target machine.'
+    }}
+    $ssdal = Find-Ssdal
+    & $ssdal /p '{printer}' /q settings reset
+    if ($LASTEXITCODE -ne 0) {{ throw ""ssdal settings reset failed with exit code $LASTEXITCODE"" }}
+    & $ssdal /p '{printer}' /q settings import '{sds}'
+    if ($LASTEXITCODE -ne 0) {{ throw ""ssdal settings import failed with exit code $LASTEXITCODE"" }}";
+        return WrapWithResultHandling(body);
+    }
+
     public static string BuildRenamePrinterScript(string currentName, string newName)
     {
         var c = EscapePs(currentName);

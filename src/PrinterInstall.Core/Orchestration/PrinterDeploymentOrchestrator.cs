@@ -1,3 +1,4 @@
+using System.Net;
 using PrinterInstall.Core.Catalog;
 using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Models;
@@ -7,6 +8,8 @@ namespace PrinterInstall.Core.Orchestration;
 
 public sealed class PrinterDeploymentOrchestrator
 {
+    private static readonly TimeSpan SpoolerSettleDelay = TimeSpan.FromSeconds(2);
+
     private readonly IRemotePrinterOperations _remote;
     private readonly ILocalDriverPackageCatalog _localDrivers;
 
@@ -167,6 +170,73 @@ public sealed class PrinterDeploymentOrchestrator
                         portName,
                         cancellationToken).ConfigureAwait(false);
 
+                    if (def.Brand == PrinterBrand.Gainscha)
+                    {
+                        if (def.GainschaLabelPreset is null)
+                        {
+                            progress.Report(new DeploymentProgressEvent(
+                                computer,
+                                TargetMachineState.Error,
+                                "Gainscha queue requires a label preset.",
+                                displayName));
+                            await RevertUnjournaledQueueAsync(
+                                computer,
+                                request.DomainCredential,
+                                displayName,
+                                portName,
+                                rollbackJournal,
+                                cancellationToken).ConfigureAwait(false);
+                            continue;
+                        }
+
+                        progress.Report(new DeploymentProgressEvent(
+                            computer,
+                            TargetMachineState.Configuring,
+                            "Configurando tamanho de etiqueta...",
+                            displayName));
+
+                        await Task.Delay(SpoolerSettleDelay, cancellationToken).ConfigureAwait(false);
+
+                        try
+                        {
+                            await _remote.ConfigureGainschaLabelPresetAsync(
+                                computer,
+                                request.DomainCredential,
+                                displayName,
+                                def.GainschaLabelPreset.Value,
+                                cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        {
+                            progress.Report(new DeploymentProgressEvent(
+                                computer,
+                                TargetMachineState.Configuring,
+                                "Falha na preferência de etiqueta — revertendo fila e porta...",
+                                displayName));
+
+                            await RevertUnjournaledQueueAsync(
+                                computer,
+                                request.DomainCredential,
+                                displayName,
+                                portName,
+                                rollbackJournal,
+                                cancellationToken).ConfigureAwait(false);
+
+                            progress.Report(new DeploymentProgressEvent(
+                                computer,
+                                TargetMachineState.Error,
+                                $"Revertido — preferência de etiqueta não aplicada: {Flatten(ex)}",
+                                displayName));
+                            continue;
+                        }
+
+                        progress.Report(new DeploymentProgressEvent(
+                            computer,
+                            TargetMachineState.Configuring,
+                            "Preferência de etiqueta aplicada.",
+                            displayName));
+                    }
+
                     rollbackJournal.RecordQueueCreated(computer, displayName, portName);
 
                     if (request.PrintTestPage)
@@ -281,6 +351,38 @@ public sealed class PrinterDeploymentOrchestrator
         }
 
         return (true, null);
+    }
+
+    private async Task RevertUnjournaledQueueAsync(
+        string computer,
+        NetworkCredential credential,
+        string displayName,
+        string portName,
+        DeploymentRollbackJournal rollbackJournal,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _remote.RemovePrinterQueueAsync(computer, credential, displayName, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Best effort — continue to port cleanup.
+        }
+
+        try
+        {
+            var count = await _remote.CountPrintersUsingPortAsync(computer, credential, portName, cancellationToken)
+                .ConfigureAwait(false);
+            if (count == 0)
+                await _remote.RemoveTcpPrinterPortAsync(computer, credential, portName, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Best effort.
+        }
+
+        rollbackJournal.AbandonPortOnly(computer, portName);
     }
 
     private static string Flatten(Exception ex)

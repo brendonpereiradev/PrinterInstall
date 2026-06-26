@@ -17,7 +17,8 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         DisplayName = "P1",
         PrinterHostAddress = "10.0.0.10",
         PortNumber = 9100,
-        Protocol = TcpPrinterProtocol.Raw
+        Protocol = TcpPrinterProtocol.Raw,
+        GainschaLabelPreset = brand == PrinterBrand.Gainscha ? GainschaLabelPreset.Paciente : null
     };
 
     private static PrinterDeploymentRequest MakeRequest(PrinterBrand brand = PrinterBrand.Gainscha, IReadOnlyList<string>? targets = null, bool printTestPage = false) => new()
@@ -53,6 +54,8 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         remote.Setup(m => m.CreateTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<string>(), "10.0.0.10", 9100, "RAW", It.IsAny<CancellationToken>()))
               .Returns(Task.CompletedTask);
         remote.Setup(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "P1", expected, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .Returns(Task.CompletedTask);
+        remote.Setup(m => m.ConfigureGainschaLabelPresetAsync("pc1", It.IsAny<NetworkCredential>(), "P1", GainschaLabelPreset.Paciente, It.IsAny<CancellationToken>()))
               .Returns(Task.CompletedTask);
         remote.Setup(m => m.PrintTestPageAsync("pc1", It.IsAny<NetworkCredential>(), "P1", It.IsAny<CancellationToken>()))
               .Returns(Task.CompletedTask);

@@ -33,6 +33,16 @@ public sealed class DeploymentRollbackJournal
         _queues.Add(new DeploymentRollbackQueueEntry(c, q, p));
     }
 
+    public void AbandonPortOnly(string computerName, string portName)
+    {
+        var c = computerName.Trim();
+        var p = portName.Trim();
+        if (c.Length == 0 || p.Length == 0)
+            return;
+
+        _portOnly.Remove((c, p));
+    }
+
     private sealed class ComputerPortComparer : IEqualityComparer<(string Computer, string PortName)>
     {
         public bool Equals((string Computer, string PortName) x, (string Computer, string PortName) y) =>

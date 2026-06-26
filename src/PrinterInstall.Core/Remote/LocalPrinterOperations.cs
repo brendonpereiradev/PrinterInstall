@@ -2,6 +2,7 @@ using System.Management;
 using System.Net;
 using System.Text;
 using PrinterInstall.Core.Drivers;
+using PrinterInstall.Core.Gainscha;
 using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
@@ -16,6 +17,18 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
     private static readonly TimeSpan PrintTestPageTimeout = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan SpoolerSettleDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan PrintJobWaitTimeout = TimeSpan.FromSeconds(10);
+
+    private readonly IGainschaLabelPreferenceConfigurator _gainschaLabelConfigurator;
+
+    public LocalPrinterOperations()
+        : this(new GainschaLabelPreferenceConfigurator())
+    {
+    }
+
+    internal LocalPrinterOperations(IGainschaLabelPreferenceConfigurator gainschaLabelConfigurator)
+    {
+        _gainschaLabelConfigurator = gainschaLabelConfigurator;
+    }
 
     public Task<IReadOnlyList<string>> GetInstalledDriverNamesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
     {
@@ -101,6 +114,18 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
 
             printer.Put(new PutOptions { Type = PutType.CreateOnly });
         }, cancellationToken);
+    }
+
+    public Task ConfigureGainschaLabelPresetAsync(
+        string computerName,
+        NetworkCredential credential,
+        string printerQueueName,
+        GainschaLabelPreset preset,
+        CancellationToken cancellationToken = default)
+    {
+        _ = computerName;
+        _ = credential;
+        return _gainschaLabelConfigurator.ApplyAsync(printerQueueName, preset, cancellationToken);
     }
 
     public async Task PrintTestPageAsync(string computerName, NetworkCredential credential, string printerQueueName, CancellationToken cancellationToken = default)
