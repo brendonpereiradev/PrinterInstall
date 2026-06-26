@@ -2,59 +2,65 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
+        xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         Title="{DynamicResource NetworkTest_WindowTitle}"
-        Height="400" Width="480"
+        Width="480"
+        SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
     </Window.Resources>
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Row="0" Text="{DynamicResource NetworkTest_Hint}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="{DynamicResource NetworkTest_Hint}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,12"/>
 
-        <StackPanel Grid.Row="1" Margin="0,0,0,8">
-            <TextBlock Text="{DynamicResource NetworkTest_BrandLabel}" Margin="0,0,0,4"/>
-            <ComboBox ItemsSource="{Binding BrandChoices}" SelectedItem="{Binding SelectedBrand}"/>
+            <StackPanel Margin="0,0,0,8">
+                <TextBlock Text="{DynamicResource NetworkTest_BrandLabel}" Margin="0,0,0,4"/>
+                <ComboBox ItemsSource="{Binding BrandChoices}" SelectedItem="{Binding SelectedBrand}"/>
+            </StackPanel>
+
+            <StackPanel Margin="0,0,0,8"
+                        Visibility="{Binding IsGainschaBrand, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="{DynamicResource Main_GainschaLabelPresetLabel}" Margin="0,0,0,4"/>
+                <ComboBox ItemsSource="{Binding GainschaLabelPresetChoices}"
+                          SelectedItem="{Binding SelectedGainschaLabelPreset}"/>
+            </StackPanel>
+
+            <StackPanel Margin="0,0,0,8">
+                <TextBlock Text="{DynamicResource NetworkTest_HostLabel}" Margin="0,0,0,4"/>
+                <TextBox Text="{Binding HostAddress, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          MaxHeight="72"
+                          Margin="0,0,0,8"
+                          Visibility="{Binding StatusMessage, Converter={StaticResource StringToVis}, ConverterParameter=Invert}">
+                <TextBlock Text="{Binding StatusMessage}"
+                           TextWrapping="Wrap"/>
+            </ScrollViewer>
         </StackPanel>
 
-        <StackPanel Grid.Row="2" Margin="0,0,0,8"
-                    Visibility="{Binding IsGainschaBrand, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock Text="{DynamicResource Main_GainschaLabelPresetLabel}" Margin="0,0,0,4"/>
-            <ComboBox ItemsSource="{Binding GainschaLabelPresetChoices}"
-                      SelectedItem="{Binding SelectedGainschaLabelPreset}"/>
-        </StackPanel>
-
-        <StackPanel Grid.Row="3" Margin="0,0,0,8">
-            <TextBlock Text="{DynamicResource NetworkTest_HostLabel}" Margin="0,0,0,4"/>
-            <TextBox Text="{Binding HostAddress, UpdateSourceTrigger=PropertyChanged}"/>
-        </StackPanel>
-
-        <ScrollViewer Grid.Row="4"
-                      VerticalScrollBarVisibility="Auto"
-                      MaxHeight="72"
-                      Margin="0,8,0,8">
-            <TextBlock Text="{Binding StatusMessage}"
-                       TextWrapping="Wrap"/>
-        </ScrollViewer>
-
-        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,4,0,0">
             <ui:Button Content="{DynamicResource NetworkTest_RunButton}"
                        Command="{Binding RunTestCommand}"
-                       Appearance="Primary" Margin="0,0,8,0"/>
+                       Appearance="Primary"
+                       Margin="0,0,8,0"/>
             <ui:Button Content="{DynamicResource NetworkTest_CloseButton}"
-                       IsCancel="True" Appearance="Secondary"/>
+                       IsCancel="True"
+                       Appearance="Secondary"/>
         </StackPanel>
     </Grid>
 </Window>
