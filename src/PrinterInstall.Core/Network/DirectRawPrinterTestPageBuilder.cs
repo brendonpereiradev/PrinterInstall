@@ -1,15 +1,20 @@
+using System.Globalization;
 using System.Text;
+using PrinterInstall.Core.Gainscha;
 using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Network;
 
 public static class DirectRawPrinterTestPageBuilder
 {
-    public static byte[] ForBrand(PrinterBrand brand, string host)
+    private const int DotsPerMm = 8;
+    private const int TextRotation = 180;
+
+    public static byte[] ForBrand(PrinterBrand brand, string host, GainschaLabelPreset? gainschaLabelPreset = null)
     {
         return brand switch
         {
-            PrinterBrand.Gainscha => BuildTspl(host),
+            PrinterBrand.Gainscha => BuildTspl(host, gainschaLabelPreset ?? GainschaLabelPreset.Paciente),
             PrinterBrand.Epson => BuildPcl5(host),
             PrinterBrand.Lexmark => BuildPcl5(host),
             _ => BuildPcl5(host)
@@ -35,36 +40,91 @@ public static class DirectRawPrinterTestPageBuilder
     }
 
     /// <summary>
-    /// Etiquetadoras Gainscha (ex.: GA-2408T) usam TSPL na porta RAW 9100, nao ESC/POS.
+    /// Etiquetadoras Gainscha (ex.: GA-2408T) usam TSPL na porta RAW 9100.
     /// </summary>
-    private static byte[] BuildTspl(string host)
+    private static byte[] BuildTspl(string host, GainschaLabelPreset preset)
     {
-        // Etiqueta fisica: 89 mm (largura) x 36 mm (altura) @ 203 dpi ~ 712 x 288 dots.
-        const int labelWidthDots = 712;
-        const int labelHeightDots = 288;
-        const int margin = 20;
-        var boxRight = labelWidthDots - margin;
-        var boxBottom = labelHeightDots - margin;
+        var def = GainschaLabelPresetCatalog.GetDefinition(preset);
+        var widthDots = def.WidthMm * DotsPerMm;
+        var heightDots = def.HeightMm * DotsPerMm;
+        var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        var presetLabel = def.UiDisplayName;
 
-        var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        // Rotation 180: Gainscha GA-2408T ignora DIRECTION de forma inconsistente; rotacionar cada TEXT corrige etiqueta invertida.
-        // Com rotation=180, (x,y) e o canto inferior direito do texto (TSPL/TSC).
-        const int textRotation = 180;
-        var lines = new[]
+        var lines = preset switch
         {
-            "SIZE 89 mm, 36 mm",
-            "GAP 3 mm, 0 mm",
-            "DIRECTION 0",
-            "REFERENCE 0,0",
-            "CLS",
-            $"BOX {boxRight},{boxBottom},{margin},{margin},3",
-            $"TEXT {boxRight - 30},{boxBottom - 25},\"4\",{textRotation},2,2,\"TEST\"",
-            $"TEXT {boxRight - 30},{boxBottom - 95},\"3\",{textRotation},1,1,\"Printer Install\"",
-            $"TEXT {boxRight - 30},{boxBottom - 135},\"2\",{textRotation},1,1,\"Host: {EscapeTspl(host)}\"",
-            $"TEXT {boxRight - 30},{boxBottom - 165},\"2\",{textRotation},1,1,\"{EscapeTspl(timestamp)}\"",
-            "PRINT 1,1"
+            GainschaLabelPreset.Pulseira => BuildPulseiraLines(host, timestamp, def.WidthMm, def.HeightMm, widthDots, heightDots),
+            GainschaLabelPreset.Dupla => BuildDuplaLines(host, timestamp, presetLabel, def.WidthMm, def.HeightMm, widthDots, heightDots),
+            _ => BuildStandardLabelLines(host, timestamp, presetLabel, def.WidthMm, def.HeightMm, widthDots, heightDots)
         };
+
         return Encoding.ASCII.GetBytes(string.Join("\r\n", lines) + "\r\n");
+    }
+
+    private static IEnumerable<string> BuildHeader(int widthMm, int heightMm)
+    {
+        yield return $"SIZE {widthMm} mm, {heightMm} mm";
+        yield return "GAP 3 mm, 0 mm";
+        yield return "DIRECTION 0";
+        yield return "REFERENCE 0,0";
+        yield return "CLS";
+    }
+
+    private static IEnumerable<string> BuildStandardLabelLines(
+        string host, string timestamp, string presetLabel,
+        int widthMm, int heightMm, int widthDots, int heightDots)
+    {
+        var margin = 20;
+        var boxRight = widthDots - margin;
+        var boxBottom = heightDots - margin;
+        var testScale = heightMm >= 30 ? 2 : 1;
+
+        foreach (var line in BuildHeader(widthMm, heightMm))
+            yield return line;
+
+        yield return $"BOX {boxRight},{boxBottom},{margin},{margin},3";
+        yield return $"TEXT {boxRight - 30},{boxBottom - 25},\"4\",{TextRotation},{testScale},{testScale},\"TEST\"";
+        yield return $"TEXT {boxRight - 30},{boxBottom - 55},\"3\",{TextRotation},1,1,\"{EscapeTspl(presetLabel)}\"";
+        yield return $"TEXT {boxRight - 30},{boxBottom - 85},\"3\",{TextRotation},1,1,\"Printer Install\"";
+        yield return $"TEXT {boxRight - 30},{boxBottom - 115},\"2\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
+        yield return $"TEXT {boxRight - 30},{boxBottom - 145},\"2\",{TextRotation},1,1,\"{EscapeTspl(timestamp)}\"";
+        yield return "PRINT 1,1";
+    }
+
+    private static IEnumerable<string> BuildDuplaLines(
+        string host, string timestamp, string presetLabel,
+        int widthMm, int heightMm, int widthDots, int heightDots)
+    {
+        var margin = 8;
+        var boxRight = widthDots - margin;
+        var boxBottom = heightDots - margin;
+
+        foreach (var line in BuildHeader(widthMm, heightMm))
+            yield return line;
+
+        yield return $"BOX {boxRight},{boxBottom},{margin},{margin},2";
+        yield return $"TEXT {boxRight - 10},{boxBottom - 8},\"3\",{TextRotation},1,1,\"TEST\"";
+        yield return $"TEXT {boxRight - 10},{boxBottom - 28},\"2\",{TextRotation},1,1,\"{EscapeTspl(presetLabel)}\"";
+        yield return $"TEXT {boxRight - 10},{boxBottom - 48},\"2\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
+        yield return "PRINT 1,1";
+    }
+
+    private static IEnumerable<string> BuildPulseiraLines(
+        string host, string timestamp, int widthMm, int heightMm, int widthDots, int heightDots)
+    {
+        var margin = 12;
+        var boxRight = widthDots - margin;
+        var boxBottom = heightDots - margin;
+
+        foreach (var line in BuildHeader(widthMm, heightMm))
+            yield return line;
+
+        yield return $"BOX {boxRight},{boxBottom},{margin},{margin},2";
+        yield return $"TEXT {boxRight - 8},{boxBottom - 40},\"3\",{TextRotation},1,1,\"TEST\"";
+        yield return $"TEXT {boxRight - 8},{boxBottom - 120},\"2\",{TextRotation},1,1,\"Pulseira\"";
+        yield return $"TEXT {boxRight - 8},{boxBottom - 200},\"2\",{TextRotation},1,1,\"Printer Install\"";
+        yield return $"TEXT {boxRight - 8},{boxBottom - 280},\"2\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
+        yield return $"TEXT {boxRight - 8},{boxBottom - 360},\"2\",{TextRotation},1,1,\"{EscapeTspl(timestamp)}\"";
+        yield return "PRINT 1,1";
     }
 
     private static string EscapeTspl(string value) =>

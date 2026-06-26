@@ -8,6 +8,7 @@
   <data name="Main_Validation_ComputersRequired" xml:space="preserve"><value>Informe pelo menos um nome de computador.</value></data>
   <data name="Main_Validation_DisplayNameRequired" xml:space="preserve"><value>O nome de exibição (fila) é obrigatório.</value></data>
   <data name="Main_Validation_PrinterHostRequired" xml:space="preserve"><value>O endereço do host da impressora é obrigatório.</value></data>
+  <data name="Main_Validation_GainschaLabelPresetRequired" xml:space="preserve"><value>Selecione o tamanho de etiqueta para impressoras Gainscha.</value></data>
   <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Formato de nome de computador inválido.</value></data>
   <data name="Main_LocalComputerSuffix" xml:space="preserve"><value>(este PC)</value></data>
   <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} cancelado(s) — driver ausente.</value></data>

@@ -3,11 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         Title="{DynamicResource NetworkTest_WindowTitle}"
-        Height="360" Width="480"
+        Height="400" Width="480"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
     <Grid Margin="16">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -25,12 +29,19 @@
             <ComboBox ItemsSource="{Binding BrandChoices}" SelectedItem="{Binding SelectedBrand}"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="2" Margin="0,0,0,8">
+        <StackPanel Grid.Row="2" Margin="0,0,0,8"
+                    Visibility="{Binding IsGainschaBrand, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock Text="{DynamicResource Main_GainschaLabelPresetLabel}" Margin="0,0,0,4"/>
+            <ComboBox ItemsSource="{Binding GainschaLabelPresetChoices}"
+                      SelectedItem="{Binding SelectedGainschaLabelPreset}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" Margin="0,0,0,8">
             <TextBlock Text="{DynamicResource NetworkTest_HostLabel}" Margin="0,0,0,4"/>
             <TextBox Text="{Binding HostAddress, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="3"
+        <ScrollViewer Grid.Row="4"
                       VerticalScrollBarVisibility="Auto"
                       MaxHeight="72"
                       Margin="0,8,0,8">
@@ -38,7 +49,7 @@
                        TextWrapping="Wrap"/>
         </ScrollViewer>
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
             <ui:Button Content="{DynamicResource NetworkTest_RunButton}"
                        Command="{Binding RunTestCommand}"
                        Appearance="Primary" Margin="0,0,8,0"/>

@@ -38,6 +38,14 @@ public sealed class RoutingRemotePrinterOperations : IRemotePrinterOperations
     public Task AddPrinterAsync(string computerName, NetworkCredential credential, string printerName, string driverName, string portName, CancellationToken cancellationToken = default)
         => Resolve(computerName).AddPrinterAsync(computerName, credential, printerName, driverName, portName, cancellationToken);
 
+    public Task ConfigureGainschaLabelPresetAsync(
+        string computerName,
+        NetworkCredential credential,
+        string printerQueueName,
+        GainschaLabelPreset preset,
+        CancellationToken cancellationToken = default)
+        => Resolve(computerName).ConfigureGainschaLabelPresetAsync(computerName, credential, printerQueueName, preset, cancellationToken);
+
     public Task PrintTestPageAsync(string computerName, NetworkCredential credential, string printerQueueName, CancellationToken cancellationToken = default)
         => Resolve(computerName).PrintTestPageAsync(computerName, credential, printerQueueName, cancellationToken);
 

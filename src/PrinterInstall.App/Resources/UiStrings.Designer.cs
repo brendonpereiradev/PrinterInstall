@@ -21,6 +21,7 @@ public class UiStrings
     public static string Main_Validation_ComputersRequired => ResourceManager.GetString(nameof(Main_Validation_ComputersRequired), ResourceCulture)!;
     public static string Main_Validation_DisplayNameRequired => ResourceManager.GetString(nameof(Main_Validation_DisplayNameRequired), ResourceCulture)!;
     public static string Main_Validation_PrinterHostRequired => ResourceManager.GetString(nameof(Main_Validation_PrinterHostRequired), ResourceCulture)!;
+    public static string Main_Validation_GainschaLabelPresetRequired => ResourceManager.GetString(nameof(Main_Validation_GainschaLabelPresetRequired), ResourceCulture)!;
     public static string Main_InvalidComputerNameFormat => ResourceManager.GetString(nameof(Main_InvalidComputerNameFormat), ResourceCulture)!;
     public static string Main_LocalComputerSuffix => ResourceManager.GetString(nameof(Main_LocalComputerSuffix), ResourceCulture)!;
     public static string Main_SummaryLineFormat => ResourceManager.GetString(nameof(Main_SummaryLineFormat), ResourceCulture)!;

@@ -23,6 +23,7 @@ public sealed class DirectRawPrinterTestService : IDirectRawPrinterTestService
     public async Task<DirectRawPrinterTestResult> RunAsync(
         string host,
         PrinterBrand brand,
+        GainschaLabelPreset? gainschaLabelPreset = null,
         CancellationToken cancellationToken = default)
     {
         var trimmedHost = host.Trim();
@@ -52,7 +53,7 @@ public sealed class DirectRawPrinterTestService : IDirectRawPrinterTestService
 
         try
         {
-            var payload = DirectRawPrinterTestPageBuilder.ForBrand(brand, trimmedHost);
+            var payload = DirectRawPrinterTestPageBuilder.ForBrand(brand, trimmedHost, gainschaLabelPreset);
             using var sendCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             sendCts.CancelAfter(SendTimeout);
             await connection.WriteAsync(payload, sendCts.Token).ConfigureAwait(false);

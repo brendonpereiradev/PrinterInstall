@@ -153,13 +153,20 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            if (row.Brand == PrinterBrand.Gainscha && row.GainschaLabelPreset is null)
+            {
+                AppendLog(UiStrings.Main_Validation_GainschaLabelPresetRequired);
+                return;
+            }
+
             definitions.Add(new PrinterQueueDefinition
             {
                 Brand = row.Brand,
                 DisplayName = row.DisplayName.Trim(),
                 PrinterHostAddress = row.PrinterHostAddress.Trim(),
                 PortNumber = DefaultDeployPort,
-                Protocol = DefaultDeployProtocol
+                Protocol = DefaultDeployProtocol,
+                GainschaLabelPreset = row.Brand == PrinterBrand.Gainscha ? row.GainschaLabelPreset : null
             });
         }
 
