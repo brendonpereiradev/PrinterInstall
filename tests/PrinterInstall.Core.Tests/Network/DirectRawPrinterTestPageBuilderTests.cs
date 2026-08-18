@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Network;
 
@@ -9,6 +10,7 @@ public class DirectRawPrinterTestPageBuilderTests
     [Theory]
     [InlineData(PrinterBrand.Epson)]
     [InlineData(PrinterBrand.Lexmark)]
+    [InlineData(PrinterBrand.Brother)]
     public void ForBrand_PclBrands_ReturnsNonEmptyPayload(PrinterBrand brand)
     {
         var payload = DirectRawPrinterTestPageBuilder.ForBrand(brand, "10.0.0.50");
@@ -19,7 +21,6 @@ public class DirectRawPrinterTestPageBuilderTests
     [Theory]
     [InlineData(GainschaLabelPreset.Paciente, "SIZE 89 mm, 36 mm", "Paciente")]
     [InlineData(GainschaLabelPreset.Matrix, "SIZE 50 mm, 30 mm", "Matrix")]
-    [InlineData(GainschaLabelPreset.Dupla, "SIZE 45 mm, 13 mm", "Dupla")]
     [InlineData(GainschaLabelPreset.Pulseira, "SIZE 25 mm, 270 mm", "Pulseira")]
     public void ForBrand_Gainscha_UsesPresetDimensions(
         GainschaLabelPreset preset, string expectedSizeLine, string expectedPresetLabel)
@@ -60,6 +61,23 @@ public class DirectRawPrinterTestPageBuilderTests
         Assert.All(payload, b => Assert.InRange(b, (byte)0, (byte)127));
     }
 
+    [Theory]
+    [InlineData(GainschaLabelPreset.Matrix, "Matrix")]
+    [InlineData(GainschaLabelPreset.Paciente, "Paciente")]
+    public void ForBrand_Gainscha_StandardPresets_TestLabelDoesNotOverlapPresetName(
+        GainschaLabelPreset preset, string presetLabel)
+    {
+        var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.51", preset);
+        var text = Encoding.ASCII.GetString(payload);
+
+        var testY = GetTextLineY(text, "TEST");
+        var presetY = GetTextLineY(text, presetLabel);
+
+        Assert.True(
+            Math.Abs(testY - presetY) >= 40,
+            $"Expected at least 40 dots between TEST (y={testY}) and {presetLabel} (y={presetY}).");
+    }
+
     [Fact]
     public void ForBrand_Gainscha_IncludesHostAndTimestampWithoutConnectivityLine()
     {
@@ -70,5 +88,12 @@ public class DirectRawPrinterTestPageBuilderTests
         Assert.Contains("TEST", text);
         Assert.DoesNotContain("Conectividade OK", text);
         Assert.All(payload, b => Assert.InRange(b, (byte)0, (byte)127));
+    }
+
+    private static int GetTextLineY(string tspl, string content)
+    {
+        var match = Regex.Match(tspl, $@"TEXT \d+,(\d+),.*""{Regex.Escape(content)}""");
+        Assert.True(match.Success, $"TEXT line containing \"{content}\" not found.");
+        return int.Parse(match.Groups[1].Value);
     }
 }

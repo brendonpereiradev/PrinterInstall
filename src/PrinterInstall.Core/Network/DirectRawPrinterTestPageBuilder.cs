@@ -17,6 +17,7 @@ public static class DirectRawPrinterTestPageBuilder
             PrinterBrand.Gainscha => BuildTspl(host, gainschaLabelPreset ?? GainschaLabelPreset.Paciente),
             PrinterBrand.Epson => BuildPcl5(host),
             PrinterBrand.Lexmark => BuildPcl5(host),
+            PrinterBrand.Brother => BuildPcl5(host),
             _ => BuildPcl5(host)
         };
     }
@@ -53,7 +54,6 @@ public static class DirectRawPrinterTestPageBuilder
         var lines = preset switch
         {
             GainschaLabelPreset.Pulseira => BuildPulseiraLines(host, timestamp, def.WidthMm, def.HeightMm, widthDots, heightDots),
-            GainschaLabelPreset.Dupla => BuildDuplaLines(host, timestamp, presetLabel, def.WidthMm, def.HeightMm, widthDots, heightDots),
             _ => BuildStandardLabelLines(host, timestamp, presetLabel, def.WidthMm, def.HeightMm, widthDots, heightDots)
         };
 
@@ -76,35 +76,18 @@ public static class DirectRawPrinterTestPageBuilder
         var margin = 20;
         var boxRight = widthDots - margin;
         var boxBottom = heightDots - margin;
-        var testScale = heightMm >= 30 ? 2 : 1;
+        var x = boxRight - 30;
+        const int lineGap = 40;
 
         foreach (var line in BuildHeader(widthMm, heightMm))
             yield return line;
 
         yield return $"BOX {boxRight},{boxBottom},{margin},{margin},3";
-        yield return $"TEXT {boxRight - 30},{boxBottom - 25},\"4\",{TextRotation},{testScale},{testScale},\"TEST\"";
-        yield return $"TEXT {boxRight - 30},{boxBottom - 55},\"3\",{TextRotation},1,1,\"{EscapeTspl(presetLabel)}\"";
-        yield return $"TEXT {boxRight - 30},{boxBottom - 85},\"3\",{TextRotation},1,1,\"Printer Install\"";
-        yield return $"TEXT {boxRight - 30},{boxBottom - 115},\"2\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
-        yield return $"TEXT {boxRight - 30},{boxBottom - 145},\"2\",{TextRotation},1,1,\"{EscapeTspl(timestamp)}\"";
-        yield return "PRINT 1,1";
-    }
-
-    private static IEnumerable<string> BuildDuplaLines(
-        string host, string timestamp, string presetLabel,
-        int widthMm, int heightMm, int widthDots, int heightDots)
-    {
-        var margin = 8;
-        var boxRight = widthDots - margin;
-        var boxBottom = heightDots - margin;
-
-        foreach (var line in BuildHeader(widthMm, heightMm))
-            yield return line;
-
-        yield return $"BOX {boxRight},{boxBottom},{margin},{margin},2";
-        yield return $"TEXT {boxRight - 10},{boxBottom - 8},\"3\",{TextRotation},1,1,\"TEST\"";
-        yield return $"TEXT {boxRight - 10},{boxBottom - 28},\"2\",{TextRotation},1,1,\"{EscapeTspl(presetLabel)}\"";
-        yield return $"TEXT {boxRight - 10},{boxBottom - 48},\"2\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
+        yield return $"TEXT {x},{boxBottom - lineGap},\"3\",{TextRotation},1,1,\"TEST\"";
+        yield return $"TEXT {x},{boxBottom - lineGap * 2},\"3\",{TextRotation},1,1,\"{EscapeTspl(presetLabel)}\"";
+        yield return $"TEXT {x},{boxBottom - lineGap * 3},\"3\",{TextRotation},1,1,\"Printer Install\"";
+        yield return $"TEXT {x},{boxBottom - lineGap * 4},\"2\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
+        yield return $"TEXT {x},{boxBottom - lineGap * 5},\"2\",{TextRotation},1,1,\"{EscapeTspl(timestamp)}\"";
         yield return "PRINT 1,1";
     }
 

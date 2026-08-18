@@ -116,6 +116,40 @@ public sealed class PrinterDeploymentOrchestrator
                 {
                     if (await _remote.PrinterQueueExistsAsync(computer, request.DomainCredential, displayName, cancellationToken).ConfigureAwait(false))
                     {
+                        if (def.Brand == PrinterBrand.Gainscha)
+                        {
+                            if (def.GainschaLabelPreset is null)
+                            {
+                                progress.Report(new DeploymentProgressEvent(
+                                    computer,
+                                    TargetMachineState.Error,
+                                    "Gainscha queue requires a label preset.",
+                                    displayName));
+                                continue;
+                            }
+
+                            var (applied, errorDetail) = await TryApplyGainschaLabelPresetAsync(
+                                computer,
+                                request,
+                                displayName,
+                                def.GainschaLabelPreset.Value,
+                                revertOnFailure: false,
+                                portName: null,
+                                rollbackJournal,
+                                progress,
+                                cancellationToken,
+                                "Fila já existe — aplicando preferência de etiqueta...").ConfigureAwait(false);
+
+                            progress.Report(new DeploymentProgressEvent(
+                                computer,
+                                applied ? TargetMachineState.CompletedSuccess : TargetMachineState.Error,
+                                applied
+                                    ? "Preferência de etiqueta aplicada (fila já existia)."
+                                    : $"Falha ao aplicar preferência de etiqueta: {errorDetail}",
+                                displayName));
+                            continue;
+                        }
+
                         progress.Report(new DeploymentProgressEvent(
                             computer,
                             TargetMachineState.SkippedAlreadyExists,
@@ -189,52 +223,21 @@ public sealed class PrinterDeploymentOrchestrator
                             continue;
                         }
 
-                        progress.Report(new DeploymentProgressEvent(
+                        var (presetApplied, _) = await TryApplyGainschaLabelPresetAsync(
                             computer,
-                            TargetMachineState.Configuring,
-                            "Configurando tamanho de etiqueta...",
-                            displayName));
-
-                        await Task.Delay(SpoolerSettleDelay, cancellationToken).ConfigureAwait(false);
-
-                        try
+                            request,
+                            displayName,
+                            def.GainschaLabelPreset.Value,
+                            revertOnFailure: true,
+                            portName,
+                            rollbackJournal,
+                            progress,
+                            cancellationToken,
+                            "Configurando tamanho de etiqueta...").ConfigureAwait(false);
+                        if (!presetApplied)
                         {
-                            await _remote.ConfigureGainschaLabelPresetAsync(
-                                computer,
-                                request.DomainCredential,
-                                displayName,
-                                def.GainschaLabelPreset.Value,
-                                cancellationToken).ConfigureAwait(false);
-                        }
-                        catch (Exception ex) when (ex is not OperationCanceledException)
-                        {
-                            progress.Report(new DeploymentProgressEvent(
-                                computer,
-                                TargetMachineState.Configuring,
-                                "Falha na preferência de etiqueta — revertendo fila e porta...",
-                                displayName));
-
-                            await RevertUnjournaledQueueAsync(
-                                computer,
-                                request.DomainCredential,
-                                displayName,
-                                portName,
-                                rollbackJournal,
-                                cancellationToken).ConfigureAwait(false);
-
-                            progress.Report(new DeploymentProgressEvent(
-                                computer,
-                                TargetMachineState.Error,
-                                $"Revertido — preferência de etiqueta não aplicada: {Flatten(ex)}",
-                                displayName));
                             continue;
                         }
-
-                        progress.Report(new DeploymentProgressEvent(
-                            computer,
-                            TargetMachineState.Configuring,
-                            "Preferência de etiqueta aplicada.",
-                            displayName));
                     }
 
                     rollbackJournal.RecordQueueCreated(computer, displayName, portName);
@@ -348,6 +351,76 @@ public sealed class PrinterDeploymentOrchestrator
         {
             var sample = string.Join(" | ", drivers.Take(10));
             return (false, $"Driver installed does not match expected. Expected one of: {describe}. Found: [{sample}]");
+        }
+
+        return (true, null);
+    }
+
+    private async Task<(bool Success, string? ErrorDetail)> TryApplyGainschaLabelPresetAsync(
+        string computer,
+        PrinterDeploymentRequest request,
+        string displayName,
+        GainschaLabelPreset preset,
+        bool revertOnFailure,
+        string? portName,
+        DeploymentRollbackJournal rollbackJournal,
+        IProgress<DeploymentProgressEvent> progress,
+        CancellationToken cancellationToken,
+        string configuringMessage)
+    {
+        progress.Report(new DeploymentProgressEvent(
+            computer,
+            TargetMachineState.Configuring,
+            configuringMessage,
+            displayName));
+
+        await Task.Delay(SpoolerSettleDelay, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await _remote.ConfigureGainschaLabelPresetAsync(
+                computer,
+                request.DomainCredential,
+                displayName,
+                preset,
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            var detail = Flatten(ex);
+            if (revertOnFailure && portName is not null)
+            {
+                progress.Report(new DeploymentProgressEvent(
+                    computer,
+                    TargetMachineState.Configuring,
+                    "Falha na preferência de etiqueta — revertendo fila e porta...",
+                    displayName));
+
+                await RevertUnjournaledQueueAsync(
+                    computer,
+                    request.DomainCredential,
+                    displayName,
+                    portName,
+                    rollbackJournal,
+                    cancellationToken).ConfigureAwait(false);
+
+                progress.Report(new DeploymentProgressEvent(
+                    computer,
+                    TargetMachineState.Error,
+                    $"Revertido — preferência de etiqueta não aplicada: {detail}",
+                    displayName));
+            }
+
+            return (false, detail);
+        }
+
+        if (revertOnFailure)
+        {
+            progress.Report(new DeploymentProgressEvent(
+                computer,
+                TargetMachineState.Configuring,
+                "Preferência de etiqueta aplicada.",
+                displayName));
         }
 
         return (true, null);

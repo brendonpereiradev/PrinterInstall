@@ -12,7 +12,12 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
 
         try
         {
-            var identifier = new LdapDirectoryIdentifier(domainName.Trim(), 389, false, false);
+            var host = domainName.Trim();
+            var identifier = new LdapDirectoryIdentifier(
+                host,
+                389,
+                fullyQualifiedDnsHostName: host.Contains('.', StringComparison.Ordinal),
+                connectionless: false);
             using var connection = new LdapConnection(identifier)
             {
                 AuthType = AuthType.Negotiate,
@@ -26,13 +31,9 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
             connection.Bind();
             return Task.FromResult(LdapValidationResult.Success());
         }
-        catch (LdapException ex)
+        catch (Exception ex)
         {
-            return Task.FromResult(LdapValidationResult.Failure(LdapLoginErrorMessages.FromLdapException(ex)));
-        }
-        catch (Exception)
-        {
-            return Task.FromResult(LdapValidationResult.Failure(LdapLoginErrorMessages.AuthenticationFailed));
+            return Task.FromResult(LdapValidationResult.Failure(LdapLoginErrorMessages.FromException(ex)));
         }
     }
 }

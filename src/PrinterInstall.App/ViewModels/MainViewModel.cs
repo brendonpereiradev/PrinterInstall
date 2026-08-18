@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PrinterInstall.App.Localization;
 using PrinterInstall.App.Resources;
 using PrinterInstall.App.Services;
+using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Orchestration;
 using PrinterInstall.Core.Remote;
@@ -24,6 +25,7 @@ public partial class MainViewModel : ObservableObject
     private readonly DeploymentRollbackRunner _rollbackRunner;
     private readonly IServiceProvider _serviceProvider;
     private readonly LocalMachineIdentity _localMachineIdentity;
+    private readonly ILogExportService _logExportService;
     private CancellationTokenSource? _deployCts;
 
     public MainViewModel(
@@ -31,13 +33,15 @@ public partial class MainViewModel : ObservableObject
         PrinterDeploymentOrchestrator orchestrator,
         DeploymentRollbackRunner rollbackRunner,
         IServiceProvider serviceProvider,
-        LocalMachineIdentity localMachineIdentity)
+        LocalMachineIdentity localMachineIdentity,
+        ILogExportService? logExportService = null)
     {
         _session = session;
         _orchestrator = orchestrator;
         _rollbackRunner = rollbackRunner;
         _serviceProvider = serviceProvider;
         _localMachineIdentity = localMachineIdentity;
+        _logExportService = logExportService ?? new LogExportService();
         PrinterRows.Add(new PrinterFormRowViewModel());
         Targets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowStatusEmptyHint));
     }
@@ -53,6 +57,11 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _logText = "";
 
+    partial void OnLogTextChanged(string value)
+    {
+        ExportLogCommand.NotifyCanExecuteChanged();
+    }
+
     [ObservableProperty]
     private string _lastSummaryText = "";
 
@@ -63,7 +72,10 @@ public partial class MainViewModel : ObservableObject
     {
         DeployCommand.NotifyCanExecuteChanged();
         CancelDeployCommand.NotifyCanExecuteChanged();
+        ExportLogCommand.NotifyCanExecuteChanged();
     }
+
+    public bool CanExportLog => !IsDeployRunning && !string.IsNullOrWhiteSpace(LogText);
 
     public ObservableCollection<PrinterFormRowViewModel> PrinterRows { get; } = new();
 
@@ -117,6 +129,44 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanExportLog))]
+    private void ExportLog()
+    {
+        if (string.IsNullOrWhiteSpace(LogText))
+            return;
+
+        var operatorId = _session.Credential is not null
+            ? (string.IsNullOrEmpty(_session.Credential.Domain)
+                ? _session.Credential.UserName
+                : $@"{_session.Credential.Domain}\{_session.Credential.UserName}")
+            : null;
+
+        var targetSummaries = Targets.Select(t => (
+            t.ComputerName,
+            t.PrinterQueueName,
+            TargetMachineStateDisplay.GetDisplay(t.State),
+            (string?)t.Message
+        ));
+
+        var report = LogReportFormatter.FormatDeployReport(
+            operatorId,
+            _localMachineIdentity.GetPrimaryLocalName(),
+            targetSummaries,
+            LogText);
+
+        var defaultFileName = $"PrinterInstall_Deploy_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt";
+        var result = _logExportService.ExportLog(defaultFileName, report);
+
+        if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.FilePath))
+        {
+            AppendLog(string.Format(UiStrings.Main_LogExportSuccessFormat, result.FilePath));
+        }
+        else if (!result.IsCancelled && !string.IsNullOrWhiteSpace(result.ErrorMessage))
+        {
+            AppendLog(string.Format(UiStrings.Main_LogExportErrorFormat, result.ErrorMessage));
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanDeploy))]
     private async Task DeployAsync()
     {
@@ -153,6 +203,21 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
+            var trimmedDisplayName = row.DisplayName.Trim();
+            var trimmedHost = row.PrinterHostAddress.Trim();
+
+            if (PrinterHostValidator.DetectProbableInversion(trimmedDisplayName, trimmedHost))
+            {
+                AppendLog(string.Format(UiStrings.Main_Validation_InversionDetectedFormat, trimmedDisplayName, trimmedHost));
+                return;
+            }
+
+            if (!PrinterHostValidator.IsValidHostAddress(trimmedHost))
+            {
+                AppendLog(string.Format(UiStrings.Main_Validation_InvalidHostAddressFormat, trimmedHost));
+                return;
+            }
+
             if (row.Brand == PrinterBrand.Gainscha && row.GainschaLabelPreset is null)
             {
                 AppendLog(UiStrings.Main_Validation_GainschaLabelPresetRequired);
@@ -162,8 +227,8 @@ public partial class MainViewModel : ObservableObject
             definitions.Add(new PrinterQueueDefinition
             {
                 Brand = row.Brand,
-                DisplayName = row.DisplayName.Trim(),
-                PrinterHostAddress = row.PrinterHostAddress.Trim(),
+                DisplayName = trimmedDisplayName,
+                PrinterHostAddress = trimmedHost,
                 PortNumber = DefaultDeployPort,
                 Protocol = DefaultDeployProtocol,
                 GainschaLabelPreset = row.Brand == PrinterBrand.Gainscha ? row.GainschaLabelPreset : null

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\PrinterInstall.Core\PrinterInstall.Core.csproj" />
@@ -23,14 +23,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="..\..\drivers\**\*">
-      <Link>Drivers\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <InternalsVisibleTo Include="PrinterInstall.App.Tests" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="appsettings.json" />
+    <None Update="appsettings.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
 </Project>

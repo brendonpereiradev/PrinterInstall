@@ -1,5 +1,6 @@
 using System.Net;
 using Moq;
+using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Remote;
 
 namespace PrinterInstall.Core.Tests.Remote;
@@ -59,5 +60,56 @@ public class RoutingRemotePrinterOperationsTests
 
         local.VerifyAll();
         remote.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ConfigureGainschaLabelPresetAsync_LocalMachineName_DelegatesToLocal()
+    {
+        var identity = new LocalMachineIdentity();
+        var local = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        var remote = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        local.Setup(x => x.ConfigureGainschaLabelPresetAsync(
+                Environment.MachineName,
+                Cred,
+                "Etiquetadora",
+                GainschaLabelPreset.Paciente,
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new RoutingRemotePrinterOperations(identity, local.Object, remote.Object);
+        await sut.ConfigureGainschaLabelPresetAsync(
+            Environment.MachineName,
+            Cred,
+            "Etiquetadora",
+            GainschaLabelPreset.Paciente);
+
+        local.VerifyAll();
+        remote.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ConfigureGainschaLabelPresetAsync_RemoteMachine_DelegatesToRemote()
+    {
+        var identity = new LocalMachineIdentity();
+        var local = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        var remote = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        const string remotePc = "definitely-not-this-pc-xyz-99999";
+        remote.Setup(x => x.ConfigureGainschaLabelPresetAsync(
+                remotePc,
+                Cred,
+                "Etiquetadora",
+                GainschaLabelPreset.Paciente,
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new RoutingRemotePrinterOperations(identity, local.Object, remote.Object);
+        await sut.ConfigureGainschaLabelPresetAsync(
+            remotePc,
+            Cred,
+            "Etiquetadora",
+            GainschaLabelPreset.Paciente);
+
+        remote.VerifyAll();
+        local.VerifyNoOtherCalls();
     }
 }

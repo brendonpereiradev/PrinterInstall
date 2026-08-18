@@ -17,6 +17,7 @@ public class PrinterCatalogTests
     {
         Assert.Equal("Lexmark Universal v4 XL", PrinterCatalog.GetExpectedDriverName(PrinterBrand.Lexmark));
         Assert.Equal("Gainscha GA-2408T", PrinterCatalog.GetExpectedDriverName(PrinterBrand.Gainscha));
+        Assert.Equal("Brother HL-L5212DW Printer", PrinterCatalog.GetExpectedDriverName(PrinterBrand.Brother));
     }
 
     [Fact]
@@ -37,6 +38,14 @@ public class PrinterCatalogTests
     }
 
     [Fact]
+    public void GetDriverResolutionOrder_Brother_SingleEntry()
+    {
+        var order = PrinterCatalog.GetDriverResolutionOrder(PrinterBrand.Brother);
+        Assert.Single(order);
+        Assert.Equal("Brother HL-L5212DW Printer", order[0]);
+    }
+
+    [Fact]
     public void DescribeAcceptableDrivers_Lexmark_JoinsWithOr()
     {
         var text = PrinterCatalog.DescribeAcceptableDrivers(PrinterBrand.Lexmark);
@@ -47,5 +56,11 @@ public class PrinterCatalogTests
     public void DescribeAcceptableDrivers_Gainscha_SingleName()
     {
         Assert.Equal("Gainscha GA-2408T", PrinterCatalog.DescribeAcceptableDrivers(PrinterBrand.Gainscha));
+    }
+
+    [Fact]
+    public void DescribeAcceptableDrivers_Brother_SingleName()
+    {
+        Assert.Equal("Brother HL-L5212DW Printer", PrinterCatalog.DescribeAcceptableDrivers(PrinterBrand.Brother));
     }
 }

@@ -35,6 +35,26 @@ public class LocalDriverPackageCatalogTests
     }
 
     [Fact]
+    public void TryGet_WhenBrother_ReturnsBrotherPackage()
+    {
+        var root = CreateTempDriverTree("Brother", brand =>
+        {
+            File.WriteAllText(Path.Combine(brand, "BROHL20A.INF"), "");
+            File.WriteAllText(Path.Combine(brand, "BROHL20A.CAT"), "");
+            Directory.CreateDirectory(Path.Combine(brand, "amd64"));
+        });
+        var sut = new LocalDriverPackageCatalog(root);
+
+        var pkg = sut.TryGet(PrinterBrand.Brother);
+
+        Assert.NotNull(pkg);
+        Assert.Equal(PrinterBrand.Brother, pkg!.Brand);
+        Assert.Equal("BROHL20A.INF", pkg.InfFileName);
+        Assert.Equal(Path.Combine(root, "Drivers", "Brother"), pkg.RootFolder);
+        Assert.Equal("Brother HL-L5212DW Printer", pkg.ExpectedDriverName);
+    }
+
+    [Fact]
     public void TryGet_WhenBrandFolderMissing_ReturnsNull()
     {
         var root = Path.Combine(Path.GetTempPath(), "PrinterInstallTests", Guid.NewGuid().ToString("N"));

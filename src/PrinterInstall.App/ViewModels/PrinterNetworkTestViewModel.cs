@@ -26,7 +26,7 @@ public partial class PrinterNetworkTestViewModel : ObservableObject
     public IEnumerable<PrinterBrand> BrandChoices => Enum.GetValues<PrinterBrand>();
 
     public IEnumerable<GainschaLabelPreset> GainschaLabelPresetChoices =>
-        GainschaLabelPresetCatalog.UiDisplayOrder;
+        GainschaLabelPresetCatalog.NetworkTestDisplayOrder;
 
     public bool IsGainschaBrand => SelectedBrand == PrinterBrand.Gainscha;
 

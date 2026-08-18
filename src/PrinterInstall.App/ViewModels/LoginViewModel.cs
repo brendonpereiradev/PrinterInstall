@@ -56,8 +56,10 @@ public partial class LoginViewModel : ObservableObject
             return (false, ErrorMessage);
         }
 
-        var cred = new NetworkCredential(UserName, Password, _domainName);
-        var result = await _ldap.ValidateAsync(_domainName, cred, cancellationToken).ConfigureAwait(false);
+        var (userName, domainName) = ParseCredentialIdentity(UserName, _domainName);
+        var cred = new NetworkCredential(userName, Password, domainName);
+        var ldapHost = ResolveLdapHost(domainName, _domainName);
+        var result = await _ldap.ValidateAsync(ldapHost, cred, cancellationToken).ConfigureAwait(false);
         if (!result.IsSuccess)
         {
             ErrorMessage = result.ErrorMessage;
@@ -65,12 +67,37 @@ public partial class LoginViewModel : ObservableObject
         }
 
         if (RememberMe)
-            _rememberedUserStore.Save(new RememberedUser(_domainName, UserName));
+            _rememberedUserStore.Save(new RememberedUser(domainName, userName));
         else
             _rememberedUserStore.Clear();
 
         _session.Credential = cred;
-        _session.DomainName = _domainName;
+        _session.DomainName = domainName;
         return (true, null);
     }
+
+    internal static (string UserName, string DomainName) ParseCredentialIdentity(string rawUserName, string configuredDomain)
+    {
+        var trimmed = rawUserName.Trim();
+        if (trimmed.Contains('\\', StringComparison.Ordinal))
+        {
+            var parts = trimmed.Split('\\', 2, StringSplitOptions.TrimEntries);
+            if (parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
+                return (parts[1], parts[0]);
+        }
+
+        if (trimmed.Contains('@', StringComparison.Ordinal))
+        {
+            var parts = trimmed.Split('@', 2, StringSplitOptions.TrimEntries);
+            if (parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
+                return (parts[0], parts[1]);
+        }
+
+        return (trimmed, configuredDomain.Trim());
+    }
+
+    internal static string ResolveLdapHost(string parsedDomain, string configuredDomain) =>
+        parsedDomain.Contains('.', StringComparison.Ordinal)
+            ? parsedDomain.Trim()
+            : configuredDomain.Trim();
 }

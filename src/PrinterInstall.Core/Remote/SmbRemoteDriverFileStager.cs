@@ -22,7 +22,7 @@ public sealed class SmbRemoteDriverFileStager : IRemoteDriverFileStager
         {
             using var share = SmbShareConnection.Open(host, "ADMIN$", credential);
             var logPath = paths.UncLogPath(logName);
-            return File.Exists(logPath) ? File.ReadAllText(logPath) : string.Empty;
+            return RemoteStagingLogReader.ReadText(logPath);
         }, cancellationToken);
     }
 

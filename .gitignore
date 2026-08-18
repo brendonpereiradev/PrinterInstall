@@ -48,3 +48,7 @@ publish/
 
 ## Git worktrees (local only)
 .worktrees/
+
+## Embedded binaries / archives
+**/EmbeddedDrivers.zip
+*.zip
