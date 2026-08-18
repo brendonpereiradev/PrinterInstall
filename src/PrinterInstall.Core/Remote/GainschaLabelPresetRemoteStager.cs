@@ -6,7 +6,9 @@ namespace PrinterInstall.Core.Remote;
 
 public static class GainschaLabelPresetRemoteStager
 {
-    public static Task<(RemoteDriverStagingPaths Paths, string SdsFileName)> StageAsync(
+    public sealed record StageResult(RemoteDriverStagingPaths Paths, string TemplateFileName, string DefaultsTemplateFileName);
+
+    public static Task<StageResult> StageAsync(
         string host,
         NetworkCredential credential,
         GainschaLabelPreset preset,
@@ -15,19 +17,30 @@ public static class GainschaLabelPresetRemoteStager
         return Task.Run(() =>
         {
             var paths = RemoteDriverStagingPaths.Create(host);
-            var sdsFileName = GainschaLabelTemplateLoader.TemplateFileName(preset);
-            var content = GainschaLabelTemplateLoader.LoadText(preset);
+            var templateFileName = GainschaLabelTemplateLoader.TemplateFileName(preset);
+            var defaultsFileName = GainschaLabelTemplateLoader.DefaultsTemplateFileName(preset);
+            var templateContent = GainschaLabelTemplateLoader.LoadText(preset);
+            var defaultsContent = GainschaLabelTemplateLoader.LoadDefaultsText(preset);
+            var cleanupContent = GainschaLabelCleanupImportSdsBuilder.Build(preset);
 
             using var share = SmbShareConnection.Open(host, "ADMIN$", credential);
             Directory.CreateDirectory(paths.UncRoot);
-            File.WriteAllText(
-                Path.Combine(paths.UncRoot, sdsFileName),
-                content,
-                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+            SeagullSdsFileWriter.Write(
+                Path.Combine(paths.UncRoot, templateFileName),
+                templateContent);
+            SeagullSdsFileWriter.Write(
+                Path.Combine(paths.UncRoot, defaultsFileName),
+                defaultsContent);
+            SeagullSdsFileWriter.Write(
+                Path.Combine(paths.UncRoot, GainschaLabelCleanupImportSdsBuilder.CleanupFileName),
+                cleanupContent);
 
-            return (paths, sdsFileName);
+            return new StageResult(paths, templateFileName, defaultsFileName);
         }, cancellationToken);
     }
+
+    public static string CleanupFileLocalPath(RemoteDriverStagingPaths paths) =>
+        paths.LocalInfPath(GainschaLabelCleanupImportSdsBuilder.CleanupFileName);
 
     public static Task CleanupAsync(
         string host,

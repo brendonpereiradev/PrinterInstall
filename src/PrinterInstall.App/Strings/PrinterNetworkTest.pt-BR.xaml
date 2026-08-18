@@ -2,9 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="NetworkTest_WindowTitle">Testar impressora</sys:String>
-  <sys:String x:Key="NetworkTest_BrandLabel">Marca</sys:String>
+  <sys:String x:Key="NetworkTest_BrandLabel">Modelo</sys:String>
   <sys:String x:Key="NetworkTest_HostLabel">IP ou hostname</sys:String>
-  <sys:String x:Key="NetworkTest_Hint">Informe a marca e o endereço IP da impressora para enviar um teste de impressão. Confirme na impressora se o teste saiu.</sys:String>
+  <sys:String x:Key="NetworkTest_Hint">Informe o modelo e o endereço IP da impressora para enviar um teste de impressão. Confirme na impressora se o teste saiu.</sys:String>
   <sys:String x:Key="NetworkTest_RunButton">Testar</sys:String>
   <sys:String x:Key="NetworkTest_CloseButton">Fechar</sys:String>
 </ResourceDictionary>

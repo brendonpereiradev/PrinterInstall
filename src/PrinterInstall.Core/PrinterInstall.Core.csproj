@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Gainscha\Templates\*.sds" />
+    <EmbeddedResource Include="Drivers\EmbeddedDrivers.zip" Condition="Exists('Drivers\EmbeddedDrivers.zip')" />
   </ItemGroup>
 
 </Project>

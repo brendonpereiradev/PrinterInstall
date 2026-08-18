@@ -49,6 +49,17 @@ public class WmiPrinterOperationsCoreTests
     }
 
     [Fact]
+    public void BuildLocalElevatedScript_RelaunchesElevatedWhenNotAdministrator()
+    {
+        var script = WmiPrinterOperationsCore.BuildLocalElevatedScript(
+            @"C:\Windows\Temp\PrinterInstall\test\apply-label.log",
+            "Write-Output 'RESULT>> OK'");
+
+        Assert.Contains("-Verb RunAs", script, StringComparison.Ordinal);
+        Assert.Contains("RESULT>> OK", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void BuildInstallerScript_RelaunchesElevatedWhenNotAdministrator()
     {
         var script = WmiPrinterOperationsCore.BuildInstallerScript(

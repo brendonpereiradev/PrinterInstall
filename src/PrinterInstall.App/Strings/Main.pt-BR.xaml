@@ -10,7 +10,7 @@
   <sys:String x:Key="Main_ColumnState">Estado</sys:String>
   <sys:String x:Key="Main_ColumnMessage">Mensagem</sys:String>
   <sys:String x:Key="Main_PrintersGroupHeader">Configuração de impressora</sys:String>
-  <sys:String x:Key="Main_BrandLabel">Marca</sys:String>
+  <sys:String x:Key="Main_BrandLabel">Modelo</sys:String>
   <sys:String x:Key="Main_DisplayNameLabel">Nome da impressora</sys:String>
   <sys:String x:Key="Main_PrinterHostLabel">Host (IP/DNS)</sys:String>
   <sys:String x:Key="Main_GainschaLabelPresetLabel">Tamanho de etiqueta</sys:String>
@@ -22,6 +22,7 @@
   <sys:String x:Key="Main_RemovePrintersButton">Controle de impressoras</sys:String>
   <sys:String x:Key="Main_TestPrinterButton">Testar impressora…</sys:String>
   <sys:String x:Key="Main_LogGroupHeader">Log</sys:String>
+  <sys:String x:Key="Main_ExportLogButton">Exportar log</sys:String>
   <sys:String x:Key="Main_StatusEmptyHint">Nenhum computador na lista. Adicione nomes à esquerda e clique em Implantar para ver o progresso aqui.</sys:String>
   <sys:String x:Key="Main_PageSubtitle">Implantação remota de impressoras</sys:String>
 </ResourceDictionary>

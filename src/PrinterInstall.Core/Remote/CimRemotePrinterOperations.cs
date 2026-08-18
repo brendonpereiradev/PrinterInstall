@@ -1,6 +1,7 @@
 using System.Management;
 using System.Net;
 using PrinterInstall.Core.Drivers;
+using PrinterInstall.Core.Gainscha;
 using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
@@ -170,20 +171,19 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
             });
     }
 
-    public Task ConfigureGainschaLabelPresetAsync(
+    public async Task ConfigureGainschaLabelPresetAsync(
         string computerName,
         NetworkCredential credential,
         string printerQueueName,
         GainschaLabelPreset preset,
         CancellationToken cancellationToken = default)
     {
-        return ExecuteMutationAsync(
+        await ApplyGainschaLabelPresetOnRemoteAsync(
             computerName,
             credential,
-            log: null,
-            cancellationToken,
-            direct: () => ApplyGainschaLabelPresetOnRemoteAsync(computerName, credential, printerQueueName, preset, useElevatedRunner: false, cancellationToken),
-            elevated: () => ApplyGainschaLabelPresetOnRemoteAsync(computerName, credential, printerQueueName, preset, useElevatedRunner: true, cancellationToken));
+            printerQueueName,
+            preset,
+            cancellationToken).ConfigureAwait(false);
     }
 
     private async Task ApplyGainschaLabelPresetOnRemoteAsync(
@@ -191,44 +191,41 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
         NetworkCredential credential,
         string printerQueueName,
         GainschaLabelPreset preset,
-        bool useElevatedRunner,
         CancellationToken cancellationToken)
     {
-        var (paths, sdsFileName) = await GainschaLabelPresetRemoteStager
+        var staged = await GainschaLabelPresetRemoteStager
             .StageAsync(computerName, credential, preset, cancellationToken)
             .ConfigureAwait(false);
 
         try
         {
-            var sdsLocal = paths.LocalInfPath(sdsFileName);
-            var script = RemoteElevatedScriptBuilder.BuildApplyGainschaLabelPresetScript(printerQueueName, sdsLocal);
+            var templateLocal = staged.Paths.LocalInfPath(staged.TemplateFileName);
+            var defaultsLocal = staged.Paths.LocalInfPath(staged.DefaultsTemplateFileName);
+            var cleanupLocal = GainschaLabelPresetRemoteStager.CleanupFileLocalPath(staged.Paths);
+            var def = GainschaLabelPresetCatalog.GetDefinition(preset);
+            var deployUser = SchtasksRunAsFormatter.FormatRunAsUser(credential);
+            var script = RemoteElevatedScriptBuilder.BuildApplyGainschaLabelPresetScript(
+                printerQueueName,
+                templateLocal,
+                cleanupLocal,
+                defaultsLocal,
+                deployUser,
+                def.WidthMm,
+                def.HeightMm,
+                def.DriverStockDisplayName);
 
-            if (useElevatedRunner)
-            {
-                await _elevatedRunner.RunElevatedScriptAsync(
-                    computerName,
-                    credential,
-                    script,
-                    InstallTimeout,
-                    null,
-                    cancellationToken).ConfigureAwait(false);
-                return;
-            }
-
-            await _stager.WriteTextFileAsync(computerName, credential, paths, "apply-label.ps1", script, cancellationToken)
-                .ConfigureAwait(false);
-            var cmd = $"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{paths.LocalInfPath("apply-label.ps1")}\"";
-            var runResult = await _processRunner.RunAsync(computerName, credential, cmd, InstallTimeout, cancellationToken)
-                .ConfigureAwait(false);
-            if (runResult.TimedOut)
-                throw new TimeoutException($"Configurar etiqueta Gainscha em {computerName} excedeu o tempo de {InstallTimeout}.");
-            if (runResult.ReturnValue != 0)
-                throw new InvalidOperationException($"Configurar etiqueta Gainscha em {computerName} falhou (WMI return {runResult.ReturnValue}).");
+            await _elevatedRunner.RunElevatedScriptAsUserAsync(
+                computerName,
+                credential,
+                script,
+                InstallTimeout,
+                null,
+                cancellationToken).ConfigureAwait(false);
         }
         finally
         {
             await GainschaLabelPresetRemoteStager
-                .CleanupAsync(computerName, credential, paths, CancellationToken.None)
+                .CleanupAsync(computerName, credential, staged.Paths, CancellationToken.None)
                 .ConfigureAwait(false);
         }
     }
@@ -479,4 +476,5 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
         scope.Connect();
         return scope;
     }
+
 }

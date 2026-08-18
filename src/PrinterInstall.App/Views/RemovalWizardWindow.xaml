@@ -201,9 +201,14 @@
                 <TabItem>
                     <DockPanel LastChildFill="True">
                         <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Removal_LogHeader}" FontWeight="Bold" Margin="0,0,0,8"/>
-                        <ui:Button DockPanel.Dock="Bottom" Content="{DynamicResource Removal_CloseButton}"
-                                     Command="{Binding CloseCommand}" IsEnabled="{Binding CanClose}"
-                                     HorizontalAlignment="Right" Padding="16,6" Margin="0,8,0,0" Appearance="Primary"/>
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                            <ui:Button Content="{DynamicResource Removal_ExportLogButton}"
+                                       Command="{Binding ExportLogCommand}"
+                                       Padding="16,6" Margin="0,0,8,0" Appearance="Secondary"/>
+                            <ui:Button Content="{DynamicResource Removal_CloseButton}"
+                                       Command="{Binding CloseCommand}" IsEnabled="{Binding CanClose}"
+                                       Padding="16,6" Appearance="Primary"/>
+                        </StackPanel>
                         <TextBox Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True"
                                  VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
                     </DockPanel>

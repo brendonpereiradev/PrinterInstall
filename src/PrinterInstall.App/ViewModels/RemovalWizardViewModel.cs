@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PrinterInstall.App.Resources;
 using PrinterInstall.App.Services;
+using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Orchestration;
 using PrinterInstall.Core.Remote;
@@ -17,6 +18,7 @@ public partial class RemovalWizardViewModel : ObservableObject
     private readonly ISessionContext _session;
     private readonly IRemotePrinterOperations _remote;
     private readonly PrinterControlOrchestrator _orchestrator;
+    private readonly ILogExportService _logExportService;
 
     private readonly Dictionary<string, List<PrinterRemovalQueueItem>> _selectionsByComputer = new();
     private readonly Dictionary<string, List<PrinterRenameItem>> _renamesByComputer = new();
@@ -26,11 +28,13 @@ public partial class RemovalWizardViewModel : ObservableObject
     public RemovalWizardViewModel(
         ISessionContext session,
         IRemotePrinterOperations remote,
-        PrinterControlOrchestrator orchestrator)
+        PrinterControlOrchestrator orchestrator,
+        ILogExportService? logExportService = null)
     {
         _session = session;
         _remote = remote;
         _orchestrator = orchestrator;
+        _logExportService = logExportService ?? new LogExportService();
         QueuesForCurrentComputer.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowQueuesEmptyHint));
     }
 
@@ -59,20 +63,32 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     public bool CanClose => CurrentStepIndex == 3 && !IsExecuting;
 
+    public bool CanExportLog => CurrentStepIndex == 3 && !IsExecuting && !string.IsNullOrWhiteSpace(LogText);
+
     public event EventHandler? CloseRequested;
 
     partial void OnIsExecutingChanged(bool value)
     {
         OnPropertyChanged(nameof(CanExecute));
         OnPropertyChanged(nameof(CanClose));
+        OnPropertyChanged(nameof(CanExportLog));
         CloseCommand.NotifyCanExecuteChanged();
+        ExportLogCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnCurrentStepIndexChanged(int value)
     {
         OnPropertyChanged(nameof(CanExecute));
         OnPropertyChanged(nameof(CanClose));
+        OnPropertyChanged(nameof(CanExportLog));
         CloseCommand.NotifyCanExecuteChanged();
+        ExportLogCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnLogTextChanged(string value)
+    {
+        OnPropertyChanged(nameof(CanExportLog));
+        ExportLogCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnIsLoadingQueuesChanged(bool value)
@@ -294,6 +310,37 @@ public partial class RemovalWizardViewModel : ObservableObject
         ReviewSummary = string.Join(Environment.NewLine, lines);
     }
 
+    [RelayCommand(CanExecute = nameof(CanExportLog))]
+    private void ExportLog()
+    {
+        if (string.IsNullOrWhiteSpace(LogText))
+            return;
+
+        var operatorId = _session.Credential is not null
+            ? (string.IsNullOrEmpty(_session.Credential.Domain)
+                ? _session.Credential.UserName
+                : $@"{_session.Credential.Domain}\{_session.Credential.UserName}")
+            : null;
+
+        var report = LogReportFormatter.FormatRemovalReport(
+            operatorId,
+            Environment.MachineName,
+            ReviewSummary,
+            LogText);
+
+        var defaultFileName = $"PrinterInstall_Controle_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt";
+        var result = _logExportService.ExportLog(defaultFileName, report);
+
+        if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.FilePath))
+        {
+            AppendLog(string.Format(UiStrings.Removal_LogExportSuccessFormat, result.FilePath));
+        }
+        else if (!result.IsCancelled && !string.IsNullOrWhiteSpace(result.ErrorMessage))
+        {
+            AppendLog(string.Format(UiStrings.Removal_LogExportErrorFormat, result.ErrorMessage));
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanClose))]
     private void Close()
     {
@@ -302,10 +349,19 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     private void AppendLog(string line)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        void Write()
         {
             var ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             LogText += $"[{ts}] {line}\r\n";
-        });
+        }
+
+        if (Application.Current?.Dispatcher is not null && !Application.Current.Dispatcher.CheckAccess())
+        {
+            Application.Current.Dispatcher.Invoke(Write);
+        }
+        else
+        {
+            Write();
+        }
     }
 }

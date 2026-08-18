@@ -81,6 +81,44 @@ public static class WmiPrinterOperationsCore
 
     public static string EscapePs(string s) => s.Replace("'", "''");
 
+    public static string BuildRunAsRelaunchBlock() =>
+$@"$scriptPath = $MyInvocation.MyCommand.Path
+$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {{
+    Write-Output 'ELEVATE>> Solicitando privilegios de administrador (UAC)...'
+    try {{
+        $proc = Start-Process -FilePath 'powershell.exe' -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList @(
+            '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $scriptPath
+        )
+        if ($null -eq $proc) {{
+            Write-Output 'RESULT>> FAIL Prompt UAC cancelado. Execute o Printer Install como administrador.'
+            exit 1
+        }}
+        exit $proc.ExitCode
+    }}
+    catch {{
+        Write-Output ('ELEVATE>> UAC negado: ' + $_.Exception.Message)
+        Write-Output 'RESULT>> FAIL Execute o Printer Install como administrador ou aceite o prompt UAC.'
+        exit 1
+    }}
+}}
+
+";
+
+    public static string BuildLocalElevatedScript(string logPath, string innerScriptBody) =>
+        BuildRunAsRelaunchBlock() +
+$@"$logPath = '{EscapePs(logPath)}'
+$logDir = Split-Path -Parent $logPath
+if (-not (Test-Path -LiteralPath $logDir)) {{
+    New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+}}
+Start-Transcript -LiteralPath $logPath -Force | Out-Null
+try {{
+{innerScriptBody}
+}} finally {{
+    Stop-Transcript | Out-Null
+}}";
+
     public static string BuildRenamePrinterCommandLine(string currentName, string newName)
     {
         var n = EscapePs(currentName);
@@ -185,31 +223,7 @@ public static class WmiPrinterOperationsCore
     public static string BuildInstallerScript(string infLocal, string driverName, string logPath, bool skipRunAsBlock = false)
     {
         var infFileName = Path.GetFileName(infLocal);
-        var elevationBlock = skipRunAsBlock
-            ? ""
-            :
-$@"$scriptPath = $MyInvocation.MyCommand.Path
-$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {{
-    Write-Output 'ELEVATE>> Solicitando privilegios de administrador (UAC)...'
-    try {{
-        $proc = Start-Process -FilePath 'powershell.exe' -Verb RunAs -Wait -PassThru -WindowStyle Hidden -ArgumentList @(
-            '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $scriptPath
-        )
-        if ($null -eq $proc) {{
-            Write-Output 'RESULT>> FAIL Prompt UAC cancelado. Execute o Printer Install como administrador.'
-            exit 1
-        }}
-        exit $proc.ExitCode
-    }}
-    catch {{
-        Write-Output ('ELEVATE>> UAC negado: ' + $_.Exception.Message)
-        Write-Output 'RESULT>> FAIL Execute o Printer Install como administrador ou aceite o prompt UAC.'
-        exit 1
-    }}
-}}
-
-";
+        var elevationBlock = skipRunAsBlock ? "" : BuildRunAsRelaunchBlock();
         return elevationBlock +
 $@"Start-Transcript -Path '{EscapePs(logPath)}' -Force | Out-Null
 try {{

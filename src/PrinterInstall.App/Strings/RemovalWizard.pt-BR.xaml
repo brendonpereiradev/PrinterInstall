@@ -15,5 +15,6 @@
   <sys:String x:Key="Removal_ColumnNewName">Renomear para</sys:String>
   <sys:String x:Key="Removal_RenamePlaceholder">Digite o novo nome</sys:String>
   <sys:String x:Key="Removal_LogHeader">Log de execução</sys:String>
+  <sys:String x:Key="Removal_ExportLogButton">Exportar log</sys:String>
   <sys:String x:Key="Removal_CloseButton">Fechar</sys:String>
 </ResourceDictionary>

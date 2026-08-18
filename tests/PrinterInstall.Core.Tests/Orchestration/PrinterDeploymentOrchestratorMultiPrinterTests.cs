@@ -111,7 +111,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
         await sut.RunAsync(
             request,
             new DeploymentRollbackJournal(),
-            new Progress<DeploymentProgressEvent>(e =>
+            new InlineProgress<DeploymentProgressEvent>(e =>
             {
                 if (e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: { } n })
                 {

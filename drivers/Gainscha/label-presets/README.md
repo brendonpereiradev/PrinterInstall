@@ -1,36 +1,120 @@
-# Gainscha label preset templates (.sds)
+# Capture real Gainscha label preset templates
 
-Templates Seagull Driver Settings importados via `ssdal settings import` após criar a fila.
 
-## Driver de referência
 
-- Pacote: `drivers/Gainscha` (Seagull `2021.1.4_GN`, modelo `Gainscha GA-2408T`)
-- Impressora de teste na rede: `10.1.152.132:9100` (RAW)
+The embedded `.sds` files under `src/PrinterInstall.Core/Gainscha/Templates/` must be **real exports** from the Seagull driver.
 
-## Captura de templates (spike)
 
-Num PC Windows **com o driver instalado** e uma fila de teste:
 
-1. Preferências → Configuração de página → excluir stocks extra; deixar só USER com dimensões do setor.
-2. Exportar:
+## What deploy validates
 
-```powershell
-$ssdal = Get-ChildItem -Path "${env:ProgramFiles}","${env:ProgramFiles(x86)}" -Filter ssdal.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-ssdal /p "NomeDaFila" settings export "C:\Temp\paciente.sds"
-```
 
-3. Repetir para Pulseira (25×270), Matrix (50×30), Paciente (89×36), Dupla (45×13).
-4. Copiar os `.sds` para:
-   - `drivers/Gainscha/label-presets/*.sds`
-   - `src/PrinterInstall.Core/Gainscha/Templates/*.sds` (embedded resources)
 
-## Ficheiros
+Deploy applies **two** Seagull stores:
 
-| Ficheiro | Preset | Dimensões |
-|----------|--------|-----------|
-| `pulseira.sds` | Pulseira | 25 × 270 mm |
-| `matrix.sds` | Matrix | 50 × 30 mm |
-| `paciente.sds` | Paciente | 89 × 36 mm |
-| `dupla.sds` | Dupla | 45 × 13 mm |
 
-Os `.sds` incluídos inicialmente são **placeholders** (stock USER com Data genérico). Substituir pelos exports reais antes de validação em produção.
+
+| Store | Windows UI | Template file |
+
+|-------|------------|---------------|
+
+| Printing preferences | Properties → Preferences → Page Setup | `{preset}.sds` |
+
+| Printing Defaults | Properties → Advanced → Printing Defaults → Page Setup | `{preset}-defaults.sds` |
+
+
+
+Both are imported via `ssdal settings import` and validated by export (USER width × height in mm).
+
+
+
+After deploy, confirm **both** dialogs show the correct USER size (e.g. 89 × 36 mm for Paciente).
+
+
+
+To hide default stocks in the dropdown, delete `2 x 4`, `4 x 4`, and `4 x 6` manually once in printer preferences (Seagull does not remove them via `ssdal` import alone).
+
+
+
+## One-time capture per preset
+
+
+
+On a Windows PC with the Gainscha GA-2408T driver installed:
+
+
+
+### 1. Preferences template (`{preset}.sds`)
+
+
+
+1. Create or use a capture queue (for example `Etiquetadora`).
+
+2. Open **Printer properties → Preferences → Page Setup → Label Paper**.
+
+3. Delete every stock except one custom `USER` with the target dimensions.
+
+4. Export:
+
+   ```powershell
+
+   .\scripts\Capture-GainschaLabelPreset.ps1 -PrinterName "Etiquetadora" -Preset Paciente -OutputDirectory C:\Temp -Target Preferences
+
+   ```
+
+5. Copy to `src/PrinterInstall.Core/Gainscha/Templates/<preset>.sds`.
+
+
+
+### 2. Printing Defaults template (`{preset}-defaults.sds`)
+
+
+
+1. Use the same queue (or a fresh one with driver defaults in both stores).
+
+2. Open **Printer properties → Advanced → Printing Defaults → Page Setup → Label Paper**.
+
+3. Configure **only** Printing Defaults (do not change Preferences).
+
+4. Export:
+
+   ```powershell
+
+   .\scripts\Capture-GainschaLabelPreset.ps1 -PrinterName "Etiquetadora" -Preset Paciente -OutputDirectory C:\Temp -Target PrintingDefaults
+
+   ```
+
+5. Copy to `src/PrinterInstall.Core/Gainscha/Templates/<preset>-defaults.sds`.
+
+
+
+6. Rebuild/publish and copy to the deployment share.
+
+
+
+**Note:** The current `{preset}-defaults.sds` placeholders are copies of the preferences templates until real Printing Defaults captures are done on a Gainscha PC.
+
+
+
+## Expected dimensions
+
+
+
+| Preset   | USER size              |
+
+|----------|------------------------|
+
+| Paciente | 89 × 36 mm             |
+
+| Matrix   | 50 × 30 mm             |
+
+| Pulseira | 25 × 270 mm            |
+
+
+
+## Remote fallback
+
+
+
+If headless `ssdal import` of `{preset}-defaults.sds` does not validate, deploy retries with an interactive `DocumentProperties` sync when the deploy user has an active session on the target PC (30 s timeout). Otherwise deploy fails with a clear message to log in and redeploy.
+

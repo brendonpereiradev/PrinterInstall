@@ -193,7 +193,16 @@
                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
                 <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Main_LogGroupHeader}" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                    <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{DynamicResource Main_LogGroupHeader}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <ui:Button Grid.Column="1" Content="{DynamicResource Main_ExportLogButton}"
+                                   Command="{Binding ExportLogCommand}"
+                                   Appearance="Secondary" Padding="12,4"/>
+                    </Grid>
                     <TextBox Text="{Binding LogText}" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                              TextWrapping="Wrap" FontFamily="Consolas"/>
                 </DockPanel>

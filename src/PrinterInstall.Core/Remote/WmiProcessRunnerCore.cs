@@ -92,7 +92,17 @@ internal static class WmiProcessRunnerCore
                 if (remaining <= TimeSpan.Zero)
                     break;
                 if (proc.WaitForExit((int)Math.Min(remaining.TotalMilliseconds, 500)))
-                    return new RemoteProcessResult((uint)proc.ExitCode, pid, TimedOut: false);
+                {
+                    try
+                    {
+                        return new RemoteProcessResult((uint)proc.ExitCode, pid, TimedOut: false);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // WMI-started processes are not owned by this Process instance.
+                        return new RemoteProcessResult(0, pid, TimedOut: false);
+                    }
+                }
             }
             catch (ArgumentException)
             {

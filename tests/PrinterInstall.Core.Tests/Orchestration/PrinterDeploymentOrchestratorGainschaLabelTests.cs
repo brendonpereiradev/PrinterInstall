@@ -102,7 +102,7 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
     }
 
     [Fact]
-    public async Task Gainscha_SkippedAlreadyExists_DoesNotCallConfigurePreset()
+    public async Task Gainscha_AlreadyExists_AppliesLabelPreset()
     {
         var driver = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Gainscha);
         var remote = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
@@ -110,7 +110,10 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
             .ReturnsAsync(new[] { driver });
         remote.Setup(m => m.PrinterQueueExistsAsync("pc1", It.IsAny<NetworkCredential>(), "Q1", It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
+        remote.Setup(m => m.ConfigureGainschaLabelPresetAsync("pc1", It.IsAny<NetworkCredential>(), "Q1", GainschaLabelPreset.Paciente, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
+        var events = new List<DeploymentProgressEvent>();
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
@@ -122,10 +125,12 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
         await new PrinterDeploymentOrchestrator(remote.Object).RunAsync(
             request,
             new DeploymentRollbackJournal(),
-            new InlineProgress<DeploymentProgressEvent>(_ => { }));
+            new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         remote.Verify(m => m.ConfigureGainschaLabelPresetAsync(
-            It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<GainschaLabelPreset>(), It.IsAny<CancellationToken>()), Times.Never);
+            "pc1", It.IsAny<NetworkCredential>(), "Q1", GainschaLabelPreset.Paciente, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Contains(events, e => e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: "Q1" }
+            && e.Message.Contains("fila já existia", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

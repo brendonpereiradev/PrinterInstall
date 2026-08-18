@@ -9,7 +9,8 @@ public static class PrinterCatalog
     {
         [PrinterBrand.Epson] = "EPSON Universal Print Driver",
         [PrinterBrand.Gainscha] = "Gainscha GA-2408T",
-        [PrinterBrand.Lexmark] = "Lexmark Universal v4 XL"
+        [PrinterBrand.Lexmark] = "Lexmark Universal v4 XL",
+        [PrinterBrand.Brother] = "Brother HL-L5212DW Printer"
     };
 
     private static readonly IReadOnlyDictionary<PrinterBrand, IReadOnlyList<string>> DriverResolutionOrder =
@@ -18,6 +19,7 @@ public static class PrinterCatalog
             [PrinterBrand.Epson] = new[] { "EPSON Universal Print Driver" },
             [PrinterBrand.Gainscha] = new[] { "Gainscha GA-2408T" },
             [PrinterBrand.Lexmark] = new[] { "Lexmark Universal v4 XL", "Lexmark Universal v2 XL" },
+            [PrinterBrand.Brother] = new[] { "Brother HL-L5212DW Printer" },
         };
 
     public static string GetExpectedDriverName(PrinterBrand brand) => DriverNames[brand];

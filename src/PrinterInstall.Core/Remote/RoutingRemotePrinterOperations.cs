@@ -43,8 +43,9 @@ public sealed class RoutingRemotePrinterOperations : IRemotePrinterOperations
         NetworkCredential credential,
         string printerQueueName,
         GainschaLabelPreset preset,
-        CancellationToken cancellationToken = default)
-        => Resolve(computerName).ConfigureGainschaLabelPresetAsync(computerName, credential, printerQueueName, preset, cancellationToken);
+        CancellationToken cancellationToken = default) =>
+        Resolve(computerName).ConfigureGainschaLabelPresetAsync(
+            computerName, credential, printerQueueName, preset, cancellationToken);
 
     public Task PrintTestPageAsync(string computerName, NetworkCredential credential, string printerQueueName, CancellationToken cancellationToken = default)
         => Resolve(computerName).PrintTestPageAsync(computerName, credential, printerQueueName, cancellationToken);
