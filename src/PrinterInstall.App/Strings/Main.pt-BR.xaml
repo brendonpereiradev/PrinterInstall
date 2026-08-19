@@ -12,7 +12,7 @@
   <sys:String x:Key="Main_PrintersGroupHeader">Configuração de impressora</sys:String>
   <sys:String x:Key="Main_BrandLabel">Modelo</sys:String>
   <sys:String x:Key="Main_DisplayNameLabel">Nome da impressora</sys:String>
-  <sys:String x:Key="Main_PrinterHostLabel">Host (IP/DNS)</sys:String>
+  <sys:String x:Key="Main_PrinterHostLabel">IP</sys:String>
   <sys:String x:Key="Main_GainschaLabelPresetLabel">Tamanho de etiqueta</sys:String>
   <sys:String x:Key="Main_AddPrinterRow">+ Adicionar impressora</sys:String>
   <sys:String x:Key="Main_RemovePrinterRow">Remover</sys:String>
