@@ -214,7 +214,7 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
                 def.HeightMm,
                 def.DriverStockDisplayName);
 
-            await _elevatedRunner.RunElevatedScriptAsUserAsync(
+            await _elevatedRunner.RunElevatedScriptAsync(
                 computerName,
                 credential,
                 script,

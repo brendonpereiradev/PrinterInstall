@@ -91,4 +91,64 @@ public class EmbeddedDriverPackageExtractorTests : IDisposable
         Assert.Equal("EXTERNAL.INF", pkg!.InfFileName);
         Assert.Equal(externalBrother, pkg.RootFolder);
     }
+
+    [Fact]
+    public void IsExtracted_WhenMarkerFileDoesNotExist_ReturnsFalse()
+    {
+        // Arrange
+        var sut = new EmbeddedDriverPackageExtractor(_tempDirectory, typeof(FactAttribute).Assembly);
+
+        // Act & Assert
+        Assert.False(sut.IsExtracted);
+    }
+
+    [Fact]
+    public void IsExtracted_WhenMarkerFileExistsAndResourceStreamNull_ReturnsTrue()
+    {
+        // Arrange
+        var sut = new EmbeddedDriverPackageExtractor(_tempDirectory, typeof(FactAttribute).Assembly);
+        var markerPath = Path.Combine(_tempDirectory, ".extracted");
+        File.WriteAllText(markerPath, "12345");
+
+        // Act & Assert
+        Assert.True(sut.IsExtracted);
+    }
+
+    [Fact]
+    public void GetExtractedDriversPath_WhenMarkerExists_ReturnsTargetDirectory()
+    {
+        // Arrange
+        var sut = new EmbeddedDriverPackageExtractor(_tempDirectory, typeof(FactAttribute).Assembly);
+        var markerPath = Path.Combine(_tempDirectory, ".extracted");
+        File.WriteAllText(markerPath, "12345");
+
+        // Act
+        var result = sut.GetExtractedDriversPath();
+
+        // Assert
+        Assert.Equal(_tempDirectory, result);
+    }
+
+    [Fact]
+    public void GetExtractedDriversPath_WhenNoMarkerAndNoResource_ReturnsNull()
+    {
+        // Arrange
+        var sut = new EmbeddedDriverPackageExtractor(_tempDirectory, typeof(FactAttribute).Assembly);
+
+        // Act
+        var result = sut.GetExtractedDriversPath();
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void DefaultConstructor_CreatesInstanceWithoutThrowing()
+    {
+        // Arrange & Act
+        var sut = new EmbeddedDriverPackageExtractor();
+
+        // Assert
+        Assert.NotNull(sut);
+    }
 }

@@ -84,4 +84,44 @@ public class LogReportFormatterTests
         Assert.Contains("(Nenhum resumo de ações registrado)", result);
         Assert.Contains("log line", result);
     }
+
+    [Fact]
+    public void FormatDeployReport_WhenQueueNameAndMessageAreEmpty_FormatsPlaceholderHyphenAndOmitsDetails()
+    {
+        // Arrange
+        var targets = new List<(string ComputerName, string PrinterQueueName, string State, string? Message)>
+        {
+            ("PC-RH-01", "", "Pending", null),
+            ("PC-RH-02", "   ", "ContactingRemote", "   ")
+        };
+
+        // Act
+        var result = LogReportFormatter.FormatDeployReport("operador", "PC-ADMIN", targets, "log");
+
+        // Assert
+        Assert.Contains("• [PC-RH-01 | -] Estado: Pending", result);
+        Assert.DoesNotContain("• [PC-RH-01 | -] Estado: Pending — Detalhes:", result);
+        Assert.Contains("• [PC-RH-02 | -] Estado: ContactingRemote", result);
+        Assert.DoesNotContain("• [PC-RH-02 | -] Estado: ContactingRemote — Detalhes:", result);
+    }
+
+    [Fact]
+    public void FormatDeployReport_WhenExportTimeNotSpecified_UsesCurrentDateTime()
+    {
+        // Act
+        var result = LogReportFormatter.FormatDeployReport("operador", "PC-ADMIN", null, null);
+
+        // Assert
+        Assert.Contains("Data/Hora da Exportação: " + DateTime.Now.ToString("yyyy-MM-dd"), result);
+    }
+
+    [Fact]
+    public void FormatRemovalReport_WhenExportTimeNotSpecified_UsesCurrentDateTime()
+    {
+        // Act
+        var result = LogReportFormatter.FormatRemovalReport("operador", "PC-ADMIN", "Resumo", "Log");
+
+        // Assert
+        Assert.Contains("Data/Hora da Exportação: " + DateTime.Now.ToString("yyyy-MM-dd"), result);
+    }
 }

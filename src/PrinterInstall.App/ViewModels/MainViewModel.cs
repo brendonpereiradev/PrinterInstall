@@ -26,6 +26,8 @@ public partial class MainViewModel : ObservableObject
     private readonly IServiceProvider _serviceProvider;
     private readonly LocalMachineIdentity _localMachineIdentity;
     private readonly ILogExportService _logExportService;
+    private readonly IDeploymentNotificationService _notificationService;
+    private readonly IConfirmationDialogService _dialogService;
     private CancellationTokenSource? _deployCts;
 
     public MainViewModel(
@@ -34,7 +36,9 @@ public partial class MainViewModel : ObservableObject
         DeploymentRollbackRunner rollbackRunner,
         IServiceProvider serviceProvider,
         LocalMachineIdentity localMachineIdentity,
-        ILogExportService? logExportService = null)
+        ILogExportService? logExportService = null,
+        IDeploymentNotificationService? notificationService = null,
+        IConfirmationDialogService? dialogService = null)
     {
         _session = session;
         _orchestrator = orchestrator;
@@ -42,6 +46,8 @@ public partial class MainViewModel : ObservableObject
         _serviceProvider = serviceProvider;
         _localMachineIdentity = localMachineIdentity;
         _logExportService = logExportService ?? new LogExportService();
+        _notificationService = notificationService ?? new DeploymentNotificationService();
+        _dialogService = dialogService ?? new ConfirmationDialogService();
         PrinterRows.Add(new PrinterFormRowViewModel());
         Targets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowStatusEmptyHint));
     }
@@ -235,6 +241,17 @@ public partial class MainViewModel : ObservableObject
             });
         }
 
+        var heuristicWarnings = PrinterBrandHeuristicsValidator.Inspect(definitions);
+        if (heuristicWarnings.Count > 0)
+        {
+            var proceed = await _dialogService.ConfirmDeployWarningAsync(heuristicWarnings);
+            if (!proceed)
+            {
+                AppendLog(UiStrings.Main_DeployCancelledByMismatchWarning);
+                return;
+            }
+        }
+
         var validNames = new List<string>();
         foreach (var n in rawNames)
         {
@@ -291,9 +308,9 @@ public partial class MainViewModel : ObservableObject
         _deployCts = new CancellationTokenSource();
         IsDeployRunning = true;
 
-        var progress = new Progress<DeploymentProgressEvent>(e =>
+        var progress = new SynchronousProgress<DeploymentProgressEvent>(e =>
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            RunOnUiDispatcher(() =>
             {
                 if (e.PrinterQueueName is null)
                 {
@@ -324,7 +341,8 @@ public partial class MainViewModel : ObservableObject
             await _orchestrator.RunAsync(request, journal, progress, _deployCts.Token).ConfigureAwait(true);
 
             LastSummaryText = BuildSummaryText();
-            if (!string.IsNullOrEmpty(LastSummaryText))
+            NotifyDeployCompletion();
+            if (!string.IsNullOrEmpty(LastSummaryText) && Application.Current is not null)
             {
                 MessageBox.Show(LastSummaryText, UiStrings.Main_SummaryDialogTitle, MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -332,14 +350,14 @@ public partial class MainViewModel : ObservableObject
         catch (OperationCanceledException)
         {
             AppendLog(UiStrings.Main_DeployCancelRequested);
-            Application.Current.Dispatcher.Invoke(MarkIntermediateTargetsAsDeployCancelled);
+            RunOnUiDispatcher(MarkIntermediateTargetsAsDeployCancelled);
 
             if (journal.HasRollbackWork)
             {
                 AppendLog(UiStrings.Main_DeployRollbackStarting);
-                var rbProgress = new Progress<PrinterRemovalProgressEvent>(e =>
+                var rbProgress = new SynchronousProgress<PrinterRemovalProgressEvent>(e =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    RunOnUiDispatcher(() =>
                     {
                         ApplyRollbackProgress(e, journal);
                         AppendLog($"{e.ComputerName}: {e.Message}");
@@ -356,8 +374,25 @@ public partial class MainViewModel : ObservableObject
                 }
             }
 
+            RunOnUiDispatcher(() =>
+            {
+                foreach (var row in Targets)
+                {
+                    if (row.State is TargetMachineState.RollbackRemovingQueue or TargetMachineState.RollbackRemovingPort)
+                    {
+                        row.State = TargetMachineState.RolledBack;
+                    }
+                    else if (IsIntermediateDeployState(row.State))
+                    {
+                        row.State = TargetMachineState.DeployCancelled;
+                        row.Message = UiStrings.Main_DeployCancelledRowMessage;
+                    }
+                }
+            });
+
             AppendLog(UiStrings.Main_DeployCooperativeCancelHint);
             LastSummaryText = BuildSummaryText();
+            _notificationService.NotifyWarning();
         }
         finally
         {
@@ -527,10 +562,54 @@ public partial class MainViewModel : ObservableObject
         return sb.ToString();
     }
 
+    private void NotifyDeployCompletion()
+    {
+        if (Targets.Count == 0)
+            return;
+
+        var successCount = Targets.Count(t => t.State is TargetMachineState.CompletedSuccess or TargetMachineState.SkippedAlreadyExists);
+        var errorCount = Targets.Count(t => t.State is TargetMachineState.Error or TargetMachineState.AbortedDriverMissing);
+        var cancelCount = Targets.Count(t => t.State is TargetMachineState.DeployCancelled or TargetMachineState.RolledBack);
+
+        if (cancelCount > 0)
+        {
+            _notificationService.NotifyWarning();
+        }
+        else if (errorCount == 0 && successCount > 0)
+        {
+            _notificationService.NotifySuccess();
+        }
+        else if (successCount == 0 && errorCount > 0)
+        {
+            _notificationService.NotifyError();
+        }
+        else
+        {
+            _notificationService.NotifyWarning();
+        }
+    }
+
+    private static void RunOnUiDispatcher(Action action)
+    {
+        if (Application.Current?.Dispatcher is not null && !Application.Current.Dispatcher.CheckAccess())
+        {
+            Application.Current.Dispatcher.Invoke(action);
+        }
+        else
+        {
+            action();
+        }
+    }
+
     private void AppendLog(string line)
     {
-        var ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        LogText += $"[{ts}] {line}\r\n";
+        void Write()
+        {
+            var ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            LogText += $"[{ts}] {line}\r\n";
+        }
+
+        RunOnUiDispatcher(Write);
     }
 
     [RelayCommand]
@@ -555,5 +634,17 @@ public partial class MainViewModel : ObservableObject
         if (owner is not null)
             window.Owner = owner;
         window.ShowDialog();
+    }
+
+    private sealed class SynchronousProgress<T> : IProgress<T>
+    {
+        private readonly Action<T> _handler;
+
+        public SynchronousProgress(Action<T> handler)
+        {
+            _handler = handler;
+        }
+
+        public void Report(T value) => _handler(value);
     }
 }

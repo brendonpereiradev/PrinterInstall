@@ -2,6 +2,7 @@ using System.Net;
 using PrinterInstall.Core.Catalog;
 using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Models;
+using PrinterInstall.Core.Network;
 using PrinterInstall.Core.Remote;
 
 namespace PrinterInstall.Core.Orchestration;
@@ -12,16 +13,49 @@ public sealed class PrinterDeploymentOrchestrator
 
     private readonly IRemotePrinterOperations _remote;
     private readonly ILocalDriverPackageCatalog _localDrivers;
+    private readonly IDirectRawPrinterTestService _rawTestService;
+    private readonly int _maxRetryAttempts;
+    private readonly TimeSpan _retryDelay;
 
     public PrinterDeploymentOrchestrator(IRemotePrinterOperations remote)
-        : this(remote, new NullLocalDriverPackageCatalog())
+        : this(remote, new NullLocalDriverPackageCatalog(), new DirectRawPrinterTestService(), TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay)
     {
     }
 
     public PrinterDeploymentOrchestrator(IRemotePrinterOperations remote, ILocalDriverPackageCatalog localDrivers)
+        : this(remote, localDrivers, new DirectRawPrinterTestService(), TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay)
+    {
+    }
+
+    public PrinterDeploymentOrchestrator(
+        IRemotePrinterOperations remote,
+        ILocalDriverPackageCatalog localDrivers,
+        IDirectRawPrinterTestService rawTestService)
+        : this(remote, localDrivers, rawTestService, TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay)
+    {
+    }
+
+    public PrinterDeploymentOrchestrator(
+        IRemotePrinterOperations remote,
+        ILocalDriverPackageCatalog localDrivers,
+        int maxRetryAttempts,
+        TimeSpan retryDelay)
+        : this(remote, localDrivers, new DirectRawPrinterTestService(), maxRetryAttempts, retryDelay)
+    {
+    }
+
+    public PrinterDeploymentOrchestrator(
+        IRemotePrinterOperations remote,
+        ILocalDriverPackageCatalog localDrivers,
+        IDirectRawPrinterTestService rawTestService,
+        int maxRetryAttempts,
+        TimeSpan retryDelay)
     {
         _remote = remote;
         _localDrivers = localDrivers;
+        _rawTestService = rawTestService;
+        _maxRetryAttempts = maxRetryAttempts;
+        _retryDelay = retryDelay;
     }
 
     public async Task RunAsync(
@@ -37,7 +71,19 @@ public sealed class PrinterDeploymentOrchestrator
             IReadOnlyList<string> drivers;
             try
             {
-                drivers = await _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, cancellationToken).ConfigureAwait(false);
+                drivers = await TransientRetryHelper.ExecuteWithRetryAsync(
+                    ct => _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, ct),
+                    maxAttempts: _maxRetryAttempts,
+                    initialDelay: _retryDelay,
+                    onRetry: (ex, attempt, delay) =>
+                    {
+                        progress.Report(new DeploymentProgressEvent(
+                            computer,
+                            TargetMachineState.ContactingRemote,
+                            $"Falha transitória ({Flatten(ex)}). Tentando novamente em {delay.TotalSeconds:F0}s (tentativa {attempt + 1}/{_maxRetryAttempts})...",
+                            null));
+                    },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -69,8 +115,11 @@ public sealed class PrinterDeploymentOrchestrator
                     }
                     else
                     {
-                        drivers = await _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, cancellationToken)
-                            .ConfigureAwait(false);
+                        drivers = await TransientRetryHelper.ExecuteWithRetryAsync(
+                            ct => _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, ct),
+                            maxAttempts: _maxRetryAttempts,
+                            initialDelay: _retryDelay,
+                            cancellationToken: cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (OperationCanceledException)
@@ -114,7 +163,13 @@ public sealed class PrinterDeploymentOrchestrator
 
                 try
                 {
-                    if (await _remote.PrinterQueueExistsAsync(computer, request.DomainCredential, displayName, cancellationToken).ConfigureAwait(false))
+                    var queueExists = await TransientRetryHelper.ExecuteWithRetryAsync(
+                        ct => _remote.PrinterQueueExistsAsync(computer, request.DomainCredential, displayName, ct),
+                        maxAttempts: _maxRetryAttempts,
+                        initialDelay: _retryDelay,
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                    if (queueExists)
                     {
                         if (def.Brand == PrinterBrand.Gainscha)
                         {
@@ -204,6 +259,8 @@ public sealed class PrinterDeploymentOrchestrator
                         portName,
                         cancellationToken).ConfigureAwait(false);
 
+                    rollbackJournal.RecordQueueCreated(computer, displayName, portName);
+
                     if (def.Brand == PrinterBrand.Gainscha)
                     {
                         if (def.GainschaLabelPreset is null)
@@ -240,8 +297,6 @@ public sealed class PrinterDeploymentOrchestrator
                         }
                     }
 
-                    rollbackJournal.RecordQueueCreated(computer, displayName, portName);
-
                     if (request.PrintTestPage)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -252,11 +307,27 @@ public sealed class PrinterDeploymentOrchestrator
                             displayName));
                         try
                         {
-                            await _remote.PrintTestPageAsync(
-                                computer,
-                                request.DomainCredential,
-                                displayName,
-                                cancellationToken).ConfigureAwait(false);
+                            var rawSuccess = false;
+                            if (def.Brand == PrinterBrand.Gainscha && !string.IsNullOrWhiteSpace(def.PrinterHostAddress))
+                            {
+                                var rawResult = await _rawTestService.RunAsync(
+                                    def.PrinterHostAddress,
+                                    def.Brand,
+                                    def.GainschaLabelPreset,
+                                    cancellationToken).ConfigureAwait(false);
+                                if (rawResult.Success)
+                                    rawSuccess = true;
+                            }
+
+                            if (!rawSuccess)
+                            {
+                                await _remote.PrintTestPageAsync(
+                                    computer,
+                                    request.DomainCredential,
+                                    displayName,
+                                    cancellationToken).ConfigureAwait(false);
+                            }
+
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 TargetMachineState.CompletedSuccess,
@@ -346,7 +417,11 @@ public sealed class PrinterDeploymentOrchestrator
             "Revalidating driver after install...",
             null));
 
-        var drivers = await _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, cancellationToken).ConfigureAwait(false);
+        var drivers = await TransientRetryHelper.ExecuteWithRetryAsync(
+            ct => _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, ct),
+            maxAttempts: _maxRetryAttempts,
+            initialDelay: _retryDelay,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
         if (!DriverNameMatcher.IsAnyAcceptedDriverInstalled(drivers, acceptable))
         {
             var sample = string.Join(" | ", drivers.Take(10));
@@ -455,7 +530,7 @@ public sealed class PrinterDeploymentOrchestrator
             // Best effort.
         }
 
-        rollbackJournal.AbandonPortOnly(computer, portName);
+        rollbackJournal.AbandonQueue(computer, displayName, portName);
     }
 
     private static string Flatten(Exception ex)

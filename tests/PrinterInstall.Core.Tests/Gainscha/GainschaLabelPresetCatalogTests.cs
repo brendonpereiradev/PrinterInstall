@@ -9,6 +9,7 @@ public class GainschaLabelPresetCatalogTests
     [InlineData(GainschaLabelPreset.Pulseira, 25, 270, "USER (25,0 mm x 270,0 mm)")]
     [InlineData(GainschaLabelPreset.Matrix, 50, 30, "USER (50,0 mm x 30,0 mm)")]
     [InlineData(GainschaLabelPreset.Paciente, 89, 36, "USER (89,0 mm x 36,0 mm)")]
+    [InlineData(GainschaLabelPreset.Lote, 45, 13, "USER (45,0 mm x 13,0 mm)")]
     public void GetDefinition_ReturnsExpectedDimensionsAndDisplayName(
         GainschaLabelPreset preset, int widthMm, int heightMm, string displayName)
     {

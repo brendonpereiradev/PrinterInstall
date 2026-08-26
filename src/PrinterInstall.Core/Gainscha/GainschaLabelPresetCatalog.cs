@@ -15,12 +15,15 @@ public static class GainschaLabelPresetCatalog
     [
         GainschaLabelPreset.Paciente,
         GainschaLabelPreset.Matrix,
+        GainschaLabelPreset.Lote,
         GainschaLabelPreset.Pulseira,
     ];
 
     public static IReadOnlyList<GainschaLabelPreset> NetworkTestDisplayOrder { get; } =
     [
         GainschaLabelPreset.Paciente,
+        GainschaLabelPreset.Matrix,
+        GainschaLabelPreset.Lote,
         GainschaLabelPreset.Pulseira,
     ];
 
@@ -29,6 +32,7 @@ public static class GainschaLabelPresetCatalog
         Def(GainschaLabelPreset.Paciente, 89, 36, "Paciente"),
         Def(GainschaLabelPreset.Matrix, 50, 30, "Matrix"),
         Def(GainschaLabelPreset.Pulseira, 25, 270, "Pulseira"),
+        Def(GainschaLabelPreset.Lote, 45, 13, "Lote"),
     ];
 
     public static GainschaLabelPresetDefinition GetDefinition(GainschaLabelPreset preset) =>

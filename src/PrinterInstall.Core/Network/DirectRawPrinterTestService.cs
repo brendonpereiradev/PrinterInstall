@@ -40,15 +40,10 @@ public sealed class DirectRawPrinterTestService : IDirectRawPrinterTestService
         {
             throw;
         }
-        catch (OperationCanceledException)
+        catch (Exception)
         {
             return Fail(DirectRawPrinterTestPhase.Connectivity,
-                $"Sem conectividade em {trimmedHost}:{RawPort} — tempo esgotado.");
-        }
-        catch (Exception ex)
-        {
-            return Fail(DirectRawPrinterTestPhase.Connectivity,
-                $"Sem conectividade em {trimmedHost}:{RawPort} — {ex.Message}");
+                $"Sem conectividade com {trimmedHost}.");
         }
 
         try

@@ -4,6 +4,7 @@
         xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         Title="{DynamicResource Removal_WindowTitle}"
+        Icon="pack://application:,,,/Assets/app.ico"
         Height="640" Width="900"
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
@@ -28,13 +29,25 @@
             <TabControl SelectedIndex="{Binding CurrentStepIndex}">
                 <TabItem>
                     <DockPanel LastChildFill="True">
-                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                            <TextBlock Text="{DynamicResource Removal_Step0Intro}" TextWrapping="Wrap"/>
-                            <TextBlock Text="{DynamicResource Removal_Step0KeyboardHint}"
-                                       FontSize="12"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       TextWrapping="Wrap" Margin="0,4,0,0"/>
-                        </StackPanel>
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="{DynamicResource Removal_Step0Intro}" TextWrapping="Wrap"/>
+                                <TextBlock Text="{DynamicResource Removal_Step0KeyboardHint}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="1"
+                                       Content="{DynamicResource Removal_AddThisComputer}"
+                                       Command="{Binding AddThisComputerCommand}"
+                                       Appearance="Secondary"
+                                       VerticalAlignment="Top"
+                                       Padding="8,4"/>
+                        </Grid>
                         <ui:Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Padding="16,6"
                                 Content="{DynamicResource Removal_Next}" Command="{Binding StartCommand}" Margin="0,8,0,0" Appearance="Primary" IsDefault="True"/>
                         <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"

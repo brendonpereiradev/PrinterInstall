@@ -20,7 +20,13 @@
     <RootNamespace>PrinterInstall.App</RootNamespace>
     <AssemblyTitle>Printer Install</AssemblyTitle>
     <Product>Printer Install</Product>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+    <Resource Include="Assets\app.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="PrinterInstall.App.Tests" />

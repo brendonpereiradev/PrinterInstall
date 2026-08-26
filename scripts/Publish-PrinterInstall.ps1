@@ -62,24 +62,33 @@ try {
         Remove-Item $runtimesDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    # Validação do executável
-    $exePath = Join-Path $publishDir "PrinterInstall.App.exe"
-    if (-not (Test-Path $exePath)) {
-        Write-Error "Erro: PrinterInstall.App.exe não foi encontrado na pasta de publicação."
+    # Validação e renomeação do executável
+    $defaultExe = Join-Path $publishDir "PrinterInstall.App.exe"
+    $finalExe = Join-Path $publishDir "Printer Install.exe"
+
+    if (Test-Path $defaultExe) {
+        if (Test-Path $finalExe) {
+            Remove-Item -Path $finalExe -Force -ErrorAction SilentlyContinue
+        }
+        Move-Item -Path $defaultExe -Destination $finalExe -Force
+    }
+
+    if (-not (Test-Path $finalExe)) {
+        Write-Error "Erro: 'Printer Install.exe' não foi encontrado na pasta de publicação."
     }
 
     $files = Get-ChildItem -Path $publishDir
-    $exeSizeMb = [math]::Round((Get-Item $exePath).Length / 1MB, 2)
+    $exeSizeMb = [math]::Round((Get-Item $finalExe).Length / 1MB, 2)
 
     Write-Host ""
     Write-Host "=================================================================" -ForegroundColor Green
     Write-Host "  PUBLICAÇÃO CONCLUÍDA COM SUCESSO! (ARQUIVO ÚNICO)" -ForegroundColor Green
     Write-Host "=================================================================" -ForegroundColor Green
     Write-Host "Diretório de saída: $publishDir"
-    Write-Host "Executável gerado:  PrinterInstall.App.exe ($exeSizeMb MB)" -ForegroundColor Yellow
+    Write-Host "Executável gerado:  Printer Install.exe ($exeSizeMb MB)" -ForegroundColor Yellow
     Write-Host "Total de arquivos na pasta: $($files.Count) arquivo(s)" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Distribuição: Apenas copie o arquivo 'PrinterInstall.App.exe' para as máquinas de destino."
+    Write-Host "Distribuição: Apenas copie o arquivo 'Printer Install.exe' para as máquinas de destino."
     Write-Host ""
 }
 finally {

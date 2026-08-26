@@ -79,20 +79,17 @@ public sealed class ElevatedRemoteProcessRunner
             await _stager.WriteTextFileAsync(host, credential, paths, "task.ps1", transcriptWrapper, cancellationToken)
                 .ConfigureAwait(false);
 
-            var runAt = DateTime.Now.AddMinutes(1);
             var createCmd = runAsSystem
                 ? string.Format(
                     CultureInfo.InvariantCulture,
-                    "schtasks /Create /TN \"{0}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{1}\\\"\" /SC ONCE /ST {2:HH:mm} /SD {2:MM/dd/yyyy} /RU SYSTEM /RL HIGHEST /F",
+                    "schtasks /Create /TN \"{0}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{1}\\\"\" /SC ONCE /ST 00:00 /RU SYSTEM /RL HIGHEST /F",
                     taskName,
-                    scriptLocal,
-                    runAt)
+                    scriptLocal)
                 : string.Format(
                     CultureInfo.InvariantCulture,
-                    "schtasks /Create /TN \"{0}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{1}\\\"\" /SC ONCE /ST {2:HH:mm} /SD {2:MM/dd/yyyy} /RU \"{3}\" /RP \"{4}\" /RL HIGHEST /F",
+                    "schtasks /Create /TN \"{0}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{1}\\\"\" /SC ONCE /ST 00:00 /RU \"{2}\" /RP \"{3}\" /RL HIGHEST /F",
                     taskName,
                     scriptLocal,
-                    runAt,
                     SchtasksRunAsFormatter.EscapeCmdArgument(SchtasksRunAsFormatter.FormatRunAsUser(credential)),
                     SchtasksRunAsFormatter.EscapeCmdArgument(credential.Password ?? string.Empty));
 
@@ -178,7 +175,15 @@ public sealed class ElevatedRemoteProcessRunner
             await Task.Delay(PollInterval, cancellationToken).ConfigureAwait(false);
         }
 
-        throw new TimeoutException($"Execução elevada expirou em {host} após {timeout}.");
+        string? lastLog = null;
+        try
+        {
+            lastLog = await _stager.ReadLogAsync(host, credential, paths, "task.log", CancellationToken.None).ConfigureAwait(false);
+        }
+        catch { }
+
+        var diag = !string.IsNullOrWhiteSpace(lastLog) ? $" Último log capturado: {lastLog.Trim()}" : "";
+        throw new TimeoutException($"Execução elevada expirou em {host} após {timeout}.{diag}");
     }
 
     private static string AugmentScriptWithResultFile(string wrappedScript, string resultPathOnTarget)

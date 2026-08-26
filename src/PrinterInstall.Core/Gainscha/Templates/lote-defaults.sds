@@ -1,0 +1,60 @@
+<driver version='6.6'>
+
+<stock>
+Name=USER (45,0 mm x 13,0 mm)
+Data=WkxJQhwAAAAdAAAAeJxz8TU2esPKwODKUMKQyVDIAAMpDKaMAEyTBBU=
+Type=Die Cut
+</stock>
+
+<preset default='true'>
+Data=WkxJQvQFAADlAAAAeJxz8TU2esPKwODKUMKQyVDIUMqQCmQlMqQw5DMUAWliASMLE/sdBgFWflVGBkYgV4fxC2MKmHWaASQCIhkYQhmCgTYFEW0qcYAJiJlBbmCAEahgCVDQ1yXED6QO6FWgW4BAkoHhCQ9Efgc3A0OBOIR9B6gggglV/7//uO02B5pxC4gF1FHxAi4GhkNsQLOBWIeFgcEB6K5LQPUSYF0C6iAIUTkKRsEoGOkghYWRBUSfk4CUZzDABOYJMRgwQMTZgfg/EMDKuwCoOlAZhkwzMCDMCQhmApePxcXFJcXJOSwAev4mRQ==
+</preset>
+
+<font type='Bar Code'>
+Name=Sample Bar Code Font
+Data=WkxJQqgAAABAAAAAeJybwMgABgoaZgbBibkFOakKTolFCs75KakKbvl5JQxIAKT0NFgxQwoDGkhAF0AC7GCSBUOcEY8edAAAgSgJ5Q==
+</font>
+
+<options model='Gainscha GA-2408T'>
+[DATA:\Settings]
+"Disable Shared PaperSize"=hex:00
+"Disable User Defined PaperSize"=hex:00
+"TCP Port Delayed Close Period"=dword:000003e8
+"User Form: Data"=hex:c8,af,00,00,c8,32,00,00,00,00,00,00,00,00,00,00,00,00,00,\
+  00,00,00,00,00,01,00,00,01
+"User Form: Label Stock Type"=dword:00000000
+"User Form: Name"="USER"
+"User Form: Variable Bottom Margin"=dword:0000319c
+"User Form: Variable Top Margin"=dword:0000319c
+[DATA:\Settings\Cleaning]
+"Block Enabled"=hex:00
+"Reminder Count"=dword:00000000
+"Reminder Frequency"=dword:000004b0
+"Reminders Enabled"=hex:00
+"Usage Data Source"=dword:00000000
+[DATA:\Settings\Status]
+"Advanced Status Comment"=hex:01
+"Show Icon"=hex:01
+"Show On Error"=hex:01
+"Status Monitoring Mode"=dword:00000000
+"Verify Job Complete"=hex:00
+"Verify Page Complete"=hex:00
+</options>
+
+<network>
+[NETWORK:]
+"Connection Retries"=dword:00000002
+"Connection Timeout"=dword:000003e8
+"Network Bidirectional"=hex:01
+"Network Communication"=hex:01
+"Server Address Override"=hex:00
+"TCP Enabled"=hex:01
+"XPML Server Port"=dword:0000140a
+</network>
+
+<security>
+[SECURITY:]
+"Configuration Sharing"=hex:01
+"Local Access Level"=dword:00000001
+"Network Access Level"=dword:00000001
+</security>

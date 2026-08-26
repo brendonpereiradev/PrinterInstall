@@ -53,4 +53,23 @@ public class DeploymentRollbackRunnerTests
         remote.Verify(r => r.RemovePrinterQueueAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         remote.Verify(r => r.RemoveTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), "10.0.0.5", It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task RunAsync_PortOnly_PortInUse_EmitsProgressAndKeepsPort()
+    {
+        var remote = new Mock<IRemotePrinterOperations>();
+        remote.Setup(r => r.CountPrintersUsingPortAsync("pc1", It.IsAny<NetworkCredential>(), "10.0.0.5", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var control = new PrinterControlOrchestrator(remote.Object);
+        var sut = new DeploymentRollbackRunner(remote.Object, control);
+        var journal = new DeploymentRollbackJournal();
+        journal.RecordPortCreated("pc1", "10.0.0.5");
+
+        var events = new List<PrinterRemovalProgressEvent>();
+        await sut.RunAsync(journal, new NetworkCredential("u", "p"), new InlineProgress<PrinterRemovalProgressEvent>(events.Add), CancellationToken.None);
+
+        remote.Verify(r => r.RemoveTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        Assert.Contains(events, e => e.State == PrinterRemovalProgressState.RollbackSucceeded && e.Message.Contains("kept"));
+    }
 }

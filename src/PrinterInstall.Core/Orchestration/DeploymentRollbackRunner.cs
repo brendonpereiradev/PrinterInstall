@@ -76,7 +76,14 @@ public sealed class DeploymentRollbackRunner
             }
 
             if (count != 0)
+            {
+                progressSink.Report(new PrinterRemovalProgressEvent(
+                    computer,
+                    PrinterRemovalProgressState.RollbackSucceeded,
+                    $"Rollback: port '{portName}' kept (in use by {count} printer(s)).",
+                    PortName: portName));
                 continue;
+            }
 
             try
             {

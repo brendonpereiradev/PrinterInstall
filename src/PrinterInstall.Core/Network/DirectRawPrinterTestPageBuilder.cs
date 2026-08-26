@@ -54,6 +54,7 @@ public static class DirectRawPrinterTestPageBuilder
         var lines = preset switch
         {
             GainschaLabelPreset.Pulseira => BuildPulseiraLines(host, timestamp, def.WidthMm, def.HeightMm, widthDots, heightDots),
+            GainschaLabelPreset.Lote => BuildLoteLines(host, timestamp, def.WidthMm, def.HeightMm, widthDots, heightDots),
             _ => BuildStandardLabelLines(host, timestamp, presetLabel, def.WidthMm, def.HeightMm, widthDots, heightDots)
         };
 
@@ -64,6 +65,8 @@ public static class DirectRawPrinterTestPageBuilder
     {
         yield return $"SIZE {widthMm} mm, {heightMm} mm";
         yield return "GAP 3 mm, 0 mm";
+        yield return "SPEED 4";
+        yield return "DENSITY 15";
         yield return "DIRECTION 0";
         yield return "REFERENCE 0,0";
         yield return "CLS";
@@ -94,19 +97,61 @@ public static class DirectRawPrinterTestPageBuilder
     private static IEnumerable<string> BuildPulseiraLines(
         string host, string timestamp, int widthMm, int heightMm, int widthDots, int heightDots)
     {
-        var margin = 12;
+        // Pulseira: 25mm (largura = 200 dots) × 270mm (comprimento = 2160 dots).
+        // Texto rotacionado 90° para correr ao longo do comprimento.
+        // Moldura generosa na área nítida (Y=600 até Y=1600) com "Printer Install"
+        // perfeitamente centralizado e com escala 1:1 nativa para eliminar ranhuras bitmap.
+        const int rotation = 90;
+        var margin = 16;
         var boxRight = widthDots - margin;
-        var boxBottom = heightDots - margin;
+
+        var boxTop = 600;
+        var boxBottom = 1600;
+
+        // Font 4 nativa (altura 32 dots, centralizado em X=100 -> X=116)
+        var textX = 116;
 
         foreach (var line in BuildHeader(widthMm, heightMm))
             yield return line;
 
-        yield return $"BOX {boxRight},{boxBottom},{margin},{margin},2";
-        yield return $"TEXT {boxRight - 8},{boxBottom - 40},\"3\",{TextRotation},1,1,\"TEST\"";
-        yield return $"TEXT {boxRight - 8},{boxBottom - 120},\"2\",{TextRotation},1,1,\"Pulseira\"";
-        yield return $"TEXT {boxRight - 8},{boxBottom - 200},\"2\",{TextRotation},1,1,\"Printer Install\"";
-        yield return $"TEXT {boxRight - 8},{boxBottom - 280},\"2\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
-        yield return $"TEXT {boxRight - 8},{boxBottom - 360},\"2\",{TextRotation},1,1,\"{EscapeTspl(timestamp)}\"";
+        // Moldura retangular dedicada e espaçosa
+        yield return $"BOX {boxRight},{boxBottom},{margin},{boxTop},2";
+
+        // "Printer Install" centralizado dentro da caixa (ocupa Y=920..1280)
+        yield return $"TEXT {textX},920,\"4\",{rotation},1,1,\"Printer Install\"";
+
+        yield return "PRINT 1,1";
+    }
+
+    private static IEnumerable<string> BuildLoteLines(
+        string host, string timestamp, int widthMm, int heightMm, int widthDots, int heightDots)
+    {
+        // Lote: 2 colunas de 45 mm x 13 mm com gap entre colunas de 3 mm (largura total de 93 mm).
+        const int columnCount = 2;
+        const int columnGapMm = 3;
+        const int columnGapDots = columnGapMm * DotsPerMm;
+        var totalWidthMm = (widthMm * columnCount) + columnGapMm;
+
+        foreach (var line in BuildHeader(totalWidthMm, heightMm))
+            yield return line;
+
+        const int margin = 6;
+        var boxTop = margin;
+        var boxBottom = heightDots - margin;
+
+        for (var col = 0; col < columnCount; col++)
+        {
+            var colOffset = col * (widthDots + columnGapDots);
+            var boxLeft = colOffset + margin;
+            var boxRight = colOffset + widthDots - margin;
+            var textX = boxRight - 10;
+
+            yield return $"BOX {boxRight},{boxBottom},{boxLeft},{boxTop},2";
+            yield return $"TEXT {textX},{boxBottom - 18},\"2\",{TextRotation},1,1,\"TEST - Lote\"";
+            yield return $"TEXT {textX},{boxBottom - 44},\"1\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
+            yield return $"TEXT {textX},{boxBottom - 68},\"1\",{TextRotation},1,1,\"{EscapeTspl(timestamp)}\"";
+        }
+
         yield return "PRINT 1,1";
     }
 

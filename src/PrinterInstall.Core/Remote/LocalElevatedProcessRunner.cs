@@ -46,7 +46,7 @@ public sealed class LocalElevatedProcessRunner
 
     private static bool LogContainsResultMarker(string logPath) =>
         File.Exists(logPath) &&
-        WmiPrinterOperationsCore.ExtractResultLine(File.ReadAllText(logPath)) is not null;
+        WmiPrinterOperationsCore.ExtractResultLine(ReadLogSafely(logPath)) is not null;
 
     private static async Task PollForResultAsync(string logPath, TimeSpan timeout, CancellationToken cancellationToken)
     {
@@ -55,7 +55,7 @@ public sealed class LocalElevatedProcessRunner
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var logText = File.Exists(logPath) ? await File.ReadAllTextAsync(logPath, cancellationToken).ConfigureAwait(false) : "";
+            var logText = ReadLogSafely(logPath);
             var resultLine = WmiPrinterOperationsCore.ExtractResultLine(logText);
             if (!string.IsNullOrEmpty(resultLine))
             {
@@ -76,6 +76,23 @@ public sealed class LocalElevatedProcessRunner
         throw new TimeoutException($"Execução local expirou aguardando resultado.{diagnostic}");
     }
 
+    private static string ReadLogSafely(string logPath)
+    {
+        if (!File.Exists(logPath))
+            return "";
+
+        try
+        {
+            using var stream = new FileStream(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
     private static string BuildTimeoutDiagnostic(string logPath)
     {
         if (!File.Exists(logPath))
@@ -83,7 +100,7 @@ public sealed class LocalElevatedProcessRunner
 
         try
         {
-            var tail = File.ReadAllText(logPath);
+            var tail = ReadLogSafely(logPath);
             if (string.IsNullOrWhiteSpace(tail))
                 return " Log vazio.";
 
