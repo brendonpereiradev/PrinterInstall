@@ -46,6 +46,8 @@ public partial class App : Application
         }
 
         builder.Services.AddSingleton<ISessionContext, SessionContext>();
+        builder.Services.AddSingleton<IAppSettingsStore, AppSettingsStore>();
+        builder.Services.AddSingleton<IDomainDetector, DomainDetector>();
         builder.Services.AddSingleton<IRememberedUserStore, RememberedUserStore>();
         builder.Services.AddSingleton<ILdapCredentialValidator, LdapCredentialValidator>();
         builder.Services.AddSingleton<ILogExportService, LogExportService>();
@@ -93,10 +95,12 @@ public partial class App : Application
         builder.Services.AddTransient<MainViewModel>();
         builder.Services.AddTransient<RemovalWizardViewModel>();
         builder.Services.AddTransient<PrinterNetworkTestViewModel>();
+        builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<LoginWindow>();
         builder.Services.AddTransient<MainWindow>();
         builder.Services.AddTransient<RemovalWizardWindow>();
         builder.Services.AddTransient<PrinterNetworkTestWindow>();
+        builder.Services.AddTransient<SettingsWindow>();
 
         _host = builder.Build();
 
