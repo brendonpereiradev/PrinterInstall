@@ -244,4 +244,75 @@ Ao instalar ou testar impressoras térmicas **Gainscha GA-2408T**, use a tabela 
 
 ---
 
+## 8. Configurações de Domínio e Rede
+
+Para que o **PrinterInstall** funcione em qualquer ambiente de TI (diferentes domínios corporativos, filiais ou redes isoladas), você pode configurar os parâmetros de domínio e rede antes de fazer login:
+
+1. Na tela de **Login**, clique no **ícone de engrenagem** (⚙️) no canto superior direito.
+2. A janela **Configurações de Domínio e Rede** será aberta:
+   - **Domínio Padrão:** Digite o nome do domínio Active Directory (ex: `hospital.local` ou `HOSPITAL`).
+   - **Botão Detectar Domínio:** Clica para detectar automaticamente o domínio da máquina em que você está logado no momento.
+   - **Servidor / Host LDAP Alternativo (Opcional):** Permite apontar diretamente para o IP ou FQDN de um Controlador de Domínio específico (caso o DNS local não resolva automaticamente).
+3. Clique em **Salvar**. As preferências são salvas em `%LocalAppData%\PrinterInstall\settings.json` e persistirão mesmo ao atualizar ou mover o executável único.
+
+---
+
+## 9. Como Criar e Publicar Releases no GitHub
+
+O repositório está equipado com uma esteira de automação **CI/CD via GitHub Actions** ([`.github/workflows/release.yml`](.github/workflows/release.yml)) para empacotar e disponibilizar o executável único `Printer Install.exe` automaticamente em cada versão.
+
+### 🚀 Método 1: Automático via Git Tag (Recomendado)
+
+1. Certifique-se de que todas as alterações foram commitadas na branch principal:
+   ```bash
+   git add .
+   git commit -m "feat: novas melhorias e correções"
+   git push origin main
+   ```
+2. Crie uma tag de versão no formato `vX.Y.Z` e envie para o GitHub:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+3. O GitHub Actions iniciará automaticamente:
+   - Compilará o projeto em ambiente Windows limpo (`windows-latest`).
+   - Executará toda a suíte de testes automatizados.
+   - Gerará o executável único autocontido (`Printer Install.exe`) com todos os drivers embutidos.
+   - Criará a **Release** no GitHub e anexará o executável e a lista de checksums SHA256.
+
+---
+
+### 💻 Método 2: Via Script Local e Interface Web do GitHub
+
+1. No terminal PowerShell, execute o script de publicação do projeto:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\scripts\Publish-PrinterInstall.ps1 -Configuration Release
+   ```
+2. O executável standalone será gerado em:
+   ```
+   publish\PrinterInstall\Printer Install.exe
+   ```
+3. No GitHub:
+   - Acesse o repositório `brendonpereiradev/PrinterInstall`.
+   - Vá na seção **Releases** e clique em **"Draft a new release"** (ou **"Create a new release"**).
+   - Escolha ou crie uma tag (ex: `v1.0.0`).
+   - Digite o título da versão e as notas da release.
+   - Arraste e solte o arquivo `Printer Install.exe` na área de anexos de binários (*Attach binaries by dropping them here*).
+   - Clique em **"Publish release"**.
+
+---
+
+### ⚡ Método 3: Via GitHub CLI (`gh`)
+
+Se você utiliza o GitHub CLI instalado na sua máquina:
+```powershell
+# 1. Gerar o executável
+powershell -ExecutionPolicy Bypass -File .\scripts\Publish-PrinterInstall.ps1 -Configuration Release
+
+# 2. Publicar a release diretamente
+gh release create v1.0.0 "publish\PrinterInstall\Printer Install.exe" --title "Release v1.0.0" --generate-notes
+```
+
+---
+
 *Manual elaborado pela equipe de Engenharia de Software e Infraestrutura de TI.*

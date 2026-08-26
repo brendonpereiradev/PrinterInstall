@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:String x:Key="Settings_WindowTitle">Configurações de Domínio e Rede</sys:String>
+  <sys:String x:Key="Settings_Header">Configurações de Domínio e Rede</sys:String>
+  <sys:String x:Key="Settings_Hint">Configure o domínio padrão e parâmetros de rede para que o PrinterInstall funcione no seu ambiente.</sys:String>
+  <sys:String x:Key="Settings_DomainLabel">Domínio Padrão</sys:String>
+  <sys:String x:Key="Settings_DomainHint">Exemplo: empresa.local ou EMPRESA</sys:String>
+  <sys:String x:Key="Settings_DetectDomainButton">Detectar Domínio</sys:String>
+  <sys:String x:Key="Settings_LdapHostLabel">Servidor / Host LDAP Alternativo (Opcional)</sys:String>
+  <sys:String x:Key="Settings_LdapHostHint">Deixe em branco para utilizar a resolução DNS padrão do domínio.</sys:String>
+  <sys:String x:Key="Settings_ResetButton">Restaurar Padrão</sys:String>
+  <sys:String x:Key="Settings_SaveButton">Salvar</sys:String>
+  <sys:String x:Key="Settings_CancelButton">Cancelar</sys:String>
+</ResourceDictionary>

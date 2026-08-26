@@ -25,6 +25,22 @@
         </Style>
     </Window.Resources>
     <Grid>
+        <!-- Botão de Configurações de Domínio e Rede -->
+        <ui:Button
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Margin="0,12,12,0"
+            Padding="8"
+            Appearance="Transparent"
+            ToolTip="Configurações de Domínio e Rede"
+            Click="Settings_OnClick">
+            <TextBlock
+                FontFamily="Segoe MDL2 Assets"
+                Text="&#xE713;"
+                FontSize="16"
+                Foreground="{DynamicResource LoginFieldIconBrush}"/>
+        </ui:Button>
+
         <Border
             VerticalAlignment="Center"
             HorizontalAlignment="Center"

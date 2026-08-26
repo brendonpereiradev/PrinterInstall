@@ -24,6 +24,8 @@ SUMARIO:
   5. Ferramenta de Teste de Rede Direto
   6. Tabela de Referencia de Etiquetas Gainscha
   7. Resolucao de Problemas Mais Frequentes (FAQ & Troubleshooting)
+  8. Configuracoes de Dominio e Rede
+  9. Como Criar e Publicar Releases no GitHub
 --------------------------------------------------------------------------------
 
 
@@ -261,6 +263,55 @@ dentro da impressora Gainscha antes de instalar a fila.
     - Os relatorios ficam na pasta de logs e podem ser salvos na sua Area de
       Trabalho clicando no botao "Exportar Logs".
 
+
 ================================================================================
-      Manual elaborado pela equipe de TI do Rio de Janeiro.
+8. CONFIGURACOES DE DOMINIO E REDE
+================================================================================
+
+Para que o PrinterInstall funcione em qualquer ambiente de TI (diferentes
+dominios corporativos ou redes isoladas), configure os parametros antes do login:
+
+  1. Na tela de Login, clique no icone de engrenagem no canto superior direito.
+  2. A janela "Configuracoes de Dominio e Rede" sera aberta:
+     - Dominio Padrao: Digite o nome do dominio Active Directory
+       (ex: empresa.local ou EMPRESA).
+     - Botao "Detectar Dominio": Clica para preencher automaticamente com o
+       dominio da estacao em que voce esta logado.
+     - Servidor / Host LDAP Alternativo (Opcional): Permite apontar diretamente
+       para o IP ou host de um Domain Controller especifico.
+  3. Clique em "Salvar". As configuracoes ficam salvas em:
+     %LocalAppData%\PrinterInstall\settings.json
+     e persistirao mesmo ao atualizar ou mover o executavel unico.
+
+
+================================================================================
+9. COMO CRIAR E PUBLICAR RELEASES NO GITHUB
+================================================================================
+
+O repositorio esta equipado com automacao CI/CD via GitHub Actions:
+
+Metodo 1: Automatico via Git Tag (Recomendado)
+  1. Envie as alteracoes para o GitHub:
+     git add .
+     git commit -m "feat: sua mensagem"
+     git push origin main
+
+  2. Crie e envie a tag da versao (ex: v1.0.0):
+     git tag v1.0.0
+     git push origin v1.0.0
+
+  3. O GitHub Actions executara o build, os testes automatizados e criara a
+     Release anexando o arquivo "Printer Install.exe" automaticamente.
+
+Metodo 2: Compilacao Local e Upload Manual
+  1. Execute o script de publicacao:
+     powershell -ExecutionPolicy Bypass -File .\scripts\Publish-PrinterInstall.ps1 -Configuration Release
+
+  2. O executavel unico sera gerado em:
+     publish\PrinterInstall\Printer Install.exe
+
+  3. No GitHub, va em Releases -> Draft a new release -> anexe o executavel.
+
+================================================================================
+      Manual elaborado pela equipe de TI.
 ================================================================================

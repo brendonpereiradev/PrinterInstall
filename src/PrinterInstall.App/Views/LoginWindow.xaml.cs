@@ -48,4 +48,11 @@ public partial class LoginWindow
             _viewModel.ErrorMessage = ex.Message;
         }
     }
+
+    private void Settings_OnClick(object sender, RoutedEventArgs e)
+    {
+        var settingsWin = _serviceProvider.GetRequiredService<SettingsWindow>();
+        settingsWin.Owner = this;
+        settingsWin.ShowDialog();
+    }
 }

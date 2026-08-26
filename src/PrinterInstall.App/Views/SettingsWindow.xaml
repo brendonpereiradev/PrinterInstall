@@ -1,0 +1,184 @@
+<Window x:Class="PrinterInstall.App.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
+        Title="{DynamicResource Settings_WindowTitle}"
+        Icon="pack://application:,,,/Assets/app.ico"
+        Width="500"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="White"
+        UseLayoutRounding="True">
+    <Window.Resources>
+        <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
+        <Style x:Key="SettingsInnerTextBoxStyle" TargetType="TextBox">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0,2"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Cabeçalho -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="{DynamicResource Settings_Header}"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource LoginFormTitleBrush}"/>
+            <TextBlock Text="{DynamicResource Settings_Hint}"
+                       FontSize="12"
+                       Foreground="#FF666666"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Campo: Domínio Padrão -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,14">
+            <TextBlock Text="{DynamicResource Settings_DomainLabel}"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Foreground="#FF444444"
+                       Margin="0,0,0,6"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0"
+                        Height="38"
+                        CornerRadius="6"
+                        BorderBrush="{DynamicResource LoginFieldBorderBrush}"
+                        BorderThickness="1"
+                        Background="White"
+                        Margin="0,0,8,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="36"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   Text="&#xE774;"
+                                   FontSize="15"
+                                   Foreground="{DynamicResource LoginFieldIconBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"/>
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding DomainName, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource SettingsInnerTextBoxStyle}"
+                                 Margin="0,0,10,0"/>
+                    </Grid>
+                </Border>
+                <ui:Button Grid.Column="1"
+                           Content="{DynamicResource Settings_DetectDomainButton}"
+                           Icon="Search16"
+                           Command="{Binding DetectDomainCommand}"
+                           Appearance="Secondary"
+                           Height="38"
+                           Padding="12,0"/>
+            </Grid>
+            <TextBlock Text="{DynamicResource Settings_DomainHint}"
+                       FontSize="11"
+                       Foreground="#FF888888"
+                       Margin="2,4,0,0"/>
+        </StackPanel>
+
+        <!-- Campo: Servidor / Host LDAP Alternativo -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,14">
+            <TextBlock Text="{DynamicResource Settings_LdapHostLabel}"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Foreground="#FF444444"
+                       Margin="0,0,0,6"/>
+            <Border Height="38"
+                    CornerRadius="6"
+                    BorderBrush="{DynamicResource LoginFieldBorderBrush}"
+                    BorderThickness="1"
+                    Background="White">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="36"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               FontFamily="Segoe MDL2 Assets"
+                               Text="&#xE838;"
+                               FontSize="15"
+                               Foreground="{DynamicResource LoginFieldIconBrush}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding LdapHost, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource SettingsInnerTextBoxStyle}"
+                             Margin="0,0,10,0"/>
+                </Grid>
+            </Border>
+            <TextBlock Text="{DynamicResource Settings_LdapHostHint}"
+                       FontSize="11"
+                       Foreground="#FF888888"
+                       Margin="2,4,0,0"/>
+        </StackPanel>
+
+        <!-- Mensagem de Status -->
+        <Border Grid.Row="3"
+                Margin="0,0,0,12"
+                Visibility="{Binding StatusMessage, Converter={StaticResource StringToVis}, ConverterParameter=Invert}">
+            <TextBlock Text="{Binding StatusMessage}"
+                       TextWrapping="Wrap"
+                       FontSize="12">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="#FFB00020"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSuccessMessage}" Value="True">
+                                <Setter Property="Foreground" Value="#FF2E7D32"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Border>
+
+        <!-- Separador -->
+        <Separator Grid.Row="4" Margin="0,4,0,16" Background="#FFE0E0E0"/>
+
+        <!-- Botões de Ação -->
+        <Grid Grid.Row="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:Button Grid.Column="0"
+                       Content="{DynamicResource Settings_ResetButton}"
+                       Command="{Binding ResetToDefaultsCommand}"
+                       Appearance="Secondary"/>
+
+            <ui:Button Grid.Column="2"
+                       Content="{DynamicResource Settings_CancelButton}"
+                       Click="Cancel_OnClick"
+                       Appearance="Secondary"
+                       Margin="0,0,8,0"/>
+
+            <ui:Button Grid.Column="3"
+                       Content="{DynamicResource Settings_SaveButton}"
+                       Click="Save_OnClick"
+                       Appearance="Primary"
+                       FontWeight="SemiBold"
+                       IsDefault="True"/>
+        </Grid>
+    </Grid>
+</Window>

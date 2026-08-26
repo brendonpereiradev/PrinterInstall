@@ -11,19 +11,19 @@ public partial class LoginViewModel : ObservableObject
 {
     private readonly ILdapCredentialValidator _ldap;
     private readonly ISessionContext _session;
+    private readonly IAppSettingsStore _settingsStore;
     private readonly IRememberedUserStore _rememberedUserStore;
-    private readonly string _domainName;
 
     public LoginViewModel(
         ILdapCredentialValidator ldap,
         ISessionContext session,
-        IConfiguration configuration,
+        IAppSettingsStore settingsStore,
         IRememberedUserStore rememberedUserStore)
     {
         _ldap = ldap;
         _session = session;
+        _settingsStore = settingsStore;
         _rememberedUserStore = rememberedUserStore;
-        _domainName = (configuration["DomainName"] ?? "preventsenior.local").Trim();
     }
 
     [ObservableProperty]
@@ -56,9 +56,14 @@ public partial class LoginViewModel : ObservableObject
             return (false, ErrorMessage);
         }
 
-        var (userName, domainName) = ParseCredentialIdentity(UserName, _domainName);
+        var settings = _settingsStore.Load();
+        var configuredDomain = settings.DomainName;
+        var (userName, domainName) = ParseCredentialIdentity(UserName, configuredDomain);
         var cred = new NetworkCredential(userName, Password, domainName);
-        var ldapHost = ResolveLdapHost(domainName, _domainName);
+        var ldapHost = !string.IsNullOrWhiteSpace(settings.LdapHost)
+            ? settings.LdapHost.Trim()
+            : ResolveLdapHost(domainName, configuredDomain);
+
         var result = await _ldap.ValidateAsync(ldapHost, cred, cancellationToken).ConfigureAwait(false);
         if (!result.IsSuccess)
         {

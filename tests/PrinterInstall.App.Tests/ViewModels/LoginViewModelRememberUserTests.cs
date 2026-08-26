@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using PrinterInstall.App.Services;
 using PrinterInstall.App.ViewModels;
 using PrinterInstall.Core.Auth;
@@ -56,7 +57,7 @@ public class LoginViewModelRememberUserTests
             })
             .Build();
 
-        return new LoginViewModel(ldap, session, config, store);
+        return new LoginViewModel(ldap, session, new AppSettingsStore(config), store);
     }
 
     [Fact]
@@ -146,5 +147,28 @@ public class LoginViewModelRememberUserTests
         Assert.Equal(0, store.SaveCount);
         Assert.Equal(0, store.ClearCount);
         Assert.NotNull(store.Stored);
+    }
+
+    [Fact]
+    public async Task TryLoginAsync_WithCustomSettingsStore_UsesCustomDomainAndLdapHost()
+    {
+        var store = new FakeRememberedUserStore();
+        var session = new SessionContext();
+        var ldap = new FakeLdapValidator();
+        var mockSettings = new Mock<IAppSettingsStore>();
+        mockSettings.Setup(s => s.Load())
+            .Returns(new PrinterInstall.App.Models.AppSettings("custom.domain.local", "ldap.custom.local"));
+
+        var sut = new LoginViewModel(ldap, session, mockSettings.Object, store);
+        sut.UserName = "operador";
+        sut.Password = "senha123";
+        sut.RememberMe = true;
+
+        var result = await sut.TryLoginAsync();
+
+        Assert.True(result.Success);
+        Assert.Equal("custom.domain.local", session.DomainName);
+        Assert.Equal("custom.domain.local", store.Stored?.DomainName);
+        Assert.Equal("operador", store.Stored?.UserName);
     }
 }

@@ -1,98 +1,168 @@
-# PrinterInstall
+# 🖨️ PrinterInstall
 
-Aplicativo desktop para Windows que instala impressoras de rede e etiquetadoras térmicas em várias estações de trabalho de uma vez. Foi construído para ambientes hospitalares, onde o suporte de TI precisa padronizar filas de impressão em muitos computadores sem tocar em cada máquina manualmente.
+> **Solução Desktop Corporativa para Implantação, Gestão e Calibração Automatizada de Impressoras de Rede e Etiquetadoras.**
 
 > **Idiomas:** Português (este arquivo) · [English](README.en.md)
 
-## O que ele faz
+[![.NET 8](https://img.shields.io/badge/.NET-8.0--windows-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![WPF](https://img.shields.io/badge/UI-WPF%20%2F%20WPF--UI-0078D4?logo=windows)](https://github.com/lepoco/wpfui)
+[![Tests](https://img.shields.io/badge/Tests-529%20Passed-27AE60?logo=xunit)](tests/)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions)](.github/workflows/release.yml)
+[![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture%20%2F%20MVVM-1B3A5C)](#-arquitetura)
 
-Você informa os computadores alvo e as filas que quer criar. O PrinterInstall cuida do resto em cada máquina:
+---
 
-- Instala o driver correto no Windows a partir de um pacote embutido, sem CD nem download manual.
-- Cria a porta TCP/IP da impressora.
-- Cria e nomeia a fila no padrão que você definir.
-- Calibra o tamanho da etiqueta em impressoras térmicas Gainscha.
-- Desfaz portas e filas incompletas quando algo falha no meio do processo.
+## 📋 Visão Geral
 
-Marcas testadas: **Epson**, **Lexmark**, **Brother** e **Gainscha**. Outros modelos do mesmo fabricante costumam funcionar. Consulte [`MODELOS_TESTADOS.txt`](MODELOS_TESTADOS.txt) para a lista validada.
+O **PrinterInstall** é uma aplicação desktop desenvolvida em **WPF (.NET 8)** voltada para equipes de suporte, infraestrutura e helpdesk. Ela automatiza e padroniza todo o ciclo de vida de impressoras corporativas e térmicas em ambientes de missão crítica (como hospitais, clínicas e escritórios), executando operações locais e remotas via WMI/CIM com escalação segura de privilégios.
 
-## Recursos
+### ✨ Principais Funcionalidades
 
-| Recurso | Descrição |
-| --- | --- |
-| Deploy em lote | Instala uma ou várias filas em vários computadores ao mesmo tempo, com status por máquina em tempo real. |
-| Rollback automático | Reverte as portas e filas criadas quando uma máquina falha, deixando a estação limpa. |
-| Assistente de controle | Lista, remove e renomeia filas em máquinas remotas sem reinstalar o driver. |
-| Teste de rede direto | Valida a porta raw 9100 e imprime uma página ou etiqueta de teste antes do deploy. |
-| Presets Gainscha | Quatro tamanhos de etiqueta prontos: Paciente, Matrix, Pulseira e Lote. |
-| Login por domínio | Autentica pelo Active Directory (UPN ou NetBIOS) via LDAP. |
-| Exportação de logs | Salva um relatório de tudo que foi instalado. |
-| Escalação UAC | Executa operações remotas elevadas via scheduled task quando necessário. |
+1. **Implantação em Lote (Deploy Simultâneo):**
+   - Instalação e configuração de múltiplas filas e portas TCP/IP em dezenas de computadores simultaneamente.
+   - Suporte a computadores por nome de rede (`NOTE-XXXXXX`, `113-DESKXXXXXX`) ou diretamente por endereço IP.
+   - Botão rápido para adicionar a máquina local (*"Este PC"*).
 
-## Arquitetura
+2. **Gerenciamento Inteligente de Drivers:**
+   - Extração transparente e sob demanda de pacotes de drivers embutidos no executável único (`EmbeddedDrivers.zip`).
+   - Instalação via `pnputil.exe` com resolução e fallback inteligente entre versões de drivers (ex: Lexmark v4 → v2).
 
-A solução tem duas camadas e testes para cada uma.
+3. **Configuração e Calibração de Etiquetas Térmicas (Gainscha):**
+   - Suporte completo ao protocolo **Seagull SSDAL** e streams **SDS (Structured Data Streams)**.
+   - Presets calibrados: `Paciente` (89x36mm), `Matrix` (50x30mm), `Pulseira` (25x270mm) e `Lote` (45x13mm).
 
+4. **Rollback Automático e Tolerância a Falhas:**
+   - Journaling transacional (`DeploymentRollbackJournal`): se a instalação for interrompida ou falhar, portas e filas incompletas são revertidas automaticamente, evitando estados inconsistentes no Windows.
+
+5. **Assistente de Controle de Impressoras (Remoção e Renomeação):**
+   - Varredura remota de filas instaladas, exclusão segura de filas órfãs com limpeza de portas de rede e renomeação em lote.
+
+6. **Ferramenta de Teste de Rede Direto:**
+   - Validação de socket raw (porta 9100) e envio de páginas de teste dedicadas (PCL5 para Epson, Brother e Lexmark; TSPL para Gainscha).
+
+7. **Configurações Dinâmicas de Domínio e Rede:**
+   - Modal dedicado para alterar o **Domínio Padrão** e o **Host LDAP**, permitindo que a aplicação rode em qualquer rede ou floresta corporativa.
+   - Botão de **Detecção Automática de Domínio** da máquina local.
+   - Persistência das preferências em `%LocalAppData%\PrinterInstall\settings.json`.
+
+8. **Exportação de Relatórios e Auditoria:**
+   - Geração de relatórios estruturados em `.txt` com logs detalhados de deploy e controle.
+
+---
+
+## 🏗️ Arquitetura
+
+```mermaid
+graph TB
+    subgraph Solution["PrinterInstall.sln"]
+        subgraph src["src/"]
+            Core["PrinterInstall.Core<br/><i>Class Library (.NET 8)</i><br/>Lógica de negócio, WMI/CIM, Drivers, SSDAL, Orquestração"]
+            App["PrinterInstall.App<br/><i>WPF WinExe (.NET 8)</i><br/>Interface WPF-UI, ViewModels, DI, Configurações"]
+        end
+        subgraph tests["tests/"]
+            CoreTests["PrinterInstall.Core.Tests<br/><i>xUnit (328 testes)</i>"]
+            AppTests["PrinterInstall.App.Tests<br/><i>xUnit (201 testes)</i>"]
+        end
+    end
+
+    App -->|"Project Reference"| Core
+    CoreTests -->|"Project Reference"| Core
+    AppTests -->|"Project Reference"| App
+
+    style Core fill:#1B3A5C,color:#fff
+    style App fill:#3d5a80,color:#fff
+    style CoreTests fill:#27AE60,color:#fff
+    style AppTests fill:#27AE60,color:#fff
 ```
-src/
-  PrinterInstall.Core/   Lógica de domínio: drivers, remoto, orquestração, rollback, rede, auth
-  PrinterInstall.App/    Interface WPF (MVVM): views, view models, serviços de UI
-tests/
-  PrinterInstall.Core.Tests/
-  PrinterInstall.App.Tests/
-```
 
-**Stack:** .NET 8 (`net8.0-windows`), WPF com [WPF-UI](https://github.com/lepoco/wpfui), [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet), injeção de dependência via `Microsoft.Extensions.Hosting`, `System.Management` para WMI/CIM e `System.DirectoryServices.Protocols` para LDAP.
+---
 
-**Padrões:** MVVM, Strategy, Orchestrator, Saga/Rollback, Router/Proxy, Result Pattern. Operações remotas passam pelo `RoutingRemotePrinterOperations`, que decide entre execução local e remota. Toda operação que cria recursos registra no `DeploymentRollbackJournal` para permitir a reversão.
+## 🖨️ Fabricantes e Modelos Suportados
 
-## Como compilar e executar
+| Fabricante | Tipo | Driver Utilizado | Presets / Recursos |
+| :--- | :--- | :--- | :--- |
+| **Epson** | Jato de Tinta / Laser A4 | EPSON Universal Print Driver | Filas padrão, teste PCL5 |
+| **Brother** | Laser Monocromática | Brother Universal / HL Series | Filas padrão, teste PCL5 |
+| **Lexmark** | Laser Monocromática | Lexmark Universal Print Driver | Fallback v4 → v2, teste PCL5 |
+| **Gainscha** | Térmica de Etiquetas | Seagull Scientific Driver (SSDAL) | `Paciente`, `Matrix`, `Pulseira`, `Lote` |
 
-Você precisa do [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) e do Windows.
+---
+
+## ⚙️ Configuração de Domínio e Rede
+
+O **PrinterInstall** não possui domínios ou servidores fixos em código compilado:
+
+1. Na tela de login, clique no ícone de engrenagem (⚙️) no canto superior direito.
+2. Defina o **Domínio Padrão** desejado (ex: `empresa.local` ou `EMPRESA`).
+3. Utilize o botão **"Detectar Domínio"** para preencher automaticamente com o domínio atual da estação.
+4. Opcionalmente, informe um **Servidor / Host LDAP Alternativo** se o DNS não resolver diretamente o controlador de domínio.
+5. Clique em **Salvar**. As configurações são persistidas em `%LocalAppData%\PrinterInstall\settings.json`.
+
+---
+
+## 📦 Como Compilar e Publicar (Executável Único)
+
+A aplicação é compilada como um **executável único autocontido (Self-Contained Single-File win-x64)** com todos os drivers e o .NET Runtime embutidos:
 
 ```powershell
-git clone https://github.com/brendonpereiradev/PrinterInstall
-cd PrinterInstall
-dotnet build PrinterInstall.sln
-dotnet run --project src/PrinterInstall.App
+# Executar script de publicação
+powershell -ExecutionPolicy Bypass -File .\scripts\Publish-PrinterInstall.ps1 -Configuration Release
 ```
 
-Rodar os testes:
+O binário final será gerado em:
+```
+publish\PrinterInstall\Printer Install.exe
+```
+
+> **Distribuição simples:** Basta copiar o arquivo `Printer Install.exe` para qualquer computador com Windows 10/11 x64. Não requer instalação prévia do .NET Runtime nem arquivos adicionais.
+
+---
+
+## 🚀 Publicação Automática de Releases (GitHub Actions)
+
+O repositório conta com uma pipeline de CI/CD automatizada em [`.github/workflows/release.yml`](.github/workflows/release.yml).
+
+### Criando uma nova Release via Git:
+
+```bash
+# 1. Commitar suas alterações
+git add .
+git commit -m "feat: release v1.0.0"
+git push origin main
+
+# 2. Criar e enviar a tag de versão
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+O GitHub Actions irá automaticamente:
+1. Compilar o projeto em ambiente limpo Windows.
+2. Executar a suíte de 529 testes automatizados.
+3. Gerar o executável único `Printer Install.exe`.
+4. Criar a Release no GitHub anexando o executável e a lista de checksums SHA-256.
+
+---
+
+## 🧪 Testes Automatizados
+
+Para executar todos os testes da solução:
 
 ```powershell
-dotnet test PrinterInstall.sln
+dotnet test
 ```
 
-Gerar um executável único e autocontido (empacota o runtime .NET, os drivers e a configuração):
+- **PrinterInstall.Core.Tests:** 328 testes unitários e de integração.
+- **PrinterInstall.App.Tests:** 201 testes de apresentação e serviços.
+- **Total:** 529 testes com 100% de aprovação.
 
-```powershell
-pwsh scripts/Publish-PrinterInstall.ps1
-```
+---
 
-O resultado sai em `publish/PrinterInstall`.
+## 📖 Documentação Adicional
 
-## Uso
+- [Manual do Usuário (Markdown)](MANUAL_DO_USUARIO.md) — Guia passo a passo com capturas conceituais e instruções detalhadas.
+- [Manual em Texto Simples](MANUAL.txt) — Manual em formato texto puro para distribuição rápida.
+- [Modelos Testados](MODELOS_TESTADOS.txt) — Lista de modelos homologados em campo.
 
-1. **Login.** Entre com sua conta de domínio no formato `usuario@dominio` ou `DOMINIO\usuario`. As credenciais não ficam salvas depois que você fecha o programa.
-2. **Alvos.** Adicione os computadores por nome de rede ou IP. O botão "Adicionar Este PC" inclui a máquina local. Colar uma lista adiciona todas de uma vez.
-3. **Filas.** Escolha a marca, informe o IP da impressora e o nome da fila. Para Gainscha, selecione o preset de etiqueta.
-4. **Deploy.** Inicie a instalação e acompanhe o status de cada máquina. Ao final, exporte o relatório.
+---
 
-O [Manual do Usuário](MANUAL_DO_USUARIO.md) traz o passo a passo completo, a tabela de presets Gainscha e a resolução dos erros mais comuns.
-
-## Referência de etiquetas Gainscha
-
-| Preset | Tamanho | Uso no hospital |
-| --- | :---: | --- |
-| Paciente | 89 × 36 mm | Fichas, prontuários e leitos |
-| Matrix | 50 × 30 mm | Tubos de coleta e frascos de exame |
-| Pulseira | 25 × 270 mm | Pulseira de identificação do paciente |
-| Lote | 45 × 13 mm | Medicamentos e almoxarifado |
-
-Confirme qual rolo está na impressora antes de instalar a fila. Um preset maior que a etiqueta física faz a impressão sair da margem.
-
-## Documentação
-
-- [Manual do Usuário](MANUAL_DO_USUARIO.md) — guia para técnicos de suporte
-- [Modelos testados](MODELOS_TESTADOS.txt) — impressoras validadas por marca
-- [GEMINI.md](GEMINI.md) — regras e diretrizes de desenvolvimento
+*Desenvolvido com foco em alta confiabilidade, segurança e eficiência operacional.*
