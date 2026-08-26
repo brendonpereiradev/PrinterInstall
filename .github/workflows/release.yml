@@ -1,0 +1,70 @@
+name: Release Executable
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag de versão (ex: v1.0.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Publish Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore PrinterInstall.sln
+
+      - name: Run automated tests
+        run: dotnet test PrinterInstall.sln --configuration Release --no-restore --verbosity normal
+
+      - name: Build and package single-file executable
+        shell: powershell
+        run: |
+          .\scripts\Publish-PrinterInstall.ps1 -Configuration Release
+
+      - name: Verify published executable
+        shell: powershell
+        run: |
+          $exePath = "publish\PrinterInstall\Printer Install.exe"
+          if (-not (Test-Path $exePath)) {
+            Write-Error "O executável '$exePath' não foi encontrado após o build."
+            exit 1
+          }
+          $size = (Get-Item $exePath).Length / 1MB
+          $hash = (Get-FileHash -Path $exePath -Algorithm SHA256).Hash
+          Write-Host "Executável gerado com sucesso: $exePath"
+          Write-Host "Tamanho: $([math]::Round($size, 2)) MB"
+          Write-Host "SHA256: $hash"
+          "$hash  Printer Install.exe" | Out-File -FilePath "publish\PrinterInstall\checksums-sha256.txt" -Encoding utf8
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.tag_name != ''
+        with:
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
+          name: Release ${{ github.event.inputs.tag_name || github.ref_name }}
+          files: |
+            publish/PrinterInstall/Printer Install.exe
+            publish/PrinterInstall/checksums-sha256.txt
+          generate_release_notes: true
+          draft: false
+          prerelease: false
