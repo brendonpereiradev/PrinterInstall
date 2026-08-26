@@ -1,164 +1,98 @@
-# 🖨️ PrinterInstall
+# PrinterInstall
 
-> **Enterprise Desktop Solution for Automated Network Printer and Label Calibration & Deployment.**
+A Windows desktop app that installs network printers and thermal label printers across many workstations at once. It was built for hospital environments, where IT support needs to standardize print queues on many computers without touching each machine by hand.
 
 > **Languages:** English (this file) · [Português](README.md)
 
-[![.NET 8](https://img.shields.io/badge/.NET-8.0--windows-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![WPF](https://img.shields.io/badge/UI-WPF%20%2F%20WPF--UI-0078D4?logo=windows)](https://github.com/lepoco/wpfui)
-[![Tests](https://img.shields.io/badge/Tests-529%20Passed-27AE60?logo=xunit)](tests/)
-[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions)](.github/workflows/release.yml)
-[![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture%20%2F%20MVVM-1B3A5C)](#-architecture)
+## What it does
 
----
+You give it the target computers and the queues you want. PrinterInstall handles the rest on each machine:
 
-## 📋 Overview
+- Installs the right Windows driver from a bundled package, with no CD or manual download.
+- Creates the printer's TCP/IP port.
+- Creates and names the queue to your standard.
+- Calibrates the label size on Gainscha thermal printers.
+- Undoes half-created ports and queues when something fails mid-install.
 
-**PrinterInstall** is a Windows desktop application built with **WPF (.NET 8)** for IT support, infrastructure, and helpdesk teams. It automates and standardizes the entire lifecycle of enterprise printers and thermal label printers across mission-critical environments (hospitals, clinics, multi-branch offices), running local and remote operations via WMI/CIM with secure privilege elevation.
+Tested brands: **Epson**, **Lexmark**, **Brother**, and **Gainscha**. Other models from the same maker usually work. See [`MODELOS_TESTADOS.txt`](MODELOS_TESTADOS.txt) for the validated list.
 
-### ✨ Key Features
+## Features
 
-1. **Batch Deployment (Simultaneous Deploy):**
-   - Installs and configures multiple print queues and TCP/IP ports across dozens of workstations at once.
-   - Supports workstations by network hostname (`NOTE-XXXXXX`, `113-DESKXXXXXX`) or directly by IP address.
-   - Quick *"Add This PC"* button to include the local machine instantly.
+| Feature | Description |
+| --- | --- |
+| Batch deploy | Installs one or more queues across many computers at once, with live per-machine status. |
+| Automatic rollback | Reverts the ports and queues it created when a machine fails, leaving the station clean. |
+| Control wizard | Lists, removes, and renames queues on remote machines without reinstalling the driver. |
+| Direct network test | Validates raw port 9100 and prints a test page or label before deploying. |
+| Gainscha presets | Four ready label sizes: Patient, Matrix, Wristband, and Batch. |
+| Domain login | Authenticates against Active Directory (UPN or NetBIOS) over LDAP. Allows changing default domain and server in settings (⚙️ icon). |
+| Log export | Saves a report of everything that was installed. |
+| UAC elevation | Runs elevated remote operations through a scheduled task when needed. |
 
-2. **Smart Driver Management:**
-   - On-demand, transparent extraction of embedded driver packages from the single executable (`EmbeddedDrivers.zip`).
-   - Seamless installation via `pnputil.exe` with version fallback (e.g., Lexmark v4 → v2).
+## Architecture
 
-3. **Thermal Label Calibration & Configuration (Gainscha):**
-   - Full support for **Seagull SSDAL** protocol and **Structured Data Streams (SDS)**.
-   - Calibrated presets: `Patient` (89×36mm), `Matrix` (50×30mm), `Wristband` (25×270mm), and `Batch` (45×13mm).
+The solution has two layers, each with its own tests.
 
-4. **Automatic Rollback & Fault Tolerance:**
-   - Transactional journaling (`DeploymentRollbackJournal`): if a machine fails or the user cancels, incomplete ports and queues are automatically undone, leaving the workstation clean.
-
-5. **Printer Control Wizard (Removal & Rename):**
-   - Scans remote machines, safely removes orphaned queues with port cleanup, and renames existing queues in batch without reinstalling drivers.
-
-6. **Direct Raw Port 9100 Test Tool:**
-   - Tests socket connectivity and prints dedicated test pages/labels (PCL5 for Epson, Brother, Lexmark; TSPL for Gainscha).
-
-7. **Configurable Domain & Network (Run Anywhere):**
-   - Easily change the **Default Active Directory Domain** and optional **LDAP Host/Server** before logging in.
-   - **Auto-Detect Domain** button to detect the current computer's domain with one click.
-   - Settings are stored in `%LocalAppData%\PrinterInstall\settings.json`, persisting across launches even in single-file executable deployments.
-
-8. **Audit & Log Export:**
-   - Exports formatted `.txt` diagnostic reports for deployments and printer maintenance.
-
----
-
-## 🏗️ Architecture
-
-```mermaid
-graph TB
-    subgraph Solution["PrinterInstall.sln"]
-        subgraph src["src/"]
-            Core["PrinterInstall.Core<br/><i>Class Library (.NET 8)</i><br/>Business logic, WMI/CIM, Drivers, SSDAL, Orchestration"]
-            App["PrinterInstall.App<br/><i>WPF WinExe (.NET 8)</i><br/>WPF-UI Interface, ViewModels, DI, Settings"]
-        end
-        subgraph tests["tests/"]
-            CoreTests["PrinterInstall.Core.Tests<br/><i>xUnit (328 tests)</i>"]
-            AppTests["PrinterInstall.App.Tests<br/><i>xUnit (201 tests)</i>"]
-        end
-    end
-
-    App -->|"Project Reference"| Core
-    CoreTests -->|"Project Reference"| Core
-    AppTests -->|"Project Reference"| App
-
-    style Core fill:#1B3A5C,color:#fff
-    style App fill:#3d5a80,color:#fff
-    style CoreTests fill:#27AE60,color:#fff
-    style AppTests fill:#27AE60,color:#fff
+```
+src/
+  PrinterInstall.Core/   Domain logic: drivers, remote, orchestration, rollback, network, auth
+  PrinterInstall.App/    WPF UI (MVVM): views, view models, UI services
+tests/
+  PrinterInstall.Core.Tests/
+  PrinterInstall.App.Tests/
 ```
 
----
+**Stack:** .NET 8 (`net8.0-windows`), WPF with [WPF-UI](https://github.com/lepoco/wpfui), [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet), dependency injection through `Microsoft.Extensions.Hosting`, `System.Management` for WMI/CIM, and `System.DirectoryServices.Protocols` for LDAP.
 
-## 🖨️ Supported Makers & Models
+**Patterns:** MVVM, Strategy, Orchestrator, Saga/Rollback, Router/Proxy, Result Pattern. Remote operations go through `RoutingRemotePrinterOperations`, which chooses between local and remote execution. Every operation that creates resources records to the `DeploymentRollbackJournal` so it can be reversed.
 
-| Maker | Type | Driver | Presets / Features |
-| :--- | :--- | :--- | :--- |
-| **Epson** | Inkjet / Laser A4 | EPSON Universal Print Driver | Standard queues, PCL5 test |
-| **Brother** | Monochrome Laser | Brother Universal / HL Series | Standard queues, PCL5 test |
-| **Lexmark** | Monochrome Laser | Lexmark Universal Print Driver | Fallback v4 → v2, PCL5 test |
-| **Gainscha** | Thermal Label | Seagull Scientific Driver (SSDAL) | `Patient`, `Matrix`, `Wristband`, `Batch` |
+## Build and run
 
----
-
-## ⚙️ Domain and Network Configuration
-
-**PrinterInstall** does not hardcode domains or servers:
-
-1. On the login window, click the gear icon (**⚙️**) in the upper right corner.
-2. Enter the desired **Default Domain** (e.g., `company.local` or `COMPANY`).
-3. Click **"Detect Domain"** to automatically discover the current computer's Active Directory domain.
-4. Optionally, enter an **Alternative LDAP Host / Server** if DNS does not resolve directly to the Domain Controller.
-5. Click **Save**. Settings are persisted to `%LocalAppData%\PrinterInstall\settings.json`.
-
----
-
-## 📦 How to Build & Publish (Single Standalone Executable)
-
-The project produces a **single self-contained executable (win-x64)** bundling the .NET 8 runtime, dependencies, and drivers:
+You need the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and Windows.
 
 ```powershell
-# Run the publish script
-powershell -ExecutionPolicy Bypass -File .\scripts\Publish-PrinterInstall.ps1 -Configuration Release
+git clone https://github.com/brendonpereiradev/PrinterInstall
+cd PrinterInstall
+dotnet build PrinterInstall.sln
+dotnet run --project src/PrinterInstall.App
 ```
 
-The output executable is created at:
-```
-publish\PrinterInstall\Printer Install.exe
-```
-
-> **Simple Distribution:** Simply copy `Printer Install.exe` to any Windows 10/11 x64 machine. No separate .NET runtime installation required.
-
----
-
-## 🚀 GitHub Actions Releases (CI/CD)
-
-The repository includes an automated release workflow in [`.github/workflows/release.yml`](.github/workflows/release.yml).
-
-### Publishing a new release via Git Tag:
-
-```bash
-# 1. Commit changes
-git add .
-git commit -m "feat: release v1.0.0"
-git push origin main
-
-# 2. Tag and push
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-GitHub Actions will automatically test, compile, package `Printer Install.exe`, and publish the GitHub Release with SHA-256 checksums.
-
----
-
-## 🧪 Automated Tests
-
-Run the full test suite:
+Run the tests:
 
 ```powershell
-dotnet test
+dotnet test PrinterInstall.sln
 ```
 
-- **PrinterInstall.Core.Tests:** 328 unit and integration tests.
-- **PrinterInstall.App.Tests:** 201 presentation and service tests.
-- **Total:** 529 automated tests (100% passing).
+Produce a single self-contained executable (bundles the .NET runtime, the drivers, and the configuration):
 
----
+```powershell
+pwsh scripts/Publish-PrinterInstall.ps1
+```
 
-## 📖 Additional Documentation
+The output lands in `publish/PrinterInstall`.
 
-- [User Manual (Portuguese)](MANUAL_DO_USUARIO.md) — Comprehensive step-by-step guide with troubleshooting.
-- [Plain Text Manual (Portuguese)](MANUAL.txt) — Plaintext manual for quick offline reference.
-- [Tested Models List](MODELOS_TESTADOS.txt) — Field-tested printer models.
+## Usage
 
----
+1. **Login.** Sign in with your domain account as `user@domain` or `DOMAIN\user`. If you need to change the default domain or LDAP server, click the settings icon (⚙️) in the upper corner. Credentials are not stored after you close the program.
+2. **Targets.** Add computers by network name or IP. The "Add This PC" button includes the local machine. Pasting a list adds them all at once.
+3. **Queues.** Pick the brand, enter the printer IP and the queue name. For Gainscha, select the label preset.
+4. **Deploy.** Start the install and watch each machine's status. Export the report when it finishes.
 
-*Engineered for reliability, security, and operational simplicity.*
+The [user manual](MANUAL_DO_USUARIO.md) (Portuguese) has the full walkthrough, the Gainscha preset table, and fixes for the common errors.
+
+## Gainscha label reference
+
+| Preset | Size | Hospital use |
+| --- | :---: | --- |
+| Patient | 89 × 36 mm | Charts, records, beds |
+| Matrix | 50 × 30 mm | Blood tubes and sample vials |
+| Wristband | 25 × 270 mm | Patient ID wristband |
+| Batch | 45 × 13 mm | Medication and storeroom |
+
+Confirm which roll is in the printer before installing the queue. A preset larger than the physical label prints past the edge.
+
+## Documentation
+
+- [User manual](MANUAL_DO_USUARIO.md) (Portuguese) — guide for support technicians
+- [Tested models](MODELOS_TESTADOS.txt) — validated printers by brand
+- [GEMINI.md](GEMINI.md) (Portuguese) — development rules and guidelines
