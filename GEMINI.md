@@ -5,7 +5,7 @@
 Antes de realizar qualquer ação neste projeto (implementação, correção, refatoração, análise ou resposta a perguntas), você **deve** consultar a documentação técnica de referência localizada em:
 
 ```
-C:\Users\Admin\.gemini\antigravity\brain\c8367978-fd29-4a86-af0e-61c944a93537\technical_documentation.md
+C:\Users\Admin\.gemini\antigravity\brain\ca6f79a7-0b7a-4838-8851-7ae81ca7dd66\technical_documentation.md
 ```
 
 Essa documentação contém:

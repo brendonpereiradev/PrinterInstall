@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         Title="{DynamicResource Login_WindowTitle}"
+        Icon="pack://application:,,,/Assets/app.ico"
         Height="440" Width="472"
         MinHeight="440" MaxHeight="440" MinWidth="472" MaxWidth="472"
         ResizeMode="NoResize"

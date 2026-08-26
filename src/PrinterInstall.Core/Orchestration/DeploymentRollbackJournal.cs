@@ -43,6 +43,21 @@ public sealed class DeploymentRollbackJournal
         _portOnly.Remove((c, p));
     }
 
+    public void AbandonQueue(string computerName, string printerName, string portName)
+    {
+        var c = computerName.Trim();
+        var q = printerName.Trim();
+        var p = portName.Trim();
+        if (c.Length == 0 || q.Length == 0 || p.Length == 0)
+            return;
+
+        _queues.RemoveAll(entry =>
+            string.Equals(entry.ComputerName, c, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(entry.PrinterName, q, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(entry.PortName, p, StringComparison.OrdinalIgnoreCase));
+        _portOnly.Remove((c, p));
+    }
+
     private sealed class ComputerPortComparer : IEqualityComparer<(string Computer, string PortName)>
     {
         public bool Equals((string Computer, string PortName) x, (string Computer, string PortName) y) =>

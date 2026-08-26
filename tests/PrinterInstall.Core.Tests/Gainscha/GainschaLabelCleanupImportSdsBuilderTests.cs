@@ -9,6 +9,7 @@ public class GainschaLabelCleanupImportSdsBuilderTests
     [InlineData(GainschaLabelPreset.Paciente, 89, 36)]
     [InlineData(GainschaLabelPreset.Matrix, 50, 30)]
     [InlineData(GainschaLabelPreset.Pulseira, 25, 270)]
+    [InlineData(GainschaLabelPreset.Lote, 45, 13)]
     public void Build_ContainsUserStockAndOptions(GainschaLabelPreset preset, int widthMm, int heightMm)
     {
         var importSds = GainschaLabelCleanupImportSdsBuilder.Build(preset);

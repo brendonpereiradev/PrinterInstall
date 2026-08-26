@@ -81,9 +81,31 @@ public class PrinterHostValidatorTests
     [InlineData("Printer1", "printer-srv01", false)]
     [InlineData("", "10.1.152.218", false)]
     [InlineData("10.1.152.218", "", false)]
-    public void DetectProbableInversion_CorrectlyIdentifiesInversion(string displayName, string hostAddress, bool expected)
+    [InlineData(null, "10.1.152.218", false)]
+    [InlineData("10.1.152.218", null, false)]
+    [InlineData("   ", "10.1.152.218", false)]
+    public void DetectProbableInversion_CorrectlyIdentifiesInversion(string? displayName, string? hostAddress, bool expected)
     {
         var result = PrinterHostValidator.DetectProbableInversion(displayName, hostAddress);
         Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void IsValidHostAddress_HostnameExceeding253Chars_ReturnsFalse()
+    {
+        // Cria hostname válido sintaticamente mas com mais de 253 caracteres
+        var longHostname = string.Join(".", Enumerable.Repeat("a", 130)); // 130 * 2 = 260 chars
+        Assert.True(longHostname.Length > 253);
+        Assert.False(PrinterHostValidator.IsValidHostAddress(longHostname));
+    }
+
+    [Fact]
+    public void IsValidHostAddress_HostnameUpTo253Chars_ReturnsTrue()
+    {
+        // 63 chars por label, 4 labels = 252 + 3 = 255 chars. Criamos um de 250 chars.
+        var label = new string('a', 50);
+        var validHostname = $"{label}.{label}.{label}.{label}";
+        Assert.True(validHostname.Length <= 253);
+        Assert.True(PrinterHostValidator.IsValidHostAddress(validHostname));
     }
 }

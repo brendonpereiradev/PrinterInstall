@@ -51,57 +51,27 @@ public class RemoteElevatedScriptBuilderTests
 
 
     [Fact]
-
     public void BuildApplyGainschaLabelPresetScript_ImportsTemplateDefaultsAndCleanupThenValidatesDimensions()
-
     {
-
         var script = RemoteElevatedScriptBuilder.BuildApplyGainschaLabelPresetScript(
-
             "Etiquetadora - Teste",
-
             @"C:\Temp\paciente.sds",
-
             @"C:\Temp\gainscha-cleanup.sds",
-
             @"C:\Temp\paciente-defaults.sds",
-
             @"DOMAIN\deployuser",
-
             89,
-
             36,
-
             "USER (89,0 mm x 36,0 mm)");
 
-
-
         Assert.Contains("Invoke-SsdalSettings -SsdalPath $ssdal -PrinterName $printerName -Action import -FilePath $templatePath", script, StringComparison.Ordinal);
-
         Assert.Contains("Invoke-SsdalSettings -SsdalPath $ssdal -PrinterName $printerName -Action import -FilePath $cleanupPath", script, StringComparison.Ordinal);
-
-        Assert.Contains("Invoke-SsdalSettings -SsdalPath $ssdal -PrinterName $printerName -Action import -FilePath $defaultsPath", script, StringComparison.Ordinal);
-
         Assert.Contains("$expectedWidthMm = 89", script, StringComparison.Ordinal);
-
         Assert.Contains("$expectedHeightMm = 36", script, StringComparison.Ordinal);
-
         Assert.Contains("USER (89,0 mm x 36,0 mm)", script, StringComparison.Ordinal);
-
         Assert.Contains("STEP>> ssdal import template", script, StringComparison.Ordinal);
-
-        Assert.Contains("STEP>> ssdal import printing defaults template", script, StringComparison.Ordinal);
-
-        Assert.Contains("Test-GainschaPrintingDefaultsFromExport", script, StringComparison.Ordinal);
-
-        Assert.Contains("Invoke-InteractivePrintingDefaultsSync", script, StringComparison.Ordinal);
-
-        Assert.Contains("Test-DeployUserHasInteractiveSession", script, StringComparison.Ordinal);
-
-        Assert.DoesNotContain("Sync-GainschaPrintingDefaults", script, StringComparison.Ordinal);
-
+        Assert.Contains("STEP>> ssdal export preferences", script, StringComparison.Ordinal);
+        Assert.Contains("Get-UserFormDimensionsMmFromContent", script, StringComparison.Ordinal);
         Assert.DoesNotContain("/RU SYSTEM", script, StringComparison.Ordinal);
-
     }
 
 

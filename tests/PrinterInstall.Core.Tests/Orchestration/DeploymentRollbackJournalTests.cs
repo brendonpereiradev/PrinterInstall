@@ -32,4 +32,18 @@ public class DeploymentRollbackJournalTests
         j.RecordPortCreated("pc1", "P");
         Assert.Single(j.PortOnlyEntries);
     }
+
+    [Fact]
+    public void AbandonQueue_RemovesQueueAndPortEntries()
+    {
+        var j = new DeploymentRollbackJournal();
+        j.RecordPortCreated("pc1", "10.0.0.1");
+        j.RecordQueueCreated("pc1", "Q1", "10.0.0.1");
+        Assert.Single(j.QueueEntries);
+
+        j.AbandonQueue("pc1", "Q1", "10.0.0.1");
+        Assert.Empty(j.QueueEntries);
+        Assert.Empty(j.PortOnlyEntries);
+        Assert.False(j.HasRollbackWork);
+    }
 }

@@ -31,13 +31,21 @@ public partial class LoginWindow
 
     private async void SignIn_OnClick(object sender, RoutedEventArgs e)
     {
-        var result = await _viewModel.TryLoginAsync().ConfigureAwait(true);
-        if (!result.Success)
-            return;
+        try
+        {
+            var result = await _viewModel.TryLoginAsync().ConfigureAwait(true);
+            if (!result.Success)
+                return;
 
-        var main = _serviceProvider.GetRequiredService<MainWindow>();
-        Application.Current.MainWindow = main;
-        main.Show();
-        Close();
+            var main = _serviceProvider.GetRequiredService<MainWindow>();
+            Application.Current.MainWindow = main;
+            main.Show();
+            Close();
+        }
+        catch (Exception ex)
+        {
+            // Trata exceções não esperadas exibindo na interface sem derrubar o processo WPF.
+            _viewModel.ErrorMessage = ex.Message;
+        }
     }
 }

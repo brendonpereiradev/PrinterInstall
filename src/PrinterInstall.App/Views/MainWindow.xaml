@@ -9,6 +9,7 @@
         xmlns:vm="clr-namespace:PrinterInstall.App.ViewModels;assembly=PrinterInstall.App"
         mc:Ignorable="d"
         Title="{DynamicResource Main_WindowTitle}"
+        Icon="pack://application:,,,/Assets/app.ico"
         Height="800" Width="1100"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>

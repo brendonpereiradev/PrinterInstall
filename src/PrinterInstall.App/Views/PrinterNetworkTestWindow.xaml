@@ -5,6 +5,7 @@
         xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         Title="{DynamicResource NetworkTest_WindowTitle}"
+        Icon="pack://application:,,,/Assets/app.ico"
         Width="480"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"

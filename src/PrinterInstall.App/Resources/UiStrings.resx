@@ -11,7 +11,7 @@
   <data name="Main_Validation_GainschaLabelPresetRequired" xml:space="preserve"><value>Selecione o tamanho de etiqueta para impressoras Gainscha.</value></data>
   <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Formato de nome de computador inválido.</value></data>
   <data name="Main_LocalComputerSuffix" xml:space="preserve"><value>(este PC)</value></data>
-  <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} cancelado(s) — driver ausente.</value></data>
+  <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} cancelado(s).</value></data>
   <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
   <data name="Main_SummaryDialogTitle" xml:space="preserve"><value>Resumo do lote</value></data>
@@ -45,4 +45,21 @@
   <data name="Main_LogExportErrorFormat" xml:space="preserve"><value>Falha ao exportar log: {0}</value></data>
   <data name="Removal_LogExportSuccessFormat" xml:space="preserve"><value>Log exportado com sucesso para: {0}</value></data>
   <data name="Removal_LogExportErrorFormat" xml:space="preserve"><value>Falha ao exportar log: {0}</value></data>
+  <data name="Removal_SummaryDialogTitle" xml:space="preserve"><value>Resumo do controle de impressoras</value></data>
+  <data name="Removal_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} aviso(s), {2} erro(s).</value></data>
+  <data name="Removal_SummaryFailuresHeader" xml:space="preserve"><value>Falhas registradas:</value></data>
+  <data name="Removal_Cancelled" xml:space="preserve"><value>Operação cancelada pelo utilizador.</value></data>
+  <data name="Main_DeployWarningDialogTitle" xml:space="preserve"><value>Atenção: Possível divergência de modelo</value></data>
+  <data name="Main_DeployWarningHeader" xml:space="preserve"><value>Foram identificadas possíveis divergências na configuração de modelos:</value></data>
+  <data name="Main_DeployWarningQuestion" xml:space="preserve"><value>Deseja continuar com a implantação mesmo assim?</value></data>
+  <data name="Main_DeployWarningProceedButton" xml:space="preserve"><value>Prosseguir mesmo assim</value></data>
+  <data name="Main_DeployWarningCancelButton" xml:space="preserve"><value>Cancelar e corrigir</value></data>
+  <data name="Main_DeployCancelledByMismatchWarning" xml:space="preserve"><value>Implantação cancelada pelo utilizador após alerta de divergência de modelo/driver.</value></data>
+  <data name="NetworkTest_ConfirmDialogTitle" xml:space="preserve"><value>Confirmar teste de impressora</value></data>
+  <data name="NetworkTest_ConfirmHeader" xml:space="preserve"><value>Deseja enviar uma página de teste de rede para a impressora?</value></data>
+  <data name="NetworkTest_ConfirmHostFormat" xml:space="preserve"><value>Endereço IP/Host: {0}</value></data>
+  <data name="NetworkTest_ConfirmBrandFormat" xml:space="preserve"><value>Modelo: {0}</value></data>
+  <data name="NetworkTest_ConfirmPresetFormat" xml:space="preserve"><value>Tamanho de etiqueta: {0}</value></data>
+  <data name="NetworkTest_ConfirmProceedButton" xml:space="preserve"><value>Enviar teste</value></data>
+  <data name="NetworkTest_ConfirmCancelButton" xml:space="preserve"><value>Cancelar</value></data>
 </root>

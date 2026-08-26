@@ -21,7 +21,7 @@ public class DirectRawPrinterTestPageBuilderTests
     [Theory]
     [InlineData(GainschaLabelPreset.Paciente, "SIZE 89 mm, 36 mm", "Paciente")]
     [InlineData(GainschaLabelPreset.Matrix, "SIZE 50 mm, 30 mm", "Matrix")]
-    [InlineData(GainschaLabelPreset.Pulseira, "SIZE 25 mm, 270 mm", "Pulseira")]
+    [InlineData(GainschaLabelPreset.Lote, "SIZE 93 mm, 13 mm", "Lote")]
     public void ForBrand_Gainscha_UsesPresetDimensions(
         GainschaLabelPreset preset, string expectedSizeLine, string expectedPresetLabel)
     {
@@ -32,6 +32,52 @@ public class DirectRawPrinterTestPageBuilderTests
         Assert.Contains("PRINT 1,1", text);
         Assert.Contains(expectedPresetLabel, text);
         Assert.Contains("Host: 10.0.0.51", text);
+    }
+
+    [Fact]
+    public void ForBrand_Gainscha_Lote_PrintsDualColumnLayout()
+    {
+        var payload = DirectRawPrinterTestPageBuilder.ForBrand(
+            PrinterBrand.Gainscha, "10.0.0.51", GainschaLabelPreset.Lote);
+        var text = Encoding.ASCII.GetString(payload);
+
+        Assert.StartsWith("SIZE 93 mm, 13 mm", text);
+        Assert.Contains("GAP 3 mm, 0 mm", text);
+
+        // Ambas as colunas contêm moldura BOX
+        var boxMatches = Regex.Matches(text, @"BOX (\d+),(\d+),(\d+),(\d+),\d+");
+        Assert.Equal(2, boxMatches.Count);
+
+        // Coluna 1 (Esquerda: X < 360)
+        var col1BoxLeft = int.Parse(boxMatches[0].Groups[3].Value);
+        var col1BoxRight = int.Parse(boxMatches[0].Groups[1].Value);
+        Assert.True(col1BoxLeft >= 0 && col1BoxRight <= 360);
+
+        // Coluna 2 (Direita: X > 380)
+        var col2BoxLeft = int.Parse(boxMatches[1].Groups[3].Value);
+        var col2BoxRight = int.Parse(boxMatches[1].Groups[1].Value);
+        Assert.True(col2BoxLeft >= 380 && col2BoxRight <= 744);
+
+        // Ambas as colunas contêm os textos esperados
+        var testLoteMatches = Regex.Matches(text, @"TEXT (\d+),\d+,""2"",180,1,1,""TEST - Lote""");
+        Assert.Equal(2, testLoteMatches.Count);
+
+        var hostMatches = Regex.Matches(text, @"TEXT (\d+),\d+,""1"",180,1,1,""Host: 10\.0\.0\.51""");
+        Assert.Equal(2, hostMatches.Count);
+
+        Assert.Contains("PRINT 1,1", text);
+    }
+
+    [Fact]
+    public void ForBrand_Gainscha_Pulseira_UsesCleanTestLayoutInHotZone()
+    {
+        var payload = DirectRawPrinterTestPageBuilder.ForBrand(PrinterBrand.Gainscha, "10.0.0.51", GainschaLabelPreset.Pulseira);
+        var text = Encoding.ASCII.GetString(payload);
+        Assert.NotEmpty(payload);
+        Assert.StartsWith("SIZE 25 mm, 270 mm", text);
+        Assert.Contains("PRINT 1,1", text);
+        Assert.Contains("Printer Install", text);
+        Assert.Contains("BOX", text);
     }
 
     [Fact]

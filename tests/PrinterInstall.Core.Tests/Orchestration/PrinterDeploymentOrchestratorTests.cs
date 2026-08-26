@@ -209,6 +209,57 @@ public class PrinterDeploymentOrchestratorTests
     }
 
     [Fact]
+    public async Task RunAsync_GainschaCancelledDuringPreset_LeavesQueueInJournalForRollback()
+    {
+        var expectedDriver = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Gainscha);
+        var cts = new CancellationTokenSource();
+        var mock = new Mock<IRemotePrinterOperations>();
+        mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { expectedDriver });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        mock.Setup(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(m => m.ConfigureGainschaLabelPresetAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<GainschaLabelPreset>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                cts.Cancel();
+                cts.Token.ThrowIfCancellationRequested();
+                return Task.CompletedTask;
+            });
+
+        var journal = new DeploymentRollbackJournal();
+        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var def = new PrinterQueueDefinition
+        {
+            Brand = PrinterBrand.Gainscha,
+            DisplayName = "Etiquetadora",
+            PrinterHostAddress = "10.0.0.30",
+            PortNumber = 9100,
+            Protocol = TcpPrinterProtocol.Raw,
+            GainschaLabelPreset = GainschaLabelPreset.Paciente
+        };
+
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = new[] { "pc1" },
+            Printers = new[] { def },
+            DomainCredential = new NetworkCredential("u", "p"),
+            PrintTestPage = false
+        };
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            sut.RunAsync(request, journal, new Progress<DeploymentProgressEvent>(_ => { }), cts.Token));
+
+        Assert.Single(journal.QueueEntries);
+        Assert.Equal("Etiquetadora", journal.QueueEntries[0].PrinterName);
+        Assert.Equal("10.0.0.30", journal.QueueEntries[0].PortName);
+        Assert.Empty(journal.PortOnlyEntries);
+    }
+
+    [Fact]
     public async Task RunAsync_LexmarkV2Only_UsesV2ForAddPrinter()
     {
         var v2 = "Lexmark Universal v2 XL";

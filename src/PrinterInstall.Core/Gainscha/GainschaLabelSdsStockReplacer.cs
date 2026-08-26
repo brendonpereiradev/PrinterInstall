@@ -55,12 +55,15 @@ internal static class GainschaLabelSdsStockReplacer
             throw new InvalidOperationException("Template SDS missing options section.");
         }
 
+        var presetMatch = Regex.Match(templateContent, @"(?is)<preset[^>]*>.*?</preset>");
+        var presetSection = presetMatch.Success ? $"{presetMatch.Value.Trim()}{Environment.NewLine}{Environment.NewLine}" : "";
+
         return $"""
             <driver version='6.6'>
 
             {stockBlock.Trim()}
 
-            {optionsMatch.Value.Trim()}
+            {presetSection}{optionsMatch.Value.Trim()}
 
             </driver>
             """;

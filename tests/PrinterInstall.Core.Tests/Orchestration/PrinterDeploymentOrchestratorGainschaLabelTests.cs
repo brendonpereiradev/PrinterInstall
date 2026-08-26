@@ -1,7 +1,9 @@
 using System.Net;
 using Moq;
 using PrinterInstall.Core.Catalog;
+using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Models;
+using PrinterInstall.Core.Network;
 using PrinterInstall.Core.Orchestration;
 using PrinterInstall.Core.Remote;
 using PrinterInstall.Core.Tests.TestSupport;
@@ -174,5 +176,53 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
         Assert.Single(journal.QueueEntries);
         remote.Verify(m => m.ConfigureGainschaLabelPresetAsync(
             It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<GainschaLabelPreset>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Gainscha_PrintTestPageEnabled_UsesDirectRawTestService()
+    {
+        var driver = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Gainscha);
+        var remote = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        remote.Setup(m => m.GetInstalledDriverNamesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { driver });
+        remote.Setup(m => m.PrinterQueueExistsAsync("pc1", It.IsAny<NetworkCredential>(), "Q1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        remote.Setup(m => m.CreateTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<string>(), "10.0.0.10", 9100, "RAW", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        remote.Setup(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "Q1", driver, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        remote.Setup(m => m.ConfigureGainschaLabelPresetAsync("pc1", It.IsAny<NetworkCredential>(), "Q1", GainschaLabelPreset.Paciente, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var rawService = new Mock<IDirectRawPrinterTestService>();
+        rawService.Setup(r => r.RunAsync("10.0.0.10", PrinterBrand.Gainscha, GainschaLabelPreset.Paciente, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DirectRawPrinterTestResult
+            {
+                Success = true,
+                FailedPhase = DirectRawPrinterTestPhase.None,
+                Message = "OK"
+            });
+
+        var journal = new DeploymentRollbackJournal();
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = new[] { "pc1" },
+            Printers = new[] { GainschaPrinter() },
+            DomainCredential = new NetworkCredential("u", "p"),
+            PrintTestPage = true
+        };
+
+        var orchestrator = new PrinterDeploymentOrchestrator(
+            remote.Object,
+            new NullLocalDriverPackageCatalog(),
+            rawService.Object);
+
+        await orchestrator.RunAsync(
+            request,
+            journal,
+            new InlineProgress<DeploymentProgressEvent>(_ => { }));
+
+        rawService.Verify(r => r.RunAsync("10.0.0.10", PrinterBrand.Gainscha, GainschaLabelPreset.Paciente, It.IsAny<CancellationToken>()), Times.Once);
+        remote.Verify(m => m.PrintTestPageAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

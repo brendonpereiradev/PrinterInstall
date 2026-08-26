@@ -21,61 +21,69 @@ public static class LocalProcessRunner
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(executablePath);
 
-        return await Task.Run(() =>
-        {
-            using var process = new Process { StartInfo = CreateExecutableStartInfo(executablePath, arguments) };
-            if (!process.Start())
-                return new LocalProcessOutput(new RemoteProcessResult(1, null, TimedOut: false), "", "");
+        using var process = new Process { StartInfo = CreateExecutableStartInfo(executablePath, arguments) };
+        if (!process.Start())
+            return new LocalProcessOutput(new RemoteProcessResult(1, null, TimedOut: false), "", "");
 
-            return WaitForProcessOutput(process, timeout, cancellationToken);
-        }, cancellationToken).ConfigureAwait(false);
+        return await WaitForProcessOutputAsync(process, timeout, cancellationToken).ConfigureAwait(false);
     }
 
     public static async Task<LocalProcessOutput> RunWithOutputAsync(string commandLine, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        return await Task.Run(() =>
-        {
-            using var process = new Process { StartInfo = CreateStartInfo(commandLine) };
-            if (!process.Start())
-                return new LocalProcessOutput(new RemoteProcessResult(1, null, TimedOut: false), "", "");
+        using var process = new Process { StartInfo = CreateStartInfo(commandLine) };
+        if (!process.Start())
+            return new LocalProcessOutput(new RemoteProcessResult(1, null, TimedOut: false), "", "");
 
-            return WaitForProcessOutput(process, timeout, cancellationToken);
-        }, cancellationToken).ConfigureAwait(false);
+        return await WaitForProcessOutputAsync(process, timeout, cancellationToken).ConfigureAwait(false);
     }
 
-    private static LocalProcessOutput WaitForProcessOutput(Process process, TimeSpan timeout, CancellationToken cancellationToken)
+    private static async Task<LocalProcessOutput> WaitForProcessOutputAsync(Process process, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        var stderr = process.StandardError.ReadToEndAsync();
-
-        var pid = (uint)process.Id;
-        var deadline = DateTime.UtcNow + timeout;
-        while (!process.HasExited)
+        if (cancellationToken.IsCancellationRequested)
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                TryKill(process);
-                cancellationToken.ThrowIfCancellationRequested();
-            }
-
-            if (DateTime.UtcNow >= deadline)
-            {
-                TryKill(process);
-                return new LocalProcessOutput(new RemoteProcessResult(0, pid, TimedOut: true), "", "Timed out.");
-            }
-
-            if (!process.WaitForExit(500))
-                continue;
-
-            break;
+            TryKill(process);
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
-        Task.WaitAll(new Task[] { stdout, stderr }, TimeSpan.FromSeconds(5));
-        var exitCode = process.HasExited ? (uint)process.ExitCode : 0u;
-        return new LocalProcessOutput(
-            new RemoteProcessResult(exitCode, pid, TimedOut: false),
-            stdout.Result,
-            stderr.Result);
+        var pid = (uint)process.Id;
+        var stdoutTask = process.StandardOutput.ReadToEndAsync();
+        var stderrTask = process.StandardError.ReadToEndAsync();
+
+        using var timeoutCts = new CancellationTokenSource(timeout);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+        try
+        {
+            await process.WaitForExitAsync(linkedCts.Token).ConfigureAwait(false);
+
+            try
+            {
+                await Task.WhenAll(stdoutTask, stderrTask).WaitAsync(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                // Timeout de segurança ao aguardar encerramento dos streams de saída.
+            }
+
+            var exitCode = process.HasExited ? (uint)process.ExitCode : 0u;
+            var stdout = stdoutTask.IsCompletedSuccessfully ? await stdoutTask.ConfigureAwait(false) : "";
+            var stderr = stderrTask.IsCompletedSuccessfully ? await stderrTask.ConfigureAwait(false) : "";
+
+            return new LocalProcessOutput(
+                new RemoteProcessResult(exitCode, pid, TimedOut: false),
+                stdout,
+                stderr);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            TryKill(process);
+            throw;
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+        {
+            TryKill(process);
+            return new LocalProcessOutput(new RemoteProcessResult(0, pid, TimedOut: true), "", "Timed out.");
+        }
     }
 
     private static ProcessStartInfo CreateStartInfo(string commandLine)

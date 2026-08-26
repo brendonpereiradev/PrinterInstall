@@ -4,6 +4,7 @@
   <sys:String x:Key="Removal_WindowTitle">Controle de impressoras</sys:String>
   <sys:String x:Key="Removal_Step0Intro">Um IP ou nome de computador por linha. Este assistente permite remover ou renomear impressoras remotamente.</sys:String>
   <sys:String x:Key="Removal_Step0KeyboardHint">Pressione Enter para adicionar outro host na lista.</sys:String>
+  <sys:String x:Key="Removal_AddThisComputer">Adicionar este PC</sys:String>
   <sys:String x:Key="Removal_Next">Avançar</sys:String>
   <sys:String x:Key="Removal_ColumnRemove">Remover</sys:String>
   <sys:String x:Key="Removal_ColumnPrinter">Impressora</sys:String>

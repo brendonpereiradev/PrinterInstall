@@ -8,7 +8,7 @@ param(
 
     [Parameter(Mandatory = $true)]
 
-    [ValidateSet("Paciente", "Matrix", "Pulseira")]
+    [ValidateSet("Paciente", "Matrix", "Pulseira", "Lote")]
 
     [string] $Preset,
 
@@ -41,6 +41,8 @@ $expectedByPreset = @{
     Matrix   = "USER (50,0 mm x 30,0 mm)"
 
     Pulseira = "USER (25,0 mm x 270,0 mm)"
+
+    Lote     = "USER (45,0 mm x 13,0 mm)"
 
 }
 

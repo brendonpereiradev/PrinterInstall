@@ -49,6 +49,8 @@ public partial class App : Application
         builder.Services.AddSingleton<IRememberedUserStore, RememberedUserStore>();
         builder.Services.AddSingleton<ILdapCredentialValidator, LdapCredentialValidator>();
         builder.Services.AddSingleton<ILogExportService, LogExportService>();
+        builder.Services.AddSingleton<IDeploymentNotificationService, DeploymentNotificationService>();
+        builder.Services.AddSingleton<IConfirmationDialogService, ConfirmationDialogService>();
 
         builder.Services.AddSingleton<IRemoteDriverFileStager, SmbRemoteDriverFileStager>();
         builder.Services.AddSingleton<WmiRemoteProcessRunner>();
@@ -78,7 +80,8 @@ public partial class App : Application
         builder.Services.AddSingleton<PrinterDeploymentOrchestrator>(sp =>
             new PrinterDeploymentOrchestrator(
                 sp.GetRequiredService<IRemotePrinterOperations>(),
-                sp.GetRequiredService<ILocalDriverPackageCatalog>()));
+                sp.GetRequiredService<ILocalDriverPackageCatalog>(),
+                sp.GetRequiredService<IDirectRawPrinterTestService>()));
         builder.Services.AddSingleton<PrinterControlOrchestrator>(sp =>
             new PrinterControlOrchestrator(sp.GetRequiredService<IRemotePrinterOperations>()));
         builder.Services.AddSingleton<DeploymentRollbackRunner>(sp =>

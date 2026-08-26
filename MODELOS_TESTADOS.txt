@@ -1,0 +1,39 @@
+================================================================================
+             MODELOS DE IMPRESSORAS TESTADOS — PRINTERINSTALL
+================================================================================
+
+Abaixo estao listados os modelos de impressoras testados e validados no sistema,
+agrupados pela marca/opcao correspondente no aplicativo.
+
+OBSERVACAO:
+Outros modelos da mesma fabricante podem funcionar normalmente.
+
+--------------------------------------------------------------------------------
+1. EPSON (Opcao no Sistema: Epson)
+   Driver Utilizado: EPSON Universal Print Driver
+--------------------------------------------------------------------------------
+   - Impressora Monocromatica EcoTank M1180
+   - Impressora Multifuncional Monocromatica WorkForce Pro WF-M5899
+   - Impressora Multifuncional Monocromatica WorkForce Pro WF-M5799
+   - Impressora Multifuncional WorkForce Pro WF-C5890
+   - Impressora Multifuncional WorkForce Pro WF-C5790
+
+--------------------------------------------------------------------------------
+2. LEXMARK (Opcao no Sistema: Lexmark)
+   Driver Utilizado: Lexmark Universal v4 XL / v2 XL
+--------------------------------------------------------------------------------
+   - Impressora Multifuncional Lexmark CX532adwe
+
+--------------------------------------------------------------------------------
+3. BROTHER (Opcao no Sistema: Brother)
+   Driver Utilizado: Brother HL-L5212DW Printer
+--------------------------------------------------------------------------------
+   - Impressora Monocromatica Brother HL-L5212DW
+
+--------------------------------------------------------------------------------
+4. GAINSCHA (Opcao no Sistema: Gainscha)
+   Driver Utilizado: Gainscha GA-2408T
+--------------------------------------------------------------------------------
+   - Impressora Termica de Etiquetas Gainscha GA-2408T
+
+================================================================================

@@ -47,7 +47,7 @@ public class DirectRawPrinterTestServiceTests
 
         Assert.False(result.Success);
         Assert.Equal(DirectRawPrinterTestPhase.Connectivity, result.FailedPhase);
-        Assert.Contains("10.0.0.1:9100", result.Message);
+        Assert.Equal("Sem conectividade com 10.0.0.1.", result.Message);
     }
 
     [Fact]

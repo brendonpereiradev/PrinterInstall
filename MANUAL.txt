@@ -1,0 +1,266 @@
+================================================================================
+           MANUAL DE UTILIZACAO DO SISTEMA — PRINTERINSTALL
+                     Guia pratico para Field e N1
+================================================================================
+
+Versao da Aplicacao: 2.0
+Publico-Alvo: Suporte em campo / Helpdesk de nível 1
+Objetivo: Instalar, configurar, testar e gerenciar impressoras de rede e 
+          etiquetadoras em multiplos computadores de forma rapida e padronizada.
+
+--------------------------------------------------------------------------------
+SUMARIO:
+  1. Visao Geral e Pre-Requisitos
+  2. Acesso ao Sistema (Login)
+  3. Instalacao de Impressoras em Lote (Deploy)
+     3.1 Adicionando Computadores Alvos
+     3.2 Configurando as Filas de Impressao
+     3.3 Iniciando e Acompanhando a Instalacao
+     3.4 Rollback Automatico e Seguranca
+  4. Assistente de Controle de Impressoras (Remocao e Renomeacao)
+     4.1 Consultando Impressoras Instaladas
+     4.2 Removendo Filas Antigas ou Orfas
+     4.3 Renomeando Filas em Lote
+  5. Ferramenta de Teste de Rede Direto
+  6. Tabela de Referencia de Etiquetas Gainscha
+  7. Resolucao de Problemas Mais Frequentes (FAQ & Troubleshooting)
+--------------------------------------------------------------------------------
+
+
+================================================================================
+1. VISAO GERAL E PRE-REQUISITOS
+================================================================================
+
+O PrinterInstall automatiza todo o processo de instalacao de impressoras de
+rede em estacoes de trabalho locais ou remotas. Ele cuida automaticamente de:
+- Instalar os drivers corretos no Windows sem precisar de CDs ou downloads.
+- Criar as portas TCP/IP de rede.
+- Criar e nomear as filas de impressao.
+- Calibrar o tamanho correto das etiquetas termicas (Gainscha).
+- Desfazer alteracoes caso ocorra algum erro no meio do caminho (Rollback).
+
+O que voce precisa ter em maos antes de comecar:
+  [1] Sua credencial de rede: Usuario e senha do dominio com privilegio
+      administrativo (ex: conta de suporte de TI).
+  [2] Nome ou IP dos computadores: Identificacao das maquinas onde as impressoras
+      serao instaladas:
+      - Por Nome: Padroes NOTE-XXXXXX (ex: NOTE-001234) ou 113-DESKXXXXXX
+        (ex: 113-DESK004567).
+      - Por Endereco IP: Tambem e possivel usar diretamente o IP da estacao
+        (ex: 10.1.148.10).
+  [3] Endereco IP da impressora: O IP fixo ou reservado da impressora na rede
+      hospitalar (ex: 10.1.152.37).
+
+
+================================================================================
+2. ACESSO AO SISTEMA (LOGIN)
+================================================================================
+
+Ao abrir o aplicativo, a tela de autenticacao sera exibida:
+
+  +-------------------------------------------------------------+
+  |                     PRINTERINSTALL - LOGIN                  |
+  +-------------------------------------------------------------+
+  |  Usuario: [ 13455678063                                  ]  |
+  |  Senha:   [ ******************                           ]  |
+  |                                                             |
+  |                      [  ENTRAR  ]                           |
+  +-------------------------------------------------------------+
+
+
+NOTA DE SEGURANCA: Suas credenciais sao usadas de forma segura para autenticar
+e executar as instalacoes nos computadores remotos da rede. Nenhuma senha fica
+salva no computador apos fechar o programa.
+
+
+================================================================================
+3. INSTALACAO DE IMPRESSORAS EM LOTE (DEPLOY)
+================================================================================
+
+A tela principal do PrinterInstall divide o trabalho em tres partes praticas:
+Computadores Alvos, Filas de Impressao e Painel de Execucao.
+
+--- 3.1 Adicionando Computadores Alvos ---
+No painel esquerdo, informe os computadores que receberao as impressoras:
+  1. Instalar no proprio computador onde voce esta:
+     - Basta clicar no botao "Adicionar Este PC". O nome da sua maquina sera
+       adicionado instantaneamente.
+  2. Instalar em computadores remotos (por Nome ou por IP):
+     - Por Nome de Maquina: Digite o nome no padrao hospitalar (ex: NOTE-001234
+       ou 113-DESK004567) e clique em "+" (ou pressione Enter).
+     - Por Endereco IP: Digite diretamente o IP do computador de destino
+       (ex: 192.168.10.120) e clique em "+".
+  3. Adicionar multiplos computadores de uma vez:
+     - Se voce tiver uma lista de computadores ou IPs em um bloco de notas ou
+       planilha, basta copiar e colar no campo. O sistema adiciona todos
+       automaticamente.
+
+--- 3.2 Configurando as Filas de Impressao ---
+No painel central, monte a lista de impressoras que serao instaladas em cada
+computador alvo:
+
+  1. Selecione a Marca:
+     - Epson: Para impressoras de folha A4 e multifuncionais (ex: M1180, WORKFORCE).
+       Utiliza o EPSON Universal Print Driver.
+     - Lexmark: Para impressoras laser de receitas e prontuarios (ex: MS/MX).
+       Utiliza o Lexmark Universal Driver.
+     - Brother: Para impressoras laser de postos de atendimento (HL-L5212DW).
+     - Gainscha: Para impressoras termicas de etiquetas (GA-2408T).
+
+  2. Informe o Endereco IP da Impressora:
+     - Digite o IP da impressora na rede (Exemplo: 192.168.10.50).
+
+  3. Defina o Nome da Fila:
+     - De um nome claro para que os colaboradores identifiquem a
+       impressora no Windows.
+     - Exemplos recomendados:
+         POSTO-ENF-LASER-01
+         RECEPCAO-EPSON-01
+         TRIAGEM-ETIQ-PULSEIRA
+         LAB-ETIQ-TUBOS
+
+  4. Para impressoras Gainscha — Escolha do Preset de Etiqueta:
+     Ao selecionar a marca Gainscha, o campo Preset ficara ativo. Escolha o
+     tamanho exato da etiqueta:
+     - Paciente: Identificacao de ficha e prontuario (89 mm x 36 mm).
+     - Matrix: Tubos de coleta e frascos de exames (50 mm x 30 mm).
+     - Pulseira: Pulseiras de identificacao hospitalar (25 mm x 270 mm).
+     - Lote: Medicamentos e farmacia hospitalar (45 mm x 13 mm).
+
+ALERTA INTELIGENTE DE NOMENCLATURA: Se voce selecionar a marca Epson e digitar
+um nome como ETIQ-PULSEIRA, o sistema exibira um aviso amigavel para lembra-lo
+de conferir se a marca selecionada esta correta, evitando erros de instalacao!
+
+--- 3.3 Iniciando e Acompanhando a Instalacao ---
+  1. Com os computadores e impressoras configurados, clique em
+     "Iniciar Instalacao" (ou Deploy).
+  2. O sistema iniciara a instalacao simultanea em todos os computadores.
+  3. Voce vera o status de cada maquina atualizando em tempo real:
+     - Pendente: Aguardando inicio.
+     - Instalando Driver: Driver sendo enviado e registrado no Windows.
+     - Criando Porta / Fila: Porta TCP/IP e fila de impressao sendo criadas.
+     - Concluido: Impressora instalada e pronta para uso!
+     - Falha: Houve algum impedimento na maquina (veja a mensagem no log).
+  4. Exportar Relatorio: Ao final, clique em "Exportar Logs" para salvar um
+     arquivo de texto com o comprovante de tudo o que foi instalado.
+
+--- 3.4 Rollback Automatico e Seguranca ---
+O PrinterInstall possui um sistema de seguranca chamado Rollback Automatico:
+- Se ocorrer qualquer erro durante a instalacao em um computador (por exemplo,
+  a rede cair ou o computador travar no meio do processo), o sistema desfaz
+  automaticamente as portas e filas incompletas criadas naquela maquina.
+- Isso garante que a estacao de trabalho nunca fique com arquivos corrompidos
+  ou filas "fantasmas" que possam travar o Windows.
+
+
+================================================================================
+4. ASSISTENTE DE CONTROLE DE IMPRESSORAS (REMOCAO E RENOMEACAO)
+================================================================================
+
+Para acessar o assistente de manutencao, clique no menu ou botao
+"Assistente de Remocao / Controle de Filas".
+
+Esta ferramenta e ideal para quando o hospital substitui impressoras antigas ou
+quando e necessario padronizar o nome de impressoras ja existentes.
+
+  +-------------------------------------------------------------------------+
+  |                  ASSISTENTE DE CONTROLE DE IMPRESSORAS                  |
+  +-------------------------------------------------------------------------+
+  | [X] 113-DESK004567 | IMP_ANTIGA_HP   (Porta: 192.168.1.99) -> [Remover] |
+  | [ ] NOTE-001234    | EPSON-REC-01    (Porta: 192.168.1.50) -> [Manter]  |
+  |                                                                         |
+  | Acao em Lote: [ Excluir Selecionadas ]   [ Renomear Fila ]               |
+  +-------------------------------------------------------------------------+
+
+--- 4.1 Consultando Impressoras Instaladas ---
+  1. Adicione os computadores que deseja consultar (ou "Adicionar Este PC").
+  2. Clique em "Listar Impressoras".
+  3. O sistema fara uma varredura remota e listara todas as impressoras
+     instaladas em cada estacao.
+
+--- 4.2 Removendo Filas Antigas ou Orfas ---
+  1. Marque a caixinha ao lado das impressoras que deseja remover.
+  2. Clique em "Remover Impressoras Selecionadas".
+  3. O sistema remove as filas com seguranca e limpa as portas de rede
+     nao utilizadas.
+
+--- 4.3 Renomeando Filas em Lote ---
+  1. Selecione a impressora na lista.
+  2. Digite o novo nome padronizado (ex: de EPSON_NOVA para POSTO-ENF-EPSON-01).
+  3. Clique em "Renomear". O sistema atualiza o nome imediatamente no Windows
+     remoto sem precisar reinstalar o driver.
+
+
+================================================================================
+5. FERRAMENTA DE TESTE DE REDE DIRETO
+================================================================================
+
+Antes de instalar uma impressora em multiplos computadores, teste se ela esta
+ligada e respondendo na rede:
+
+  1. Abra a janela "Teste de Rede Direto".
+  2. Digite o Endereco IP da impressora (ex: 192.168.10.45).
+  3. Selecione a Marca da impressora.
+  4. Se for Gainscha, escolha o Preset da Etiqueta inserida na impressora.
+  5. Clique em "Testar Conexao":
+     - O sistema valida a comunicacao na porta raw 9100.
+  6. Clique em "Imprimir Pagina de Teste":
+     - Para impressoras de folha (Epson, Brother, Lexmark): Uma pagina de teste
+       limpa informando data, IP e sucesso da comunicacao.
+     - Para impressoras Gainscha: Uma etiqueta impressa no tamanho exato
+       configurado, sem desalinhar o rolo!
+
+
+================================================================================
+6. TABELA DE REFERENCIA DE ETIQUETAS GAINSCHA
+================================================================================
+
+Ao instalar ou testar impressoras termicas Gainscha GA-2408T, consulte a tabela
+para escolher o preset correto para cada setor do hospital:
+
++------------+--------------------+----------------------------+--------------------------------------------+
+| Preset     | Largura x Altura   | Setor no Hospital          | Exemplo de Aplicacao                       |
++------------+--------------------+----------------------------+--------------------------------------------+
+| Paciente   | 89 mm x 36 mm      | Recepcao, Triagem, Postos  | Identificacao de prontuarios e leitos      |
+| Matrix     | 50 mm x 30 mm      | Laboratorio de Analises    | Identificacao de tubos de sangue e frascos |
+| Pulseira   | 25 mm x 270 mm     | Triagem / Classificacao    | Pulseira de identificacao do paciente      |
+| Lote       | 45 mm x 13 mm      | Farmacia e Almoxarifado    | Codigo de barras, medicamentos e validade  |
++------------+--------------------+----------------------------+--------------------------------------------+
+
+Sempre confirme qual rolo de etiqueta esta fisicamente colocado
+dentro da impressora Gainscha antes de instalar a fila.
+
+
+================================================================================
+7. RESOLUCAO DE PROBLEMAS MAIS FREQUENTES (FAQ & TROUBLESHOOTING)
+================================================================================
+
+[?] 1. Erro: "Nao foi possivel conectar ao computador alvo (WMI / CIM / RPC)"
+    - Causa: Computador desligado, firewall bloqueando ou credencial sem perfil
+      de administrador.
+    - Como resolver: Verifique se o computador responde ao comando
+      "ping <nome-ou-ip-do-pc>" (ex: ping NOTE-001234 ou ping 192.168.10.120)
+      e se sua conta de usuario tem perfil de administrador no dominio.
+
+[?] 2. Erro: "A impressora nao respondeu na porta 9100"
+    - Causa: IP digitado errado, impressora desligada ou cabo desconectado.
+    - Como resolver: Use a ferramenta "Teste de Rede Direto" do PrinterInstall
+      e verifique se a luz de rede (link) atras da impressora esta piscando.
+
+[?] 3. A impressora Gainscha imprime uma etiqueta e pula 2 em branco
+    - Causa: O preset selecionado no PrinterInstall e maior do que a etiqueta
+      fisica colocada na impressora.
+    - Como resolver: No Assistente de Remocao, exclua a fila atual e reinstale a
+      impressora com o preset correto (consulte a Tabela de Etiquetas).
+
+[?] 4. Como cancelar uma instalacao que esta demorando?
+    - Basta clicar no botao "Cancelar". O PrinterInstall interrompe o processo
+      com seguranca e executa o Rollback nas maquinas incompletas.
+
+[?] 5. Onde ficam salvos os relatorios e logs?
+    - Os relatorios ficam na pasta de logs e podem ser salvos na sua Area de
+      Trabalho clicando no botao "Exportar Logs".
+
+================================================================================
+      Manual elaborado pela equipe de TI do Rio de Janeiro.
+================================================================================

@@ -58,4 +58,21 @@ public class UiStrings
     public static string Main_LogExportErrorFormat => ResourceManager.GetString(nameof(Main_LogExportErrorFormat), ResourceCulture)!;
     public static string Removal_LogExportSuccessFormat => ResourceManager.GetString(nameof(Removal_LogExportSuccessFormat), ResourceCulture)!;
     public static string Removal_LogExportErrorFormat => ResourceManager.GetString(nameof(Removal_LogExportErrorFormat), ResourceCulture)!;
+    public static string Removal_SummaryDialogTitle => ResourceManager.GetString(nameof(Removal_SummaryDialogTitle), ResourceCulture)!;
+    public static string Removal_SummaryLineFormat => ResourceManager.GetString(nameof(Removal_SummaryLineFormat), ResourceCulture)!;
+    public static string Removal_SummaryFailuresHeader => ResourceManager.GetString(nameof(Removal_SummaryFailuresHeader), ResourceCulture)!;
+    public static string Removal_Cancelled => ResourceManager.GetString(nameof(Removal_Cancelled), ResourceCulture)!;
+    public static string Main_DeployWarningDialogTitle => ResourceManager.GetString(nameof(Main_DeployWarningDialogTitle), ResourceCulture)!;
+    public static string Main_DeployWarningHeader => ResourceManager.GetString(nameof(Main_DeployWarningHeader), ResourceCulture)!;
+    public static string Main_DeployWarningQuestion => ResourceManager.GetString(nameof(Main_DeployWarningQuestion), ResourceCulture)!;
+    public static string Main_DeployWarningProceedButton => ResourceManager.GetString(nameof(Main_DeployWarningProceedButton), ResourceCulture)!;
+    public static string Main_DeployWarningCancelButton => ResourceManager.GetString(nameof(Main_DeployWarningCancelButton), ResourceCulture)!;
+    public static string Main_DeployCancelledByMismatchWarning => ResourceManager.GetString(nameof(Main_DeployCancelledByMismatchWarning), ResourceCulture)!;
+    public static string NetworkTest_ConfirmDialogTitle => ResourceManager.GetString(nameof(NetworkTest_ConfirmDialogTitle), ResourceCulture)!;
+    public static string NetworkTest_ConfirmHeader => ResourceManager.GetString(nameof(NetworkTest_ConfirmHeader), ResourceCulture)!;
+    public static string NetworkTest_ConfirmHostFormat => ResourceManager.GetString(nameof(NetworkTest_ConfirmHostFormat), ResourceCulture)!;
+    public static string NetworkTest_ConfirmBrandFormat => ResourceManager.GetString(nameof(NetworkTest_ConfirmBrandFormat), ResourceCulture)!;
+    public static string NetworkTest_ConfirmPresetFormat => ResourceManager.GetString(nameof(NetworkTest_ConfirmPresetFormat), ResourceCulture)!;
+    public static string NetworkTest_ConfirmProceedButton => ResourceManager.GetString(nameof(NetworkTest_ConfirmProceedButton), ResourceCulture)!;
+    public static string NetworkTest_ConfirmCancelButton => ResourceManager.GetString(nameof(NetworkTest_ConfirmCancelButton), ResourceCulture)!;
 }

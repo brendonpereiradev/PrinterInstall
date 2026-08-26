@@ -1,0 +1,125 @@
+<Window x:Class="PrinterInstall.App.Views.ConfirmationDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
+        xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
+        Icon="pack://application:,,,/Assets/app.ico"
+        Width="540"
+        SizeToContent="Height"
+        MaxHeight="620"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        UseLayoutRounding="True">
+    <Window.Resources>
+        <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Height="4" Background="{DynamicResource AppHeaderAccentBrush}"/>
+
+        <Grid Grid.Row="1" Margin="20,16,20,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Cabeçalho com Ícone e Título Principal -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Width="36"
+                        Height="36"
+                        CornerRadius="18"
+                        Background="#FFFDF3E8"
+                        BorderBrush="#FFF39C12"
+                        BorderThickness="1"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        x:Name="IconBadgeBorder">
+                    <TextBlock x:Name="IconGlyphText"
+                               FontFamily="Segoe MDL2 Assets"
+                               FontSize="18"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="#FFD35400"
+                               Text="&#xE7BA;"/>
+                </Border>
+
+                <TextBlock Grid.Column="1"
+                           x:Name="HeaderTextBlock"
+                           Text="Atenção: Possível divergência de modelo"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Detalhes / Lista de Avisos -->
+            <Border Grid.Row="1"
+                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="12,10"
+                    Margin="0,0,0,12"
+                    MaxHeight="260">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="DetailsItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,3,0,3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="• " FontWeight="Bold" Margin="0,0,6,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap" FontSize="12.5"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Pergunta / Texto de Confirmação -->
+            <TextBlock Grid.Row="2"
+                       x:Name="QuestionTextBlock"
+                       Text="Deseja continuar mesmo assim?"
+                       FontWeight="SemiBold"
+                       FontSize="13"
+                       Margin="0,0,0,16"
+                       TextWrapping="Wrap"/>
+
+            <!-- Botões de Ação -->
+            <StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <ui:Button x:Name="SecondaryButton"
+                           Content="Cancelar e corrigir"
+                           Appearance="Secondary"
+                           IsCancel="True"
+                           Click="OnSecondaryButtonClick"
+                           Padding="14,6"
+                           Margin="0,0,8,0"/>
+                <ui:Button x:Name="PrimaryButton"
+                           Content="Prosseguir mesmo assim"
+                           Appearance="Primary"
+                           IsDefault="True"
+                           Click="OnPrimaryButtonClick"
+                           Padding="14,6"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

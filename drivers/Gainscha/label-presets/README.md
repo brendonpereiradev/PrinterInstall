@@ -110,6 +110,8 @@ On a Windows PC with the Gainscha GA-2408T driver installed:
 
 | Pulseira | 25 × 270 mm            |
 
+| Lote     | 45 × 13 mm             |
+
 
 
 ## Remote fallback

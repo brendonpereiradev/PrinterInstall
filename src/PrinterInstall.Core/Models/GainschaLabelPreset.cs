@@ -4,5 +4,6 @@ public enum GainschaLabelPreset
 {
     Pulseira,
     Matrix,
-    Paciente
+    Paciente,
+    Lote
 }

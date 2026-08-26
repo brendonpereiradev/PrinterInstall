@@ -170,6 +170,7 @@ public class GainschaLabelSdsValidatorTests
     [InlineData(GainschaLabelPreset.Paciente)]
     [InlineData(GainschaLabelPreset.Matrix)]
     [InlineData(GainschaLabelPreset.Pulseira)]
+    [InlineData(GainschaLabelPreset.Lote)]
     public void ValidateEmbeddedTemplate_AcceptsEmbeddedTemplates(GainschaLabelPreset preset)
     {
         var template = GainschaLabelTemplateLoader.LoadText(preset);
