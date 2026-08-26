@@ -55,19 +55,33 @@ O que voce precisa ter em maos antes de comecar:
 
 
 ================================================================================
-2. ACESSO AO SISTEMA (LOGIN)
+2. ACESSO AO SISTEMA (LOGIN) E TROCA DE DOMINIO
 ================================================================================
 
 Ao abrir o aplicativo, a tela de autenticacao sera exibida:
 
   +-------------------------------------------------------------+
-  |                     PRINTERINSTALL - LOGIN                  |
+  |                     PRINTERINSTALL - LOGIN            [⚙️]  |
   +-------------------------------------------------------------+
-  |  Usuario: [ 13455678063                                  ]  |
+  |  Usuario: [ suporte.silva                                ]  |
   |  Senha:   [ ******************                           ]  |
+  |  [X] Lembrar-me                                             |
   |                                                             |
   |                      [  ENTRAR  ]                           |
   +-------------------------------------------------------------+
+
+
+COMO MUDAR O DOMINIO OU REDE:
+Se voce estiver rodando o aplicativo em outra empresa ou filial com dominio diferente:
+  1. Clique no icone de engrenagem [⚙️] no canto superior direito do login.
+  2. Digite o novo dominio ou clique em "Detectar Dominio".
+  3. Clique em "Salvar". O novo dominio passa a valer imediatamente!
+
+
+COMO PREENCHER O USUARIO:
+  - Formato UPN: usuario@dominio (ex: suporte@empresa.local)
+  - Formato NetBIOS: DOMINIO\usuario (ex: EMPRESA\suporte)
+  - Apenas o usuario: Digitando apenas "suporte", o sistema usa o dominio configurado!
 
 
 NOTA DE SEGURANCA: Suas credenciais sao usadas de forma segura para autenticar

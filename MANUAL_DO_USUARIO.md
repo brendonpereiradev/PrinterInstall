@@ -10,7 +10,7 @@
 ## 📋 Sumário
 
 1. [Visão Geral e Pré-Requisitos](#1-visão-geral-e-pré-requisitos)
-2. [Acesso ao Sistema (Login)](#2-acesso-ao-sistema-login)
+2. [Acesso ao Sistema (Login) e Troca de Domínio](#2-acesso-ao-sistema-login-e-troca-de-domínio)
 3. [Instalação de Impressoras em Lote (Deploy)](#3-instalação-de-impressoras-em-lote-deploy)
    - [3.1 Adicionando Computadores Alvos](#31-adicionando-computadores-alvos)
    - [3.2 Configurando as Filas de Impressão](#32-configurando-as-filas-de-impressão)
@@ -23,6 +23,8 @@
 5. [Ferramenta de Teste de Rede Direto](#5-ferramenta-de-teste-de-rede-direto)
 6. [Tabela de Referência de Etiquetas Gainscha](#6-tabela-de-referência-de-etiquetas-gainscha)
 7. [Resolução de Problemas Mais Frequentes (FAQ)](#7-resolução-de-problemas-mais-frequentes-faq)
+8. [Configurações de Domínio e Rede](#8-configurações-de-domínio-e-rede)
+9. [Como Criar e Publicar Releases no GitHub](#9-como-criar-e-publicar-releases-no-github)
 
 ---
 
@@ -31,38 +33,48 @@
 O **PrinterInstall** automatiza todo o processo de instalação de impressoras de rede em estações de trabalho locais ou remotas. Ele cuida automaticamente de:
 - Instalar os drivers corretos no Windows sem necessidade de CDs ou downloads manuais.
 - Criar as portas TCP/IP de rede.
-- Criar e nomear as filas de impressão no padrão hospitalar.
+- Criar e nomear as filas de impressão no padrão corporativo/hospitalar.
 - Calibrar o tamanho correto das etiquetas térmicas (Gainscha).
 - Desfazer alterações caso ocorra algum erro no meio do caminho (*Rollback*).
+- **Rodar em qualquer lugar:** Permite alterar facilmente o domínio e rede para uso em diferentes empresas, filiais ou clientes.
 
 ### 📝 O que você precisa ter em mãos antes de começar:
 1. **Sua credencial de rede:** Usuário e senha do domínio com privilégio administrativo (ex: conta de suporte de TI).
 2. **Nome ou IP dos computadores:** Identificação das máquinas onde as impressoras serão instaladas:
    - Por nome de rede: Padrões `NOTE-XXXXXX` (ex: `NOTE-001234`) ou `113-DESKXXXXXX` (ex: `113-DESK004567`).
    - Por endereço IP da máquina: Também é possível usar diretamente o IP da estação (ex: `192.168.10.120`).
-3. **Endereço IP da impressora:** O IP fixo ou reservado da impressora na rede hospitalar (ex: `192.168.10.45`).
+3. **Endereço IP da impressora:** O IP fixo ou reservado da impressora na rede (ex: `192.168.10.45`).
 
 ---
 
-## 2. Acesso ao Sistema (Login)
+## 2. Acesso ao Sistema (Login) e Troca de Domínio
 
 Ao abrir o aplicativo, a tela de autenticação será exibida:
 
 ```
 +-------------------------------------------------------------+
-|                     PRINTERINSTALL - LOGIN                  |
+|                     PRINTERINSTALL - LOGIN            [⚙️]  |
 +-------------------------------------------------------------+
 |  Usuário: [ suporte.silva@hospital.local                 ]  |
 |  Senha:   [ ******************                           ]  |
+|  [✓] Lembrar-me                                             |
 |                                                             |
 |                      [  ENTRAR  ]                           |
 +-------------------------------------------------------------+
 ```
 
+### 🌐 Como Mudar o Domínio ou Rede:
+Se você estiver rodando o aplicativo em outra empresa, cliente ou filial com domínio diferente:
+1. Clique no **ícone de engrenagem [⚙️]** no canto superior direito da tela de login.
+2. Na janela que se abre, digite o novo domínio (ex: `empresa.local` ou `EMPRESA`) ou clique em **"Detectar Domínio"** para preencher com o domínio da máquina atual.
+3. Se necessário, informe um Host LDAP alternativo.
+4. Clique em **Salvar**. O novo domínio será imediatamente utilizado!
+
 ### Como preencher o campo Usuário:
 Você pode digitar seu usuário de rede em qualquer um dos dois formatos aceitos pelo Active Directory:
 - **Formato UPN (Recomendado):** `seu_usuario@dominio.hospital` (Exemplo: `suporte.ti@saude.local`)
 - **Formato NetBIOS:** `DOMINIO\seu_usuario` (Exemplo: `HOSPITAL\suporte.ti`)
+- **Apenas o usuário:** Digitando apenas `seu_usuario` (Exemplo: `suporte.ti`), o sistema usará automaticamente o domínio configurado nas preferências!
 - **Para testes em máquina local sem domínio:** Digite apenas o nome do usuário local (Exemplo: `Administrador`).
 
 > [!TIP]
