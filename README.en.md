@@ -96,3 +96,10 @@ Confirm which roll is in the printer before installing the queue. A preset large
 - [User manual](MANUAL_DO_USUARIO.md) (Portuguese) — guide for support technicians
 - [Tested models](MODELOS_TESTADOS.txt) — validated printers by brand
 - [GEMINI.md](GEMINI.md) (Portuguese) — development rules and guidelines
+
+## License
+
+Distributed under the **MIT** License. See [`LICENSE`](LICENSE) for more details.
+
+> **Note:** Included third-party print drivers and utilities are property of their respective manufacturers and subject to their own licensing terms.
+

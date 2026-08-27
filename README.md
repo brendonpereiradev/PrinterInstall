@@ -96,3 +96,10 @@ Confirme qual rolo está na impressora antes de instalar a fila. Um preset maior
 - [Manual do Usuário](MANUAL_DO_USUARIO.md) — guia para técnicos de suporte
 - [Modelos testados](MODELOS_TESTADOS.txt) — impressoras validadas por marca
 - [GEMINI.md](GEMINI.md) — regras e diretrizes de desenvolvimento
+
+## Licença
+
+Distribuído sob a licença **MIT**. Consulte o arquivo [`LICENSE`](LICENSE) para mais detalhes.
+
+> **Nota:** Os drivers de impressão e utilitários de terceiros inclusos pertencem aos seus respectivos fabricantes e estão sujeitos aos seus próprios termos de uso e licenciamento.
+
