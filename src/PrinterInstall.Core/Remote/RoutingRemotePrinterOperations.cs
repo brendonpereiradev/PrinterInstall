@@ -67,4 +67,7 @@ public sealed class RoutingRemotePrinterOperations : IRemotePrinterOperations
 
     public Task InstallPrinterDriverAsync(string computerName, NetworkCredential credential, LocalDriverPackage package, IProgress<string>? log, CancellationToken cancellationToken = default)
         => Resolve(computerName).InstallPrinterDriverAsync(computerName, credential, package, log, cancellationToken);
+
+    public Task<SpoolerResetResult> ResetSpoolerServiceAsync(string computerName, NetworkCredential credential, bool purgeJobs = true, CancellationToken cancellationToken = default)
+        => Resolve(computerName).ResetSpoolerServiceAsync(computerName, credential, purgeJobs, cancellationToken);
 }

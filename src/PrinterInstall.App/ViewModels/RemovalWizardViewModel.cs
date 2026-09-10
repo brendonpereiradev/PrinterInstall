@@ -8,11 +8,20 @@ using PrinterInstall.App.Resources;
 using PrinterInstall.App.Services;
 using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Models;
+using PrinterInstall.Core.Network;
 using PrinterInstall.Core.Orchestration;
 using PrinterInstall.Core.Remote;
 using PrinterInstall.Core.Validation;
 
 namespace PrinterInstall.App.ViewModels;
+
+public enum ComputerPingStatus
+{
+    None,
+    Checking,
+    Online,
+    Offline
+}
 
 public partial class RemovalWizardViewModel : ObservableObject
 {
@@ -22,11 +31,15 @@ public partial class RemovalWizardViewModel : ObservableObject
     private readonly ILogExportService _logExportService;
     private readonly LocalMachineIdentity _localMachineIdentity;
     private readonly IDeploymentNotificationService _notificationService;
+    private readonly IConfirmationDialogService _dialogService;
+    private readonly IPrinterPingService _pingService;
+    private readonly IFastHostReachabilityChecker _reachabilityChecker;
 
     private readonly Dictionary<string, List<PrinterRemovalQueueItem>> _selectionsByComputer = new();
     private readonly Dictionary<string, List<PrinterRenameItem>> _renamesByComputer = new();
     private List<string> _machineOrder = new();
     private int _machineIndex;
+    private CancellationTokenSource? _loadCts;
 
     public RemovalWizardViewModel(
         ISessionContext session,
@@ -34,7 +47,10 @@ public partial class RemovalWizardViewModel : ObservableObject
         PrinterControlOrchestrator orchestrator,
         ILogExportService? logExportService = null,
         LocalMachineIdentity? localMachineIdentity = null,
-        IDeploymentNotificationService? notificationService = null)
+        IDeploymentNotificationService? notificationService = null,
+        IConfirmationDialogService? dialogService = null,
+        IPrinterPingService? pingService = null,
+        IFastHostReachabilityChecker? reachabilityChecker = null)
     {
         _session = session;
         _remote = remote;
@@ -42,6 +58,9 @@ public partial class RemovalWizardViewModel : ObservableObject
         _logExportService = logExportService ?? new LogExportService();
         _localMachineIdentity = localMachineIdentity ?? new LocalMachineIdentity();
         _notificationService = notificationService ?? new DeploymentNotificationService();
+        _dialogService = dialogService ?? new ConfirmationDialogService();
+        _pingService = pingService ?? new NullPrinterPingService();
+        _reachabilityChecker = reachabilityChecker ?? new NullFastHostReachabilityChecker();
         QueuesForCurrentComputer.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowQueuesEmptyHint));
     }
 
@@ -54,12 +73,55 @@ public partial class RemovalWizardViewModel : ObservableObject
     [ObservableProperty] private bool _isLoadingQueues;
     [ObservableProperty] private string? _queuesLoadError;
 
+    [ObservableProperty] private ComputerPingStatus _pingStatus = ComputerPingStatus.None;
+    [ObservableProperty] private string _loadingStatusMessage = "";
+    [ObservableProperty] private bool _isComputerOffline;
+    [ObservableProperty] private string _pingStatusBadgeText = "";
+
+    public bool HasPingBadge => PingStatus != ComputerPingStatus.None;
+
+    public string PingBadgeBackground => PingStatus switch
+    {
+        ComputerPingStatus.Checking => "#FFFDF3D8",
+        ComputerPingStatus.Online => "#FFE6F4EA",
+        ComputerPingStatus.Offline => "#FFFCE8E6",
+        _ => "Transparent"
+    };
+
+    public string PingBadgeForeground => PingStatus switch
+    {
+        ComputerPingStatus.Checking => "#FF8F6B00",
+        ComputerPingStatus.Online => "#FF137333",
+        ComputerPingStatus.Offline => "#FFC5221F",
+        _ => "#FF000000"
+    };
+
+    partial void OnPingStatusChanged(ComputerPingStatus value)
+    {
+        OnPropertyChanged(nameof(HasPingBadge));
+        OnPropertyChanged(nameof(PingBadgeBackground));
+        OnPropertyChanged(nameof(PingBadgeForeground));
+    }
+
+    partial void OnIsComputerOfflineChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowQueuesEmptyHint));
+        OnPropertyChanged(nameof(ShowComputerOfflineHint));
+        OnPropertyChanged(nameof(CanResetSpooler));
+        ResetCurrentMachineSpoolerCommand.NotifyCanExecuteChanged();
+    }
+
     public ObservableCollection<SelectableQueueRow> QueuesForCurrentComputer { get; } = new();
 
     public bool ShowQueuesEmptyHint =>
         !IsLoadingQueues &&
+        !IsComputerOffline &&
         string.IsNullOrEmpty(QueuesLoadError) &&
         QueuesForCurrentComputer.Count == 0;
+
+    public bool ShowComputerOfflineHint =>
+        !IsLoadingQueues &&
+        IsComputerOffline;
 
     [ObservableProperty] private string _reviewSummary = "";
 
@@ -73,6 +135,24 @@ public partial class RemovalWizardViewModel : ObservableObject
     public bool CanExportLog => CurrentStepIndex == 3 && !IsExecuting && !string.IsNullOrWhiteSpace(LogText);
 
     public event EventHandler? CloseRequested;
+
+    [ObservableProperty] private bool _isResettingSpooler;
+
+    partial void OnIsResettingSpoolerChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanResetSpooler));
+        OnPropertyChanged(nameof(CanAdvanceQueueStep));
+        OnPropertyChanged(nameof(CanRetryCurrentMachine));
+        ResetCurrentMachineSpoolerCommand.NotifyCanExecuteChanged();
+        NextQueueStepCommand.NotifyCanExecuteChanged();
+        RetryCurrentMachineCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnCurrentComputerNameChanged(string value)
+    {
+        OnPropertyChanged(nameof(CanResetSpooler));
+        ResetCurrentMachineSpoolerCommand.NotifyCanExecuteChanged();
+    }
 
     partial void OnIsExecutingChanged(bool value)
     {
@@ -88,8 +168,14 @@ public partial class RemovalWizardViewModel : ObservableObject
         OnPropertyChanged(nameof(CanExecute));
         OnPropertyChanged(nameof(CanClose));
         OnPropertyChanged(nameof(CanExportLog));
+        OnPropertyChanged(nameof(CanResetSpooler));
+        OnPropertyChanged(nameof(CanAdvanceQueueStep));
+        OnPropertyChanged(nameof(CanRetryCurrentMachine));
         CloseCommand.NotifyCanExecuteChanged();
         ExportLogCommand.NotifyCanExecuteChanged();
+        ResetCurrentMachineSpoolerCommand.NotifyCanExecuteChanged();
+        NextQueueStepCommand.NotifyCanExecuteChanged();
+        RetryCurrentMachineCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnLogTextChanged(string value)
@@ -100,8 +186,14 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     partial void OnIsLoadingQueuesChanged(bool value)
     {
+        OnPropertyChanged(nameof(CanResetSpooler));
+        OnPropertyChanged(nameof(CanAdvanceQueueStep));
+        OnPropertyChanged(nameof(CanRetryCurrentMachine));
         NextQueueStepCommand.NotifyCanExecuteChanged();
+        ResetCurrentMachineSpoolerCommand.NotifyCanExecuteChanged();
+        RetryCurrentMachineCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(ShowQueuesEmptyHint));
+        OnPropertyChanged(nameof(ShowComputerOfflineHint));
     }
 
     partial void OnQueuesLoadErrorChanged(string? value) => OnPropertyChanged(nameof(ShowQueuesEmptyHint));
@@ -143,9 +235,15 @@ public partial class RemovalWizardViewModel : ObservableObject
         await LoadCurrentMachineAsync().ConfigureAwait(true);
     }
 
+    public bool CanAdvanceQueueStep =>
+        CurrentStepIndex == 1 &&
+        !IsLoadingQueues &&
+        !IsResettingSpooler;
+
     [RelayCommand(CanExecute = nameof(CanAdvanceQueueStep))]
     private async Task NextQueueStepAsync()
     {
+        _loadCts?.Cancel();
         CaptureCurrentSelection();
         if (_machineIndex + 1 < _machineOrder.Count)
         {
@@ -158,13 +256,71 @@ public partial class RemovalWizardViewModel : ObservableObject
         CurrentStepIndex = 2;
     }
 
-    private bool CanAdvanceQueueStep()
+    public bool CanRetryCurrentMachine =>
+        CurrentStepIndex == 1 &&
+        !IsLoadingQueues &&
+        !IsResettingSpooler;
+
+    [RelayCommand(CanExecute = nameof(CanRetryCurrentMachine))]
+    private async Task RetryCurrentMachineAsync()
     {
-        if (IsLoadingQueues)
-            return false;
-        if (QueuesForCurrentComputer.Count == 0)
-            return true;
-        return QueuesForCurrentComputer.Any(r => r.IsSelected || HasMeaningfulRename(r));
+        await LoadCurrentMachineAsync().ConfigureAwait(true);
+    }
+
+    public bool CanResetSpooler =>
+        CurrentStepIndex == 1 &&
+        !IsResettingSpooler &&
+        !IsLoadingQueues &&
+        !IsComputerOffline &&
+        !string.IsNullOrWhiteSpace(CurrentComputerName);
+
+    [RelayCommand(CanExecute = nameof(CanResetSpooler))]
+    private async Task ResetCurrentMachineSpoolerAsync()
+    {
+        if (_session.Credential is null)
+        {
+            AppendLog(UiStrings.Removal_NotAuthenticated);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CurrentComputerName))
+            return;
+
+        var confirmed = await _dialogService.ConfirmSpoolerResetAsync(CurrentComputerName).ConfigureAwait(true);
+        if (!confirmed)
+            return;
+
+        IsResettingSpooler = true;
+        AppendLog(string.Format(UiStrings.Removal_ResetSpoolerRunning, CurrentComputerName));
+
+        try
+        {
+            var result = await _remote.ResetSpoolerServiceAsync(
+                CurrentComputerName,
+                _session.Credential,
+                purgeJobs: true).ConfigureAwait(true);
+
+            if (result.IsSuccess)
+            {
+                AppendLog(string.Format(UiStrings.Removal_ResetSpoolerSuccess, CurrentComputerName));
+                _notificationService.NotifySuccess();
+                await LoadCurrentMachineAsync().ConfigureAwait(true);
+            }
+            else
+            {
+                AppendLog(string.Format(UiStrings.Removal_ResetSpoolerErrorFormat, CurrentComputerName, result.ErrorMessage));
+                _notificationService.NotifyError();
+            }
+        }
+        catch (Exception ex)
+        {
+            AppendLog(string.Format(UiStrings.Removal_ResetSpoolerErrorFormat, CurrentComputerName, ex.Message));
+            _notificationService.NotifyError();
+        }
+        finally
+        {
+            IsResettingSpooler = false;
+        }
     }
 
     private static bool HasMeaningfulRename(SelectableQueueRow r)
@@ -176,7 +332,9 @@ public partial class RemovalWizardViewModel : ObservableObject
     private void OnQueueRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(SelectableQueueRow.IsSelected) or nameof(SelectableQueueRow.NewName))
+        {
             NextQueueStepCommand.NotifyCanExecuteChanged();
+        }
     }
 
     [RelayCommand]
@@ -329,24 +487,59 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     private async Task LoadCurrentMachineAsync()
     {
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        _loadCts = new CancellationTokenSource();
+        var ct = _loadCts.Token;
+
         IsLoadingQueues = true;
-        NextQueueStepCommand.NotifyCanExecuteChanged();
+        IsComputerOffline = false;
+        QueuesLoadError = null;
+        PingStatus = ComputerPingStatus.None;
+        PingStatusBadgeText = string.Empty;
 
         foreach (var row in QueuesForCurrentComputer.ToList())
             row.PropertyChanged -= OnQueueRowPropertyChanged;
         QueuesForCurrentComputer.Clear();
 
-        QueuesLoadError = null;
         CurrentComputerName = _machineOrder[_machineIndex];
         CurrentStepLabel = string.Format(
             UiStrings.Removal_StepLabelFormat,
             _machineIndex + 1,
             _machineOrder.Count,
             CurrentComputerName);
+
         try
         {
+            var isLocal = _localMachineIdentity.IsLocalMachine(CurrentComputerName);
+            if (!isLocal)
+            {
+                PingStatus = ComputerPingStatus.Checking;
+                PingStatusBadgeText = UiStrings.Removal_Ping_Checking;
+                LoadingStatusMessage = string.Format(UiStrings.Removal_Ping_TestingHostFormat, CurrentComputerName);
+
+                var isAlive = await CheckHostAliveAsync(CurrentComputerName, ct).ConfigureAwait(true);
+                ct.ThrowIfCancellationRequested();
+
+                if (!isAlive)
+                {
+                    PingStatus = ComputerPingStatus.Offline;
+                    PingStatusBadgeText = UiStrings.Removal_Ping_Offline;
+                    IsComputerOffline = true;
+                    QueuesLoadError = string.Format(UiStrings.Removal_Ping_ComputerOfflineFormat, CurrentComputerName);
+                    AppendLog(string.Format(UiStrings.Removal_LogListPrintersFailedFormat, CurrentComputerName, QueuesLoadError));
+                    return;
+                }
+            }
+
+            PingStatus = ComputerPingStatus.Online;
+            PingStatusBadgeText = UiStrings.Removal_Ping_Online;
+            LoadingStatusMessage = UiStrings.Removal_Ping_ConnectedLoadingPrinters;
+
             var cred = _session.Credential!;
-            var list = await _remote.ListPrinterQueuesAsync(CurrentComputerName, cred).ConfigureAwait(true);
+            var list = await _remote.ListPrinterQueuesAsync(CurrentComputerName, cred, ct).ConfigureAwait(true);
+            ct.ThrowIfCancellationRequested();
+
             foreach (var q in list.OrderBy(q => q.Name, StringComparer.OrdinalIgnoreCase))
             {
                 var row = new SelectableQueueRow
@@ -359,6 +552,10 @@ public partial class RemovalWizardViewModel : ObservableObject
                 QueuesForCurrentComputer.Add(row);
             }
         }
+        catch (OperationCanceledException)
+        {
+            // Operação cancelada cooperativamente (ex: avanço, skip ou fechamento)
+        }
         catch (Exception ex)
         {
             QueuesLoadError = ex.Message;
@@ -367,8 +564,56 @@ public partial class RemovalWizardViewModel : ObservableObject
         finally
         {
             IsLoadingQueues = false;
-            NextQueueStepCommand.NotifyCanExecuteChanged();
         }
+    }
+
+    private async Task<bool> CheckHostAliveAsync(string host, CancellationToken ct)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var pingTask = _pingService.PingAsync(host, TimeSpan.FromSeconds(2), linkedCts.Token);
+        var reachTask = _reachabilityChecker.CheckReachabilityAsync(host, linkedCts.Token);
+
+        var tasks = new List<Task> { pingTask, reachTask };
+        while (tasks.Count > 0)
+        {
+            var finished = await Task.WhenAny(tasks).ConfigureAwait(true);
+            tasks.Remove(finished);
+
+            if (finished == pingTask)
+            {
+                try
+                {
+                    var ok = await pingTask.ConfigureAwait(true);
+                    if (ok)
+                    {
+                        linkedCts.Cancel();
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // Falha no ICMP; aguarda o reachTask
+                }
+            }
+            else if (finished == reachTask)
+            {
+                try
+                {
+                    var (ok, _) = await reachTask.ConfigureAwait(true);
+                    if (ok)
+                    {
+                        linkedCts.Cancel();
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // Falha no TCP 135/445; aguarda o pingTask
+                }
+            }
+        }
+
+        return false;
     }
 
     private void CaptureCurrentSelection()
@@ -454,6 +699,7 @@ public partial class RemovalWizardViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanClose))]
     private void Close()
     {
+        _loadCts?.Cancel();
         CloseRequested?.Invoke(this, EventArgs.Empty);
     }
 

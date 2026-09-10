@@ -98,6 +98,7 @@ No painel esquerdo, informe os computadores que receberão as impressoras:
 3. **Adicionar múltiplos computadores de uma vez:**
    - Se você tiver uma lista de computadores ou IPs em um bloco de notas ou planilha, basta copiar e colar no campo. O sistema adiciona todos automaticamente.
 
+
 ---
 
 ### 3.2 Configurando as Filas de Impressão
@@ -139,10 +140,11 @@ No painel central, monte a lista de impressoras que serão instaladas em cada co
 2. O sistema iniciará a instalação simultânea em todos os computadores da lista.
 3. Você verá o status de cada máquina atualizando em tempo real:
    - 🟡 **Pendente:** Aguardando início.
+   - 🔵 **Testando Conexão com Impressora:** O sistema envia um ping para o IP da impressora antes de qualquer alteração na máquina. Se a impressora não responder, a fila não é criada, evitando filas órfãs/travadas.
    - 🔵 **Instalando Driver:** O driver está sendo enviado e registrado no Windows.
    - 🔵 **Criando Porta / Fila:** A porta TCP/IP e a fila com nome correto estão sendo criadas.
    - 🟢 **Concluído:** Impressora instalada e pronta para uso!
-   - 🔴 **Falha:** Houve algum impedimento na máquina (veja a mensagem de detalhe no painel de log).
+   - 🔴 **Falha:** Houve algum impedimento na máquina ou a impressora está offline (veja a mensagem de detalhe no painel de log). Se uma máquina estiver desligada, ela é sinalizada com falha e o sistema continua automaticamente o processo nas demais sem travar.
 
 4. **Exportar Relatório:** Ao final, clique em **"Exportar Logs"** para salvar um arquivo de texto com o comprovante de tudo o que foi instalado com sucesso.
 
@@ -175,8 +177,15 @@ Esta ferramenta é ideal para quando o hospital troca impressoras antigas de lug
 
 ### 4.1 Consultando Impressoras Instaladas
 1. Adicione os computadores que deseja consultar (ou clique em "Adicionar Este PC").
-2. Clique em **"Listar Impressoras"**.
-3. O sistema fará uma varredura remota e exibirá todas as impressoras instaladas em cada estação.
+2. Clique em **"Avançar"**.
+3. O sistema fará a consulta remota e exibirá as impressoras de cada estação em sequência.
+4. **Navegação Direta (Avançar sem Obrigatoriedade):**
+   - Caso você não queira realizar nenhuma remoção ou renomeação no computador atual, basta clicar em **"Avançar"**.
+   - O botão **"Avançar"** permanece sempre disponível, permitindo inspecionar as filas de cada máquina sem a obrigatoriedade de modificar nada e registrando `(nenhuma ação)` para o computador em questão.
+5. **Sistema de Ping e Detecção Rápida de Computadores Desligados:**
+   - Antes de consultar as impressoras, o sistema realiza uma sondagem de rede ultrarrápida (Ping ICMP + portas RPC/SMB).
+   - 🟢 **Computador Online:** Exibe a etiqueta verde *"Online (Ping OK)"* e carrega as filas de impressão em seguida.
+   - 🔴 **Computador Offline / Desligado:** Detectado em menos de 2 segundos (ao invés de travar esperando 1 minuto de timeout do Windows). O sistema exibe o aviso em vermelho, não trava a tela e habilita imediatamente o botão **"Avançar"**, além de disponibilizar o botão **"Testar Novamente"** caso você peça para o usuário ligar a máquina naquele momento.
 
 ### 4.2 Removendo Filas Antigas ou Órfãs
 1. Marque a caixinha ao lado das impressoras que deseja remover (ex: impressoras antigas que foram substituídas).
@@ -187,6 +196,23 @@ Esta ferramenta é ideal para quando o hospital troca impressoras antigas de lug
 1. Selecione a impressora na lista.
 2. Digite o novo nome padronizado (ex: mudar de `EPSON_NOVA` para `POSTO-ENF-EPSON-01`).
 3. Clique em **"Renomear"**. O sistema atualiza o nome imediatamente no Windows remoto sem precisar reinstalar o driver.
+
+### 4.4 Reiniciando o Spooler e Purgando Filas Travadas (*Remote Spooler Reset*)
+
+Quando uma estação de trabalho remota ou local apresenta filas travadas (documentos presos com status "Excluindo..." ou que travam qualquer nova impressão), você não precisa acessar o Windows da máquina nem abrir o `services.msc`:
+
+1. No **Passo 1** do Assistente de Remoção, digite o nome do computador ou clique em **"Adicionar Este PC"** e selecione-o na lista.
+2. Clique no botão **"Reiniciar Spooler"** (ícone de engrenagem/ferramenta).
+3. Uma janela de confirmação de segurança será exibida, alertando que a operação:
+   - Interrompe o serviço do Spooler de Impressão (`Spooler`).
+   - Esvazia todos os arquivos temporários presos em spool (`C:\Windows\System32\spool\PRINTERS\*.*`).
+   - Reinicia o serviço e aguarda a confirmação de que ele está ativo (`Running`).
+4. Clique em **"Confirmar"** para autorizar.
+5. O PrinterInstall executará o procedimento de forma limpa e com privilégios elevados.
+6. Ao concluir, uma notificação de sucesso será apresentada e **a lista de impressoras e status da máquina será recarregada automaticamente**, permitindo que você verifique imediatamente o estado das filas limpas.
+
+> [!TIP]
+> **Desbloqueio Imediato:** O reset do spooler resolve a grande maioria dos chamados de "impressora parou de imprimir" sem reiniciar o computador do usuário e sem derrubar os sistemas hospitalares em uso.
 
 ---
 

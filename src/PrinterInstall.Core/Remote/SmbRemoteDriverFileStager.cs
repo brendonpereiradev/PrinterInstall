@@ -1,9 +1,13 @@
+using System.Collections.Concurrent;
+using System.IO.Compression;
 using System.Net;
 
 namespace PrinterInstall.Core.Remote;
 
 public sealed class SmbRemoteDriverFileStager : IRemoteDriverFileStager
 {
+    private static readonly object CacheLock = new();
+
     public Task<RemoteDriverStagingPaths> StageAsync(string host, NetworkCredential credential, string localPackageFolder, CancellationToken cancellationToken)
     {
         return Task.Run(() =>
@@ -11,7 +15,23 @@ public sealed class SmbRemoteDriverFileStager : IRemoteDriverFileStager
             var paths = RemoteDriverStagingPaths.Create(host);
             using var share = SmbShareConnection.Open(host, "ADMIN$", credential);
             Directory.CreateDirectory(paths.UncRoot);
-            CopyDirectory(localPackageFolder, paths.UncRoot, cancellationToken);
+
+            try
+            {
+                var zipPath = GetOrCreateZippedPackage(localPackageFolder, cancellationToken);
+                var targetZip = Path.Combine(paths.UncRoot, "package.zip");
+                File.Copy(zipPath, targetZip, overwrite: true);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch
+            {
+                // Fallback para cópia arquivo por arquivo caso ocorra qualquer problema com ZIP
+                CopyDirectory(localPackageFolder, paths.UncRoot, cancellationToken);
+            }
+
             return paths;
         }, cancellationToken);
     }
@@ -73,5 +93,65 @@ public sealed class SmbRemoteDriverFileStager : IRemoteDriverFileStager
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             File.Copy(file, dest, overwrite: true);
         }
+    }
+
+    private static string GetOrCreateZippedPackage(string localPackageFolder, CancellationToken cancellationToken)
+    {
+        var cacheDir = Path.Combine(Path.GetTempPath(), "PrinterInstall", "DriverZipCache");
+        Directory.CreateDirectory(cacheDir);
+
+        var folderName = new DirectoryInfo(localPackageFolder).Name;
+        var fingerprint = ComputeDirectoryFingerprint(localPackageFolder);
+        var zipPath = Path.Combine(cacheDir, $"{folderName}_{fingerprint}.zip");
+
+        if (File.Exists(zipPath))
+            return zipPath;
+
+        lock (CacheLock)
+        {
+            if (File.Exists(zipPath))
+                return zipPath;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var tempZip = Path.Combine(cacheDir, $"{folderName}_{Guid.NewGuid():N}.tmp");
+            try
+            {
+                if (File.Exists(tempZip))
+                    File.Delete(tempZip);
+
+                ZipFile.CreateFromDirectory(localPackageFolder, tempZip, CompressionLevel.Fastest, includeBaseDirectory: false);
+                File.Move(tempZip, zipPath, overwrite: true);
+                return zipPath;
+            }
+            catch
+            {
+                if (File.Exists(tempZip))
+                {
+                    try { File.Delete(tempZip); } catch { }
+                }
+                throw;
+            }
+        }
+    }
+
+    private static string ComputeDirectoryFingerprint(string folder)
+    {
+        long ticks = 0;
+        var count = 0;
+        foreach (var file in Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories))
+        {
+            try
+            {
+                ticks += File.GetLastWriteTimeUtc(file).Ticks;
+                count++;
+            }
+            catch
+            {
+                // Ignora falhas de leitura de carimbo em arquivos transitórios
+            }
+        }
+
+        return $"{count}_{ticks:X}";
     }
 }

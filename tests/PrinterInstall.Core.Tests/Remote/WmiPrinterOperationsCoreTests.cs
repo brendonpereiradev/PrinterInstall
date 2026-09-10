@@ -49,6 +49,19 @@ public class WmiPrinterOperationsCoreTests
     }
 
     [Fact]
+    public void BuildInstallerScript_IncludesZipPackageExtractionBlock()
+    {
+        var script = WmiPrinterOperationsCore.BuildInstallerScript(
+            @"C:\Temp\pkg\LMUX1l50.inf",
+            "Lexmark Universal v4 XL",
+            @"C:\Temp\pkg\install.log");
+
+        Assert.Contains("$zipFile = Join-Path $stagingRoot 'package.zip'", script, StringComparison.Ordinal);
+        Assert.Contains("[System.IO.Compression.ZipFileExtensions]::ExtractToFile", script, StringComparison.Ordinal);
+        Assert.Contains("Remove-Item -LiteralPath $zipFile", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void BuildLocalElevatedScript_RelaunchesElevatedWhenNotAdministrator()
     {
         var script = WmiPrinterOperationsCore.BuildLocalElevatedScript(

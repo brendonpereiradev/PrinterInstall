@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using System.Management;
 
@@ -73,55 +72,6 @@ internal static class WmiProcessRunnerCore
         {
             // Best effort.
         }
-    }
-
-    public static RemoteProcessResult WaitForLocalProcessExit(
-        uint pid,
-        ManagementScope scope,
-        TimeSpan timeout,
-        CancellationToken cancellationToken)
-    {
-        var deadline = DateTime.UtcNow + timeout;
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                using var proc = Process.GetProcessById((int)pid);
-                var remaining = deadline - DateTime.UtcNow;
-                if (remaining <= TimeSpan.Zero)
-                    break;
-                if (proc.WaitForExit((int)Math.Min(remaining.TotalMilliseconds, 500)))
-                {
-                    try
-                    {
-                        return new RemoteProcessResult((uint)proc.ExitCode, pid, TimedOut: false);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // WMI-started processes are not owned by this Process instance.
-                        return new RemoteProcessResult(0, pid, TimedOut: false);
-                    }
-                }
-            }
-            catch (ArgumentException)
-            {
-                return new RemoteProcessResult(0, pid, TimedOut: false);
-            }
-        }
-
-        TryTerminate(scope, pid);
-        try
-        {
-            using var proc = Process.GetProcessById((int)pid);
-            proc.Kill(entireProcessTree: true);
-        }
-        catch
-        {
-            // Best effort.
-        }
-
-        return new RemoteProcessResult(0, pid, TimedOut: true);
     }
 
     private static bool ProcessExists(ManagementScope scope, uint pid)

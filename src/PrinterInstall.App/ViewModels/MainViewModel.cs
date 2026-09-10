@@ -61,10 +61,12 @@ public partial class MainViewModel : ObservableObject
     private bool _printTestPage;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanExportLog))]
     private string _logText = "";
 
     partial void OnLogTextChanged(string value)
     {
+        OnPropertyChanged(nameof(CanExportLog));
         ExportLogCommand.NotifyCanExecuteChanged();
     }
 
@@ -72,10 +74,12 @@ public partial class MainViewModel : ObservableObject
     private string _lastSummaryText = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanExportLog))]
     private bool _isDeployRunning;
 
     partial void OnIsDeployRunningChanged(bool value)
     {
+        OnPropertyChanged(nameof(CanExportLog));
         DeployCommand.NotifyCanExecuteChanged();
         CancelDeployCommand.NotifyCanExecuteChanged();
         ExportLogCommand.NotifyCanExecuteChanged();
@@ -191,10 +195,10 @@ public partial class MainViewModel : ObservableObject
         if (rawNames.Count == 0)
         {
             AppendLog(UiStrings.Main_Validation_ComputersRequired);
+            await _dialogService.ShowNoComputersWarningAsync();
             return;
         }
 
-        var definitions = new List<PrinterQueueDefinition>();
         foreach (var row in PrinterRows)
         {
             if (string.IsNullOrWhiteSpace(row.DisplayName))
@@ -208,15 +212,47 @@ public partial class MainViewModel : ObservableObject
                 AppendLog(UiStrings.Main_Validation_PrinterHostRequired);
                 return;
             }
+        }
 
+        var invertedRows = new List<(PrinterFormRowViewModel Row, string DisplayName, string HostAddress)>();
+        foreach (var row in PrinterRows)
+        {
             var trimmedDisplayName = row.DisplayName.Trim();
             var trimmedHost = row.PrinterHostAddress.Trim();
 
             if (PrinterHostValidator.DetectProbableInversion(trimmedDisplayName, trimmedHost))
             {
-                AppendLog(string.Format(UiStrings.Main_Validation_InversionDetectedFormat, trimmedDisplayName, trimmedHost));
+                invertedRows.Add((row, trimmedDisplayName, trimmedHost));
+            }
+        }
+
+        if (invertedRows.Count > 0)
+        {
+            var inversionItems = invertedRows
+                .Select(item => string.Format(UiStrings.Main_InversionDialogItemFormat, item.DisplayName, item.HostAddress))
+                .ToList();
+
+            var proceed = await _dialogService.ConfirmInversionCorrectionAsync(inversionItems);
+            if (!proceed)
+            {
+                AppendLog(UiStrings.Main_DeployCancelledByInversionWarning);
                 return;
             }
+
+            // Inverter os campos automaticamente na interface e registrar log
+            foreach (var item in invertedRows)
+            {
+                item.Row.DisplayName = item.HostAddress;
+                item.Row.PrinterHostAddress = item.DisplayName;
+                AppendLog(string.Format(UiStrings.Main_InversionCorrectedLogFormat, item.HostAddress, item.DisplayName));
+            }
+        }
+
+        var definitions = new List<PrinterQueueDefinition>();
+        foreach (var row in PrinterRows)
+        {
+            var trimmedDisplayName = row.DisplayName.Trim();
+            var trimmedHost = row.PrinterHostAddress.Trim();
 
             if (!PrinterHostValidator.IsValidHostAddress(trimmedHost))
             {
@@ -342,10 +378,6 @@ public partial class MainViewModel : ObservableObject
 
             LastSummaryText = BuildSummaryText();
             NotifyDeployCompletion();
-            if (!string.IsNullOrEmpty(LastSummaryText) && Application.Current is not null)
-            {
-                MessageBox.Show(LastSummaryText, UiStrings.Main_SummaryDialogTitle, MessageBoxButton.OK, MessageBoxImage.Information);
-            }
         }
         catch (OperationCanceledException)
         {
@@ -399,6 +431,11 @@ public partial class MainViewModel : ObservableObject
             _deployCts?.Dispose();
             _deployCts = null;
             IsDeployRunning = false;
+        }
+
+        if (!string.IsNullOrEmpty(LastSummaryText) && Application.Current is not null)
+        {
+            MessageBox.Show(LastSummaryText, UiStrings.Main_SummaryDialogTitle, MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 

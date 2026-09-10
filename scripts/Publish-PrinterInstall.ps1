@@ -43,6 +43,13 @@ try {
     }
 
     # 2. Limpa diretório de publicação anterior
+    $runningProcesses = Get-Process -Name "Printer Install", "PrinterInstall.App" -ErrorAction SilentlyContinue
+    if ($runningProcesses) {
+        Write-Host "  -> Encerrando instância em execução para permitir atualização do executável..." -ForegroundColor Yellow
+        $runningProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 500
+    }
+
     if (Test-Path $publishDir) {
         Write-Host "[2/4] Limpando diretório de publicação anterior..." -ForegroundColor Cyan
         Remove-Item "$publishDir\*" -Recurse -Force -ErrorAction SilentlyContinue
@@ -67,25 +74,31 @@ try {
     $finalExe = Join-Path $publishDir "Printer Install.exe"
 
     if (Test-Path $defaultExe) {
-        if (Test-Path $finalExe) {
-            Remove-Item -Path $finalExe -Force -ErrorAction SilentlyContinue
+        try {
+            if (Test-Path $finalExe) {
+                Remove-Item -Path $finalExe -Force -ErrorAction Stop
+            }
+            Move-Item -Path $defaultExe -Destination $finalExe -Force -ErrorAction Stop
         }
-        Move-Item -Path $defaultExe -Destination $finalExe -Force
+        catch {
+            Write-Warning "O arquivo 'Printer Install.exe' está em execução e protegido pelo Windows. Feche a janela aberta do aplicativo para que a substituição seja concluída. O binário atualizado recém-compilado está salvo como 'PrinterInstall.App.exe'."
+        }
     }
 
-    if (-not (Test-Path $finalExe)) {
-        Write-Error "Erro: 'Printer Install.exe' não foi encontrado na pasta de publicação."
+    $targetExe = if (Test-Path $finalExe) { $finalExe } else { $defaultExe }
+    if (-not (Test-Path $targetExe)) {
+        Write-Error "Erro: Nenhum executável foi encontrado na pasta de publicação."
     }
 
     $files = Get-ChildItem -Path $publishDir
-    $exeSizeMb = [math]::Round((Get-Item $finalExe).Length / 1MB, 2)
+    $exeSizeMb = [math]::Round((Get-Item $targetExe).Length / 1MB, 2)
 
     Write-Host ""
     Write-Host "=================================================================" -ForegroundColor Green
     Write-Host "  PUBLICAÇÃO CONCLUÍDA COM SUCESSO! (ARQUIVO ÚNICO)" -ForegroundColor Green
     Write-Host "=================================================================" -ForegroundColor Green
     Write-Host "Diretório de saída: $publishDir"
-    Write-Host "Executável gerado:  Printer Install.exe ($exeSizeMb MB)" -ForegroundColor Yellow
+    Write-Host "Executável gerado:  $(Split-Path $targetExe -Leaf) ($exeSizeMb MB)" -ForegroundColor Yellow
     Write-Host "Total de arquivos na pasta: $($files.Count) arquivo(s)" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Distribuição: Apenas copie o arquivo 'Printer Install.exe' para as máquinas de destino."

@@ -103,7 +103,8 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
                     Protocol = TcpPrinterProtocol.Raw
                 }
             },
-            DomainCredential = new NetworkCredential("u", "p")
+            DomainCredential = new NetworkCredential("u", "p"),
+            MaxDegreeOfParallelism = 1
         };
 
         var sut = new PrinterDeploymentOrchestrator(m.Object);
@@ -173,5 +174,69 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
 
         Assert.Contains(events, e => e is { PrinterQueueName: "Bad", State: TargetMachineState.Error });
         Assert.Contains(events, e => e is { PrinterQueueName: "Good", State: TargetMachineState.CompletedSuccess });
+    }
+
+    [Fact]
+    public async Task RunAsync_WithParallelism_ExecutesTargetsConcurrently()
+    {
+        var epson = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Epson);
+        var m = new Mock<IRemotePrinterOperations>();
+        m.Setup(x => x.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        m.Setup(x => x.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        m.Setup(x => x.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var concurrentCount = 0;
+        var maxConcurrent = 0;
+        var sync = new object();
+
+        m.Setup(x => x.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                int current;
+                lock (sync)
+                {
+                    concurrentCount++;
+                    current = concurrentCount;
+                    if (current > maxConcurrent)
+                        maxConcurrent = current;
+                }
+
+                await Task.Delay(50);
+
+                lock (sync)
+                {
+                    concurrentCount--;
+                }
+
+                return new[] { epson };
+            });
+
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = new[] { "PC1", "PC2", "PC3", "PC4" },
+            Printers = new[]
+            {
+                new PrinterQueueDefinition
+                {
+                    Brand = PrinterBrand.Epson,
+                    DisplayName = "FastQueue",
+                    PrinterHostAddress = "10.0.0.1",
+                    PortNumber = 9100,
+                    Protocol = TcpPrinterProtocol.Raw
+                }
+            },
+            DomainCredential = new NetworkCredential("u", "p"),
+            MaxDegreeOfParallelism = 4
+        };
+
+        var sut = new PrinterDeploymentOrchestrator(m.Object);
+        var events = new List<DeploymentProgressEvent>();
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
+
+        Assert.True(maxConcurrent > 1, $"Esperava concorrência simultânea > 1, mas obteve {maxConcurrent}.");
+        Assert.Equal(4, events.Count(e => e.State == TargetMachineState.CompletedSuccess));
     }
 }

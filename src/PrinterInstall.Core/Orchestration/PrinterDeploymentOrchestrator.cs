@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using PrinterInstall.Core.Catalog;
 using PrinterInstall.Core.Drivers;
@@ -9,21 +10,25 @@ namespace PrinterInstall.Core.Orchestration;
 
 public sealed class PrinterDeploymentOrchestrator
 {
+    public const int DefaultMaxDegreeOfParallelism = 4;
     private static readonly TimeSpan SpoolerSettleDelay = TimeSpan.FromSeconds(2);
 
     private readonly IRemotePrinterOperations _remote;
     private readonly ILocalDriverPackageCatalog _localDrivers;
     private readonly IDirectRawPrinterTestService _rawTestService;
+    private readonly IFastHostReachabilityChecker _reachabilityChecker;
+    private readonly IPrinterPingService _printerPingService;
     private readonly int _maxRetryAttempts;
     private readonly TimeSpan _retryDelay;
+    private readonly int? _configuredMaxDegreeOfParallelism;
 
     public PrinterDeploymentOrchestrator(IRemotePrinterOperations remote)
-        : this(remote, new NullLocalDriverPackageCatalog(), new DirectRawPrinterTestService(), TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay)
+        : this(remote, new NullLocalDriverPackageCatalog(), new DirectRawPrinterTestService(), new NullFastHostReachabilityChecker(), new NullPrinterPingService(), TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay, null)
     {
     }
 
     public PrinterDeploymentOrchestrator(IRemotePrinterOperations remote, ILocalDriverPackageCatalog localDrivers)
-        : this(remote, localDrivers, new DirectRawPrinterTestService(), TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay)
+        : this(remote, localDrivers, new DirectRawPrinterTestService(), new NullFastHostReachabilityChecker(), new NullPrinterPingService(), TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay, null)
     {
     }
 
@@ -31,7 +36,7 @@ public sealed class PrinterDeploymentOrchestrator
         IRemotePrinterOperations remote,
         ILocalDriverPackageCatalog localDrivers,
         IDirectRawPrinterTestService rawTestService)
-        : this(remote, localDrivers, rawTestService, TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay)
+        : this(remote, localDrivers, rawTestService, new NullFastHostReachabilityChecker(), new NullPrinterPingService(), TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay, null)
     {
     }
 
@@ -40,7 +45,7 @@ public sealed class PrinterDeploymentOrchestrator
         ILocalDriverPackageCatalog localDrivers,
         int maxRetryAttempts,
         TimeSpan retryDelay)
-        : this(remote, localDrivers, new DirectRawPrinterTestService(), maxRetryAttempts, retryDelay)
+        : this(remote, localDrivers, new DirectRawPrinterTestService(), new NullFastHostReachabilityChecker(), new NullPrinterPingService(), maxRetryAttempts, retryDelay, null)
     {
     }
 
@@ -50,12 +55,52 @@ public sealed class PrinterDeploymentOrchestrator
         IDirectRawPrinterTestService rawTestService,
         int maxRetryAttempts,
         TimeSpan retryDelay)
+        : this(remote, localDrivers, rawTestService, new NullFastHostReachabilityChecker(), new NullPrinterPingService(), maxRetryAttempts, retryDelay, null)
+    {
+    }
+
+    public PrinterDeploymentOrchestrator(
+        IRemotePrinterOperations remote,
+        ILocalDriverPackageCatalog localDrivers,
+        IDirectRawPrinterTestService rawTestService,
+        IFastHostReachabilityChecker reachabilityChecker,
+        int maxRetryAttempts,
+        TimeSpan retryDelay,
+        int? configuredMaxDegreeOfParallelism = null)
+        : this(remote, localDrivers, rawTestService, reachabilityChecker, new NullPrinterPingService(), maxRetryAttempts, retryDelay, configuredMaxDegreeOfParallelism)
+    {
+    }
+
+    public PrinterDeploymentOrchestrator(
+        IRemotePrinterOperations remote,
+        ILocalDriverPackageCatalog localDrivers,
+        IDirectRawPrinterTestService rawTestService,
+        IFastHostReachabilityChecker reachabilityChecker,
+        IPrinterPingService printerPingService,
+        int maxRetryAttempts,
+        TimeSpan retryDelay)
+        : this(remote, localDrivers, rawTestService, reachabilityChecker, printerPingService, maxRetryAttempts, retryDelay, null)
+    {
+    }
+
+    public PrinterDeploymentOrchestrator(
+        IRemotePrinterOperations remote,
+        ILocalDriverPackageCatalog localDrivers,
+        IDirectRawPrinterTestService rawTestService,
+        IFastHostReachabilityChecker reachabilityChecker,
+        IPrinterPingService? printerPingService,
+        int maxRetryAttempts,
+        TimeSpan retryDelay,
+        int? configuredMaxDegreeOfParallelism = null)
     {
         _remote = remote;
         _localDrivers = localDrivers;
         _rawTestService = rawTestService;
+        _reachabilityChecker = reachabilityChecker ?? new NullFastHostReachabilityChecker();
+        _printerPingService = printerPingService ?? new NullPrinterPingService();
         _maxRetryAttempts = maxRetryAttempts;
         _retryDelay = retryDelay;
+        _configuredMaxDegreeOfParallelism = configuredMaxDegreeOfParallelism;
     }
 
     public async Task RunAsync(
@@ -64,32 +109,79 @@ public sealed class PrinterDeploymentOrchestrator
         IProgress<DeploymentProgressEvent> progress,
         CancellationToken cancellationToken = default)
     {
-        foreach (var computer in request.TargetComputerNames)
-        {
-            progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ContactingRemote, "Connecting...", null));
+        var maxDegree = _configuredMaxDegreeOfParallelism
+            ?? (request.MaxDegreeOfParallelism > 0 ? request.MaxDegreeOfParallelism : DefaultMaxDegreeOfParallelism);
 
-            IReadOnlyList<string> drivers;
-            try
+        var printerPingCache = new ConcurrentDictionary<string, Task<bool>>(StringComparer.OrdinalIgnoreCase);
+
+        if (maxDegree <= 1 || request.TargetComputerNames.Count <= 1)
+        {
+            foreach (var computer in request.TargetComputerNames)
             {
-                drivers = await TransientRetryHelper.ExecuteWithRetryAsync(
-                    ct => _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, ct),
-                    maxAttempts: _maxRetryAttempts,
-                    initialDelay: _retryDelay,
-                    onRetry: (ex, attempt, delay) =>
-                    {
-                        progress.Report(new DeploymentProgressEvent(
-                            computer,
-                            TargetMachineState.ContactingRemote,
-                            $"Falha transitória ({Flatten(ex)}). Tentando novamente em {delay.TotalSeconds:F0}s (tentativa {attempt + 1}/{_maxRetryAttempts})...",
-                            null));
-                    },
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                await ProcessSingleTargetAsync(computer, request, rollbackJournal, progress, printerPingCache, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            return;
+        }
+
+        var parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = maxDegree,
+            CancellationToken = cancellationToken
+        };
+
+        try
+        {
+            await Parallel.ForEachAsync(request.TargetComputerNames, parallelOptions, async (computer, ct) =>
             {
-                progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Error, Flatten(ex), null));
-                continue;
-            }
+                await ProcessSingleTargetAsync(computer, request, rollbackJournal, progress, printerPingCache, ct).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (cancellationToken.IsCancellationRequested && (ex is TaskCanceledException || ex.GetType() != typeof(OperationCanceledException)))
+        {
+            throw new OperationCanceledException(ex.Message, ex, cancellationToken);
+        }
+    }
+
+    private async Task ProcessSingleTargetAsync(
+        string computer,
+        PrinterDeploymentRequest request,
+        DeploymentRollbackJournal rollbackJournal,
+        IProgress<DeploymentProgressEvent> progress,
+        ConcurrentDictionary<string, Task<bool>> printerPingCache,
+        CancellationToken cancellationToken)
+    {
+        progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ContactingRemote, "Connecting...", null));
+
+        var (isReachable, reachabilityError) = await _reachabilityChecker.CheckReachabilityAsync(computer, cancellationToken).ConfigureAwait(false);
+        if (!isReachable)
+        {
+            progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Error, reachabilityError ?? "Host inacessível.", null));
+            return;
+        }
+
+        IReadOnlyList<string> drivers;
+        try
+        {
+            drivers = await TransientRetryHelper.ExecuteWithRetryAsync(
+                ct => _remote.GetInstalledDriverNamesAsync(computer, request.DomainCredential, ct),
+                maxAttempts: _maxRetryAttempts,
+                initialDelay: _retryDelay,
+                onRetry: (ex, attempt, delay) =>
+                {
+                    progress.Report(new DeploymentProgressEvent(
+                        computer,
+                        TargetMachineState.ContactingRemote,
+                        $"Falha transitória ({Flatten(ex)}). Tentando novamente em {delay.TotalSeconds:F0}s (tentativa {attempt + 1}/{_maxRetryAttempts})...",
+                        null));
+                },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Error, Flatten(ex), null));
+            return;
+        }
 
             progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ValidatingDriver, $"Checking driver (found {drivers.Count})...", null));
 
@@ -226,21 +318,58 @@ public sealed class PrinterDeploymentOrchestrator
                         continue;
                     }
 
-                    var portName = PrinterPortNaming.BuildPortName(def.PrinterHostAddress, def.PortNumber);
+                    var host = def.PrinterHostAddress?.Trim() ?? "";
+                    if (!string.IsNullOrEmpty(host))
+                    {
+                        progress.Report(new DeploymentProgressEvent(
+                            computer,
+                            TargetMachineState.ContactingRemote,
+                            $"Testando conexão (ping) com a impressora em {host}...",
+                            displayName));
+
+                        var isPrinterReachable = await printerPingCache.GetOrAdd(
+                            host,
+                            h => _printerPingService.PingAsync(h, TimeSpan.FromSeconds(2), cancellationToken)
+                        ).ConfigureAwait(false);
+
+                        if (!isPrinterReachable)
+                        {
+                            progress.Report(new DeploymentProgressEvent(
+                                computer,
+                                TargetMachineState.Error,
+                                $"Impressora não respondeu ao ping no endereço '{host}'. Configuração desta fila ignorada.",
+                                displayName));
+                            continue;
+                        }
+                    }
+
+                    var portName = PrinterPortNaming.BuildPortName(host, def.PortNumber);
                     var protocol = MapProtocol(def.Protocol);
                     progress.Report(new DeploymentProgressEvent(
                         computer,
                         TargetMachineState.Configuring,
                         "Creating port...",
                         displayName));
-                    await _remote.CreateTcpPrinterPortAsync(
-                        computer,
-                        request.DomainCredential,
-                        portName,
-                        def.PrinterHostAddress,
-                        def.PortNumber,
-                        protocol,
-                        cancellationToken).ConfigureAwait(false);
+                    await TransientRetryHelper.ExecuteWithRetryAsync(
+                        ct => _remote.CreateTcpPrinterPortAsync(
+                            computer,
+                            request.DomainCredential,
+                            portName,
+                            host,
+                            def.PortNumber,
+                            protocol,
+                            ct),
+                        maxAttempts: _maxRetryAttempts,
+                        initialDelay: _retryDelay,
+                        onRetry: (ex, attempt, delay) =>
+                        {
+                            progress.Report(new DeploymentProgressEvent(
+                                computer,
+                                TargetMachineState.Configuring,
+                                $"Falha transitória ao criar porta ({Flatten(ex)}). Tentando novamente em {delay.TotalSeconds:F0}s (tentativa {attempt + 1}/{_maxRetryAttempts})...",
+                                displayName));
+                        },
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
 
                     rollbackJournal.RecordPortCreated(computer, portName);
 
@@ -251,13 +380,25 @@ public sealed class PrinterDeploymentOrchestrator
                         TargetMachineState.Configuring,
                         "Adding printer...",
                         displayName));
-                    await _remote.AddPrinterAsync(
-                        computer,
-                        request.DomainCredential,
-                        displayName,
-                        resolvedDriver,
-                        portName,
-                        cancellationToken).ConfigureAwait(false);
+                    await TransientRetryHelper.ExecuteWithRetryAsync(
+                        ct => _remote.AddPrinterAsync(
+                            computer,
+                            request.DomainCredential,
+                            displayName,
+                            resolvedDriver,
+                            portName,
+                            ct),
+                        maxAttempts: _maxRetryAttempts,
+                        initialDelay: _retryDelay,
+                        onRetry: (ex, attempt, delay) =>
+                        {
+                            progress.Report(new DeploymentProgressEvent(
+                                computer,
+                                TargetMachineState.Configuring,
+                                $"Falha transitória ao adicionar impressora ({Flatten(ex)}). Tentando novamente em {delay.TotalSeconds:F0}s (tentativa {attempt + 1}/{_maxRetryAttempts})...",
+                                displayName));
+                        },
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
 
                     rollbackJournal.RecordQueueCreated(computer, displayName, portName);
 
@@ -362,7 +503,6 @@ public sealed class PrinterDeploymentOrchestrator
                 }
             }
         }
-    }
 
     private static IReadOnlyList<PrinterBrand> DistinctBrandsInOrder(IReadOnlyList<PrinterQueueDefinition> printers)
     {

@@ -232,6 +232,29 @@ try {{
     $infFileName = '{EscapePs(infFileName)}'
     $stagingRoot = Split-Path -Parent $inf
 
+    $zipFile = Join-Path $stagingRoot 'package.zip'
+    if (Test-Path -LiteralPath $zipFile) {{
+        try {{
+            Write-Output 'STAGING>> Extraindo pacote de driver compactado...'
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $archive = [System.IO.Compression.ZipFile]::OpenRead($zipFile)
+            foreach ($entry in $archive.Entries) {{
+                $targetPath = [System.IO.Path]::Combine($stagingRoot, $entry.FullName)
+                $targetDir = [System.IO.Path]::GetDirectoryName($targetPath)
+                if (-not [System.IO.Directory]::Exists($targetDir)) {{
+                    [void][System.IO.Directory]::CreateDirectory($targetDir)
+                }}
+                if ($entry.Name) {{
+                    [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $targetPath, $true)
+                }}
+            }}
+            $archive.Dispose()
+            Remove-Item -LiteralPath $zipFile -Force -ErrorAction SilentlyContinue
+        }} catch {{
+            Write-Output ('STAGING>> Falha ao descompactar package.zip: ' + $_.Exception.Message)
+        }}
+    }}
+
     $catFiles = @(Get-ChildItem -LiteralPath $stagingRoot -Filter '*.cat' -ErrorAction SilentlyContinue)
     foreach ($catFile in $catFiles) {{
         try {{

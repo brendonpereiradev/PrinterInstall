@@ -170,4 +170,94 @@ public class PrinterDeploymentOrchestratorRetryTests
         mock.Verify(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "Office", expectedDriver, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.Contains(events, e => e.State == TargetMachineState.CompletedSuccess);
     }
+
+    [Fact]
+    public async Task RunAsync_CreateTcpPrinterPortTransientFailure_RetriesAndSucceeds()
+    {
+        // Arrange
+        var expectedDriver = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Lexmark);
+        var mock = new Mock<IRemotePrinterOperations>();
+        mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { expectedDriver });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var portCalls = 0;
+        mock.Setup(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                portCalls++;
+                if (portCalls == 1)
+                    throw new System.Runtime.InteropServices.COMException("The RPC server is unavailable.", unchecked((int)0x800706BA));
+                return Task.CompletedTask;
+            });
+
+        mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var sut = new PrinterDeploymentOrchestrator(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
+
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = new[] { "pc1" },
+            Printers = new[] { OnePrinter(PrinterBrand.Lexmark, "Office", "10.0.0.5") },
+            DomainCredential = new NetworkCredential("u", "p")
+        };
+
+        var events = new List<DeploymentProgressEvent>();
+        var progress = new InlineProgress<DeploymentProgressEvent>(events.Add);
+
+        // Act
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), progress);
+
+        // Assert
+        Assert.Equal(2, portCalls);
+        mock.Verify(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "Office", expectedDriver, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Contains(events, e => e.State == TargetMachineState.Configuring && e.Message.Contains("Falha transitória ao criar porta"));
+        Assert.Contains(events, e => e.State == TargetMachineState.CompletedSuccess);
+    }
+
+    [Fact]
+    public async Task RunAsync_AddPrinterTransientFailure_RetriesAndSucceeds()
+    {
+        // Arrange
+        var expectedDriver = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Lexmark);
+        var mock = new Mock<IRemotePrinterOperations>();
+        mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { expectedDriver });
+        mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        mock.Setup(m => m.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var addCalls = 0;
+        mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                addCalls++;
+                if (addCalls == 1)
+                    throw new System.Runtime.InteropServices.COMException("The RPC server is unavailable.", unchecked((int)0x800706BA));
+                return Task.CompletedTask;
+            });
+
+        var sut = new PrinterDeploymentOrchestrator(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
+
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = new[] { "pc1" },
+            Printers = new[] { OnePrinter(PrinterBrand.Lexmark, "Office", "10.0.0.5") },
+            DomainCredential = new NetworkCredential("u", "p")
+        };
+
+        var events = new List<DeploymentProgressEvent>();
+        var progress = new InlineProgress<DeploymentProgressEvent>(events.Add);
+
+        // Act
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), progress);
+
+        // Assert
+        Assert.Equal(2, addCalls);
+        Assert.Contains(events, e => e.State == TargetMachineState.Configuring && e.Message.Contains("Falha transitória ao adicionar impressora"));
+        Assert.Contains(events, e => e.State == TargetMachineState.CompletedSuccess);
+    }
 }

@@ -112,4 +112,28 @@ public class MainViewModelExportLogTests
 
         Assert.Contains("Falha ao exportar log: Disco cheio ou sem permissão", sut.LogText);
     }
+
+    [Fact]
+    public void CanExportLog_RaisesPropertyChanged_WhenLogTextOrIsDeployRunningChanges()
+    {
+        var (sut, _) = CreateSut();
+        var raisedProperties = new List<string>();
+        sut.PropertyChanged += (sender, args) =>
+        {
+            if (args.PropertyName != null)
+                raisedProperties.Add(args.PropertyName);
+        };
+
+        sut.LogText = "Novo log";
+        Assert.Contains(nameof(sut.CanExportLog), raisedProperties);
+
+        raisedProperties.Clear();
+        sut.IsDeployRunning = true;
+        Assert.Contains(nameof(sut.CanExportLog), raisedProperties);
+
+        raisedProperties.Clear();
+        sut.IsDeployRunning = false;
+        Assert.Contains(nameof(sut.CanExportLog), raisedProperties);
+        Assert.True(sut.CanExportLog);
+    }
 }

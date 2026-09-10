@@ -18,9 +18,6 @@ internal static class GainschaLabelSdsStockReplacer
         @"(?is)<options model='[^']+'>\s*.*?</options>",
         RegexOptions.Compiled);
 
-    public static bool TemplateContainsStockBlock(string templateContent) =>
-        templateContent.Contains("<stock>", StringComparison.OrdinalIgnoreCase);
-
     public static bool TryExtractStockBlock(string sdsContent, string stockName, out string stockBlock)
     {
         stockBlock = string.Empty;

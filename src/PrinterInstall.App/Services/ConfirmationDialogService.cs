@@ -39,6 +39,91 @@ public class ConfirmationDialogService : IConfirmationDialogService
         return dispatcher.InvokeAsync(() => ShowNetworkTestConfirmDialog(hostAddress, brand, preset)).Task;
     }
 
+    public Task<bool> ConfirmSpoolerResetAsync(string computerName)
+    {
+        if (Application.Current is null)
+            return Task.FromResult(true);
+
+        var dispatcher = Application.Current.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            return Task.FromResult(ShowSpoolerResetConfirmDialog(computerName));
+        }
+
+        return dispatcher.InvokeAsync(() => ShowSpoolerResetConfirmDialog(computerName)).Task;
+    }
+
+    public Task<bool> ConfirmInversionCorrectionAsync(IReadOnlyList<string> inversions)
+    {
+        if (inversions.Count == 0)
+            return Task.FromResult(true);
+
+        if (Application.Current is null)
+            return Task.FromResult(true);
+
+        var dispatcher = Application.Current.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            return Task.FromResult(ShowInversionCorrectionDialog(inversions));
+        }
+
+        return dispatcher.InvokeAsync(() => ShowInversionCorrectionDialog(inversions)).Task;
+    }
+
+    private static bool ShowInversionCorrectionDialog(IReadOnlyList<string> inversions)
+    {
+        var dialog = new ConfirmationDialogWindow();
+        var owner = GetActiveOrMainWindow();
+        if (owner is not null && owner != dialog)
+        {
+            dialog.Owner = owner;
+        }
+
+        dialog.ConfigureForInversionWarning(
+            UiStrings.Main_InversionDialogTitle,
+            UiStrings.Main_InversionDialogHeader,
+            inversions,
+            UiStrings.Main_InversionDialogQuestion,
+            UiStrings.Main_InversionDialogProceedButton,
+            UiStrings.Main_InversionDialogCancelButton);
+
+        var result = dialog.ShowDialog();
+        return result == true;
+    }
+
+    public Task ShowNoComputersWarningAsync()
+    {
+        if (Application.Current is null)
+            return Task.CompletedTask;
+
+        var dispatcher = Application.Current.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            ShowNoComputersWarningDialog();
+            return Task.CompletedTask;
+        }
+
+        return dispatcher.InvokeAsync(ShowNoComputersWarningDialog).Task;
+    }
+
+    private static void ShowNoComputersWarningDialog()
+    {
+        var dialog = new ConfirmationDialogWindow();
+        var owner = GetActiveOrMainWindow();
+        if (owner is not null && owner != dialog)
+        {
+            dialog.Owner = owner;
+        }
+
+        dialog.ConfigureForNoComputersAlert(
+            UiStrings.Main_NoComputersDialogTitle,
+            UiStrings.Main_NoComputersDialogHeader,
+            new[] { UiStrings.Main_NoComputersDialogMessage },
+            UiStrings.Main_NoComputersDialogButton);
+
+        dialog.ShowDialog();
+    }
+
     private static bool ShowDeployWarningDialog(IReadOnlyList<string> warnings)
     {
         var dialog = new ConfirmationDialogWindow();
@@ -87,6 +172,35 @@ public class ConfirmationDialogService : IConfirmationDialogService
             details,
             UiStrings.NetworkTest_ConfirmProceedButton,
             UiStrings.NetworkTest_ConfirmCancelButton);
+
+        var result = dialog.ShowDialog();
+        return result == true;
+    }
+
+    private static bool ShowSpoolerResetConfirmDialog(string computerName)
+    {
+        var details = new List<string>
+        {
+            $"Computador alvo: {computerName.Trim()}",
+            "Interrupção forçada do serviço Print Spooler",
+            "Exclusão de arquivos temporários de spool (*.spl, *.shd)",
+            "Inicialização e validação de status ativo do Spooler"
+        };
+
+        var dialog = new ConfirmationDialogWindow();
+        var owner = GetActiveOrMainWindow();
+        if (owner is not null && owner != dialog)
+        {
+            dialog.Owner = owner;
+        }
+
+        dialog.ConfigureForSpoolerReset(
+            UiStrings.Removal_ResetSpoolerConfirmTitle,
+            string.Format(UiStrings.Removal_ResetSpoolerConfirmMessage, computerName.Trim()),
+            details,
+            "Deseja prosseguir com o reinício do Spooler e limpeza da fila?",
+            "Reiniciar Spooler",
+            "Cancelar");
 
         var result = dialog.ShowDialog();
         return result == true;

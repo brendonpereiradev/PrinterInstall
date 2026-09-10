@@ -58,38 +58,4 @@ public sealed class GainschaLabelPreferenceConfigurator : IGainschaLabelPreferen
             def.DriverStockDisplayName);
         await _runner.RunScriptAsync(staging, script, SsdalTimeout, cancellationToken).ConfigureAwait(false);
     }
-
-    internal static async Task RunSsdalSettingsAsync(
-        string ssdalPath,
-        string printerQueueName,
-        string action,
-        string? sdsPath,
-        CancellationToken cancellationToken)
-    {
-        var arguments = action switch
-        {
-            "import" when !string.IsNullOrEmpty(sdsPath) =>
-                $"/p {Quote(printerQueueName)} /q settings import {Quote(sdsPath)}",
-            "export" when !string.IsNullOrEmpty(sdsPath) =>
-                $"/p {Quote(printerQueueName)} /q settings export {Quote(sdsPath)}",
-            _ => throw new ArgumentException($"Unsupported ssdal action: {action}", nameof(action))
-        };
-
-        var output = await LocalProcessRunner.RunExecutableWithOutputAsync(
-                ssdalPath, arguments, SsdalTimeout, cancellationToken)
-            .ConfigureAwait(false);
-        if (output.Result.ReturnValue != 0)
-        {
-            throw new InvalidOperationException(
-                $"ssdal settings {action} failed (exit {output.Result.ReturnValue}): {CombineOutput(output.StandardOutput, output.StandardError)}");
-        }
-    }
-
-    private static string Quote(string value) => $"\"{value.Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
-
-    private static string CombineOutput(string stdout, string stderr)
-    {
-        var parts = new[] { stdout, stderr }.Where(s => !string.IsNullOrWhiteSpace(s));
-        return string.Join(" | ", parts);
-    }
 }

@@ -372,4 +372,24 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
             // Best-effort cleanup.
         }
     }
+
+    public async Task<SpoolerResetResult> ResetSpoolerServiceAsync(
+        string computerName,
+        NetworkCredential credential,
+        bool purgeJobs = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var script = RemoteElevatedScriptBuilder.BuildResetSpoolerScript(purgeJobs);
+            var staging = LocalElevatedStagingPaths.Create();
+            var runner = new LocalElevatedProcessRunner();
+            await runner.RunScriptAsync(staging, script, TimeSpan.FromMinutes(2), cancellationToken).ConfigureAwait(false);
+            return SpoolerResetResult.Success("Serviço Spooler reiniciado e fila limpa com sucesso na máquina local.");
+        }
+        catch (Exception ex)
+        {
+            return SpoolerResetResult.Failure($"Falha ao reiniciar Spooler local: {ex.Message}");
+        }
+    }
 }

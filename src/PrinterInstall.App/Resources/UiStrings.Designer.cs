@@ -75,4 +75,28 @@ public class UiStrings
     public static string NetworkTest_ConfirmPresetFormat => ResourceManager.GetString(nameof(NetworkTest_ConfirmPresetFormat), ResourceCulture)!;
     public static string NetworkTest_ConfirmProceedButton => ResourceManager.GetString(nameof(NetworkTest_ConfirmProceedButton), ResourceCulture)!;
     public static string NetworkTest_ConfirmCancelButton => ResourceManager.GetString(nameof(NetworkTest_ConfirmCancelButton), ResourceCulture)!;
+    public static string Removal_ResetSpoolerConfirmTitle => ResourceManager.GetString(nameof(Removal_ResetSpoolerConfirmTitle), ResourceCulture)!;
+    public static string Removal_ResetSpoolerConfirmMessage => ResourceManager.GetString(nameof(Removal_ResetSpoolerConfirmMessage), ResourceCulture)!;
+    public static string Removal_ResetSpoolerRunning => ResourceManager.GetString(nameof(Removal_ResetSpoolerRunning), ResourceCulture)!;
+    public static string Removal_ResetSpoolerSuccess => ResourceManager.GetString(nameof(Removal_ResetSpoolerSuccess), ResourceCulture)!;
+    public static string Removal_ResetSpoolerErrorFormat => ResourceManager.GetString(nameof(Removal_ResetSpoolerErrorFormat), ResourceCulture)!;
+    public static string Removal_Ping_Checking => ResourceManager.GetString(nameof(Removal_Ping_Checking), ResourceCulture)!;
+    public static string Removal_Ping_Online => ResourceManager.GetString(nameof(Removal_Ping_Online), ResourceCulture)!;
+    public static string Removal_Ping_Offline => ResourceManager.GetString(nameof(Removal_Ping_Offline), ResourceCulture)!;
+    public static string Removal_Ping_TestingHostFormat => ResourceManager.GetString(nameof(Removal_Ping_TestingHostFormat), ResourceCulture)!;
+    public static string Removal_Ping_ConnectedLoadingPrinters => ResourceManager.GetString(nameof(Removal_Ping_ConnectedLoadingPrinters), ResourceCulture)!;
+    public static string Removal_Ping_ComputerOfflineFormat => ResourceManager.GetString(nameof(Removal_Ping_ComputerOfflineFormat), ResourceCulture)!;
+    public static string Main_InversionDialogTitle => ResourceManager.GetString(nameof(Main_InversionDialogTitle), ResourceCulture)!;
+    public static string Main_InversionDialogHeader => ResourceManager.GetString(nameof(Main_InversionDialogHeader), ResourceCulture)!;
+    public static string Main_InversionDialogItemFormat => ResourceManager.GetString(nameof(Main_InversionDialogItemFormat), ResourceCulture)!;
+    public static string Main_InversionDialogQuestion => ResourceManager.GetString(nameof(Main_InversionDialogQuestion), ResourceCulture)!;
+    public static string Main_InversionDialogProceedButton => ResourceManager.GetString(nameof(Main_InversionDialogProceedButton), ResourceCulture)!;
+    public static string Main_InversionDialogCancelButton => ResourceManager.GetString(nameof(Main_InversionDialogCancelButton), ResourceCulture)!;
+    public static string Main_InversionCorrectedLogFormat => ResourceManager.GetString(nameof(Main_InversionCorrectedLogFormat), ResourceCulture)!;
+    public static string Main_DeployCancelledByInversionWarning => ResourceManager.GetString(nameof(Main_DeployCancelledByInversionWarning), ResourceCulture)!;
+    public static string Main_NoComputersDialogTitle => ResourceManager.GetString(nameof(Main_NoComputersDialogTitle), ResourceCulture)!;
+    public static string Main_NoComputersDialogHeader => ResourceManager.GetString(nameof(Main_NoComputersDialogHeader), ResourceCulture)!;
+    public static string Main_NoComputersDialogMessage => ResourceManager.GetString(nameof(Main_NoComputersDialogMessage), ResourceCulture)!;
+    public static string Main_NoComputersDialogButton => ResourceManager.GetString(nameof(Main_NoComputersDialogButton), ResourceCulture)!;
 }
+

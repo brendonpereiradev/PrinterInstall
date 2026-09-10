@@ -18,4 +18,21 @@ public interface IConfirmationDialogService
     /// Retorna verdadeiro se o usuário confirmar o envio.
     /// </summary>
     Task<bool> ConfirmNetworkTestAsync(string hostAddress, PrinterBrand brand, GainschaLabelPreset? preset);
+
+    /// <summary>
+    /// Exibe diálogo de confirmação antes de reiniciar o serviço Spooler e expurgar a fila em uma máquina.
+    /// Retorna verdadeiro se o usuário confirmar o procedimento.
+    /// </summary>
+    Task<bool> ConfirmSpoolerResetAsync(string computerName);
+
+    /// <summary>
+    /// Exibe diálogo de aviso e confirmação caso haja suspeita de inversão entre o nome da impressora e o host/IP.
+    /// Retorna verdadeiro se o operador optar por inverter automaticamente os campos e prosseguir.
+    /// </summary>
+    Task<bool> ConfirmInversionCorrectionAsync(IReadOnlyList<string> inversions);
+
+    /// <summary>
+    /// Exibe diálogo de aviso quando o operador tenta iniciar o deploy sem nenhum computador alvo configurado.
+    /// </summary>
+    Task ShowNoComputersWarningAsync();
 }

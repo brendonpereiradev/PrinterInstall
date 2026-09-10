@@ -160,4 +160,40 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         Assert.Contains(events, e => e is { ComputerName: "pc1", State: TargetMachineState.AbortedDriverMissing, PrinterQueueName: "P1" });
         Assert.Contains(events, e => e is { ComputerName: "pc2", State: TargetMachineState.InstallingDriver } or { ComputerName: "pc2", State: TargetMachineState.CompletedSuccess });
     }
+
+    [Fact]
+    public async Task EpsonDriverInstalledAsPrinterDriver_SkipsDriverInstall_UsesResolvedDriverName()
+    {
+        var remote = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        remote.Setup(m => m.GetInstalledDriverNamesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(new[] { "EPSON Universal Printer Driver" });
+        remote.Setup(m => m.PrinterQueueExistsAsync("pc1", It.IsAny<NetworkCredential>(), "P1", It.IsAny<CancellationToken>()))
+              .ReturnsAsync(false);
+        remote.Setup(m => m.CreateTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<string>(), "10.0.0.10", 9100, "RAW", It.IsAny<CancellationToken>()))
+              .Returns(Task.CompletedTask);
+        remote.Setup(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "P1", "EPSON Universal Printer Driver", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .Returns(Task.CompletedTask);
+
+        var catalog = CatalogWith(PrinterBrand.Epson, MakePackage(PrinterBrand.Epson));
+        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var request = MakeRequest(brand: PrinterBrand.Epson);
+        var events = new List<DeploymentProgressEvent>();
+
+        await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
+
+        Assert.Contains(events, e => e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: "P1" });
+        remote.Verify(m => m.InstallPrinterDriverAsync(
+            It.IsAny<string>(),
+            It.IsAny<NetworkCredential>(),
+            It.IsAny<LocalDriverPackage>(),
+            It.IsAny<IProgress<string>?>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+        remote.Verify(m => m.AddPrinterAsync(
+            "pc1",
+            It.IsAny<NetworkCredential>(),
+            "P1",
+            "EPSON Universal Printer Driver",
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

@@ -44,4 +44,29 @@ public class ConfirmationDialogServiceTests
         var result = await sut.ConfirmNetworkTestAsync("10.0.0.50", PrinterBrand.Gainscha, GainschaLabelPreset.Paciente);
         Assert.True(result);
     }
+
+    [Fact]
+    public async Task ConfirmInversionCorrectionAsync_WhenInversionsEmpty_ReturnsTrueImmediately()
+    {
+        var sut = new ConfirmationDialogService();
+        var result = await sut.ConfirmInversionCorrectionAsync(Array.Empty<string>());
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task ConfirmInversionCorrectionAsync_WhenAppCurrentNull_ReturnsTrueGracefully()
+    {
+        var sut = new ConfirmationDialogService();
+        var result = await sut.ConfirmInversionCorrectionAsync(new[] { "Inversão detectada" });
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task ShowNoComputersWarningAsync_WhenAppCurrentNull_CompletesGracefully()
+    {
+        var sut = new ConfirmationDialogService();
+        await sut.ShowNoComputersWarningAsync();
+        Assert.True(true);
+    }
 }
+

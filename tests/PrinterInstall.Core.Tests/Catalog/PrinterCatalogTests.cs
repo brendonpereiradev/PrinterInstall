@@ -30,11 +30,12 @@ public class PrinterCatalogTests
     }
 
     [Fact]
-    public void GetDriverResolutionOrder_Epson_SingleEntry()
+    public void GetDriverResolutionOrder_Epson_PrintThenPrinter()
     {
         var order = PrinterCatalog.GetDriverResolutionOrder(PrinterBrand.Epson);
-        Assert.Single(order);
+        Assert.Equal(2, order.Count);
         Assert.Equal("EPSON Universal Print Driver", order[0]);
+        Assert.Equal("EPSON Universal Printer Driver", order[1]);
     }
 
     [Fact]
@@ -50,6 +51,13 @@ public class PrinterCatalogTests
     {
         var text = PrinterCatalog.DescribeAcceptableDrivers(PrinterBrand.Lexmark);
         Assert.Equal("Lexmark Universal v4 XL or Lexmark Universal v2 XL", text);
+    }
+
+    [Fact]
+    public void DescribeAcceptableDrivers_Epson_JoinsWithOr()
+    {
+        var text = PrinterCatalog.DescribeAcceptableDrivers(PrinterBrand.Epson);
+        Assert.Equal("EPSON Universal Print Driver or EPSON Universal Printer Driver", text);
     }
 
     [Fact]

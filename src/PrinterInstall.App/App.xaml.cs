@@ -78,12 +78,19 @@ public partial class App : Application
                 sp.GetRequiredService<CimRemotePrinterOperations>()));
 
         builder.Services.AddSingleton<IDirectRawPrinterTestService, DirectRawPrinterTestService>();
+        builder.Services.AddSingleton<IFastHostReachabilityChecker, FastHostReachabilityChecker>();
+        builder.Services.AddSingleton<IPrinterPingService, PrinterPingService>();
 
         builder.Services.AddSingleton<PrinterDeploymentOrchestrator>(sp =>
             new PrinterDeploymentOrchestrator(
                 sp.GetRequiredService<IRemotePrinterOperations>(),
                 sp.GetRequiredService<ILocalDriverPackageCatalog>(),
-                sp.GetRequiredService<IDirectRawPrinterTestService>()));
+                sp.GetRequiredService<IDirectRawPrinterTestService>(),
+                sp.GetRequiredService<IFastHostReachabilityChecker>(),
+                sp.GetRequiredService<IPrinterPingService>(),
+                TransientRetryHelper.DefaultMaxAttempts,
+                TransientRetryHelper.DefaultInitialDelay,
+                PrinterDeploymentOrchestrator.DefaultMaxDegreeOfParallelism));
         builder.Services.AddSingleton<PrinterControlOrchestrator>(sp =>
             new PrinterControlOrchestrator(sp.GetRequiredService<IRemotePrinterOperations>()));
         builder.Services.AddSingleton<DeploymentRollbackRunner>(sp =>
