@@ -3,14 +3,43 @@ namespace PrinterInstall.Core.Orchestration;
 public sealed class DeploymentRollbackJournal
 {
     private static readonly ComputerPortComparer KeyComparer = new();
+    private readonly object _syncRoot = new();
 
     private readonly List<DeploymentRollbackQueueEntry> _queues = new();
     private readonly HashSet<(string Computer, string PortName)> _portOnly = new(KeyComparer);
 
-    public IReadOnlyList<DeploymentRollbackQueueEntry> QueueEntries => _queues;
-    public IReadOnlyCollection<(string Computer, string PortName)> PortOnlyEntries => _portOnly;
+    public IReadOnlyList<DeploymentRollbackQueueEntry> QueueEntries
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _queues.ToList();
+            }
+        }
+    }
 
-    public bool HasRollbackWork => _queues.Count > 0 || _portOnly.Count > 0;
+    public IReadOnlyCollection<(string Computer, string PortName)> PortOnlyEntries
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _portOnly.ToList();
+            }
+        }
+    }
+
+    public bool HasRollbackWork
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _queues.Count > 0 || _portOnly.Count > 0;
+            }
+        }
+    }
 
     public void RecordPortCreated(string computerName, string portName)
     {
@@ -18,7 +47,11 @@ public sealed class DeploymentRollbackJournal
         var p = portName.Trim();
         if (c.Length == 0 || p.Length == 0)
             return;
-        _portOnly.Add((c, p));
+
+        lock (_syncRoot)
+        {
+            _portOnly.Add((c, p));
+        }
     }
 
     public void RecordQueueCreated(string computerName, string printerName, string portName)
@@ -29,18 +62,11 @@ public sealed class DeploymentRollbackJournal
         if (c.Length == 0 || q.Length == 0 || p.Length == 0)
             return;
 
-        _portOnly.Remove((c, p));
-        _queues.Add(new DeploymentRollbackQueueEntry(c, q, p));
-    }
-
-    public void AbandonPortOnly(string computerName, string portName)
-    {
-        var c = computerName.Trim();
-        var p = portName.Trim();
-        if (c.Length == 0 || p.Length == 0)
-            return;
-
-        _portOnly.Remove((c, p));
+        lock (_syncRoot)
+        {
+            _portOnly.Remove((c, p));
+            _queues.Add(new DeploymentRollbackQueueEntry(c, q, p));
+        }
     }
 
     public void AbandonQueue(string computerName, string printerName, string portName)
@@ -51,11 +77,14 @@ public sealed class DeploymentRollbackJournal
         if (c.Length == 0 || q.Length == 0 || p.Length == 0)
             return;
 
-        _queues.RemoveAll(entry =>
-            string.Equals(entry.ComputerName, c, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(entry.PrinterName, q, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(entry.PortName, p, StringComparison.OrdinalIgnoreCase));
-        _portOnly.Remove((c, p));
+        lock (_syncRoot)
+        {
+            _queues.RemoveAll(entry =>
+                string.Equals(entry.ComputerName, c, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(entry.PrinterName, q, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(entry.PortName, p, StringComparison.OrdinalIgnoreCase));
+            _portOnly.Remove((c, p));
+        }
     }
 
     private sealed class ComputerPortComparer : IEqualityComparer<(string Computer, string PortName)>

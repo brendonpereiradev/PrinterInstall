@@ -379,10 +379,35 @@ try {{
     Rename-Printer -Name '{c}' -NewName '{n}' -ErrorAction Stop | Out-Null";
 
         return WrapWithResultHandling(body);
-
     }
 
+    public static string BuildResetSpoolerScript(bool purgeJobs = true)
+    {
+        var purgeBlock = purgeJobs
+            ? @"
+    Write-Output 'STEP>> Purging print spooler cache files (*.spl, *.shd)...'
+    $spoolDir = Join-Path $env:SystemRoot 'System32\spool\PRINTERS'
+    if (Test-Path -LiteralPath $spoolDir) {
+        Get-ChildItem -LiteralPath $spoolDir -Force -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+    }"
+            : string.Empty;
 
+        var body = $@"
+    Write-Output 'STEP>> Stopping Spooler service...'
+    Stop-Service -Name Spooler -Force -ErrorAction Stop
+    Start-Sleep -Milliseconds 500
+{purgeBlock}
+    Write-Output 'STEP>> Starting Spooler service...'
+    Start-Service -Name Spooler -ErrorAction Stop
+    Start-Sleep -Milliseconds 500
+
+    $svc = Get-Service -Name Spooler -ErrorAction Stop
+    if ($svc.Status -ne 'Running') {{
+        throw ""Servico Spooler nao esta em execucao apos reinicio (Status: $($svc.Status)).""
+    }}";
+
+        return WrapWithResultHandling(body);
+    }
 
     private static string EscapePs(string value) => value.Replace("'", "''", StringComparison.Ordinal);
 

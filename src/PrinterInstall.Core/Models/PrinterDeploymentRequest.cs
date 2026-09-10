@@ -12,4 +12,9 @@ public sealed class PrinterDeploymentRequest
     /// When true, send a Windows test page to the new queue after a successful add. Default false (opt-in in UI).
     /// </summary>
     public bool PrintTestPage { get; init; }
+
+    /// <summary>
+    /// Número máximo de computadores processados simultaneamente durante a implantação. Padrão: 4.
+    /// </summary>
+    public int MaxDegreeOfParallelism { get; init; } = 4;
 }

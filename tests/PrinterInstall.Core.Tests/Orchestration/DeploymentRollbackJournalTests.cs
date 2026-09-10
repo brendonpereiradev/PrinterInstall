@@ -46,4 +46,27 @@ public class DeploymentRollbackJournalTests
         Assert.Empty(j.PortOnlyEntries);
         Assert.False(j.HasRollbackWork);
     }
+
+    [Fact]
+    public void ConcurrentOperations_MultipleThreads_ThreadSafeAndConsistent()
+    {
+        var j = new DeploymentRollbackJournal();
+        const int iterations = 100;
+
+        Parallel.For(0, iterations, i =>
+        {
+            var pc = $"pc_{i}";
+            var port = $"port_{i}";
+            var queue = $"queue_{i}";
+
+            j.RecordPortCreated(pc, port);
+            j.RecordQueueCreated(pc, queue, port);
+            _ = j.HasRollbackWork;
+            _ = j.QueueEntries.Count;
+            _ = j.PortOnlyEntries.Count;
+        });
+
+        Assert.Equal(iterations, j.QueueEntries.Count);
+        Assert.Empty(j.PortOnlyEntries);
+    }
 }

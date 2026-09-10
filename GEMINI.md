@@ -30,3 +30,4 @@ Essa documentação contém:
 - **Gainscha:** Respeite o protocolo SSDAL/SDS. Arquivos SDS devem ser UTF-8 sem BOM. Scripts headless não devem conter chamadas Win32 bloqueantes.
 - **Remote:** Novas operações remotas devem passar pelo `RoutingRemotePrinterOperations` para roteamento automático local/remoto. Considere escalação UAC via scheduled task.
 - **Rollback:** Operações que criam recursos (portas, filas) devem registrar no `DeploymentRollbackJournal` para permitir reversão automática.
+- **Publicação Automática Pós-Testes (Publish):** Sempre que os testes forem executados e obtiverem 100% de sucesso (zero falhas), realize a publicação automática executando o script de publicação `powershell -ExecutionPolicy Bypass -File scripts/Publish-PrinterInstall.ps1` (ou `pwsh scripts/Publish-PrinterInstall.ps1`) para gerar um novo executável único autocontido (`publish\PrinterInstall\Printer Install.exe`).

@@ -16,7 +16,7 @@ public static class PrinterCatalog
     private static readonly IReadOnlyDictionary<PrinterBrand, IReadOnlyList<string>> DriverResolutionOrder =
         new Dictionary<PrinterBrand, IReadOnlyList<string>>
         {
-            [PrinterBrand.Epson] = new[] { "EPSON Universal Print Driver" },
+            [PrinterBrand.Epson] = new[] { "EPSON Universal Print Driver", "EPSON Universal Printer Driver" },
             [PrinterBrand.Gainscha] = new[] { "Gainscha GA-2408T" },
             [PrinterBrand.Lexmark] = new[] { "Lexmark Universal v4 XL", "Lexmark Universal v2 XL" },
             [PrinterBrand.Brother] = new[] { "Brother HL-L5212DW Printer" },

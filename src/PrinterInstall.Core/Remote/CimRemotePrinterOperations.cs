@@ -477,4 +477,28 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
         return scope;
     }
 
+    public async Task<SpoolerResetResult> ResetSpoolerServiceAsync(
+        string computerName,
+        NetworkCredential credential,
+        bool purgeJobs = true,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var script = RemoteElevatedScriptBuilder.BuildResetSpoolerScript(purgeJobs);
+            await _elevatedRunner.RunElevatedScriptAsync(
+                computerName,
+                credential,
+                script,
+                TimeSpan.FromMinutes(2),
+                null,
+                cancellationToken).ConfigureAwait(false);
+
+            return SpoolerResetResult.Success($"Serviço Spooler reiniciado e fila limpa com sucesso em '{computerName}'.");
+        }
+        catch (Exception ex)
+        {
+            return SpoolerResetResult.Failure($"Falha ao reiniciar Spooler em '{computerName}': {ex.Message}");
+        }
+    }
 }

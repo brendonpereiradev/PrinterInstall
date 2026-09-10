@@ -19,8 +19,6 @@ public sealed record RemoteDriverStagingPaths(
             $@"C:\Windows\Temp\PrinterInstall\{id}");
     }
 
-    public string UncInfPath(string infFileName) => Path.Combine(UncRoot, infFileName);
-
     public string LocalInfPath(string infFileName) => Path.Combine(LocalOnTargetRoot, infFileName);
 
     public string UncLogPath(string logName) => Path.Combine(UncRoot, logName);

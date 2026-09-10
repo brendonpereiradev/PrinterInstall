@@ -50,4 +50,28 @@ public class DriverNameMatcherTests
         var order = PrinterCatalog.GetDriverResolutionOrder(PrinterBrand.Lexmark);
         Assert.Null(DriverNameMatcher.ResolveInstalledDriverName(installed, order));
     }
+
+    [Fact]
+    public void IsAnyAcceptedDriverInstalled_EpsonPrinterDriverOnly_ReturnsTrue()
+    {
+        var installed = new[] { "EPSON Universal Printer Driver", "Other" };
+        var order = PrinterCatalog.GetDriverResolutionOrder(PrinterBrand.Epson);
+        Assert.True(DriverNameMatcher.IsAnyAcceptedDriverInstalled(installed, order));
+    }
+
+    [Fact]
+    public void ResolveInstalledDriverName_EpsonPrinterDriverOnly_ReturnsPrinterDriver()
+    {
+        var installed = new[] { "EPSON Universal Printer Driver" };
+        var order = PrinterCatalog.GetDriverResolutionOrder(PrinterBrand.Epson);
+        Assert.Equal("EPSON Universal Printer Driver", DriverNameMatcher.ResolveInstalledDriverName(installed, order));
+    }
+
+    [Fact]
+    public void ResolveInstalledDriverName_BothEpsonPrintAndPrinter_PrefersPrint()
+    {
+        var installed = new[] { "EPSON Universal Printer Driver", "EPSON Universal Print Driver" };
+        var order = PrinterCatalog.GetDriverResolutionOrder(PrinterBrand.Epson);
+        Assert.Equal("EPSON Universal Print Driver", DriverNameMatcher.ResolveInstalledDriverName(installed, order));
+    }
 }

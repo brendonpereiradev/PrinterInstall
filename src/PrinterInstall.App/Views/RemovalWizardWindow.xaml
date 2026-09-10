@@ -58,8 +58,34 @@
 
                 <TabItem>
                     <DockPanel LastChildFill="True">
-                        <TextBlock DockPanel.Dock="Top" Text="{Binding CurrentStepLabel}" FontWeight="Bold" Margin="0,0,0,8"/>
-                        <TextBlock DockPanel.Dock="Top" Text="{Binding QueuesLoadError}" Foreground="Red" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding CurrentStepLabel}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                    <Border Margin="12,0,0,0" Padding="8,2" CornerRadius="4" VerticalAlignment="Center"
+                                            Visibility="{Binding HasPingBadge, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Background="{Binding PingBadgeBackground}">
+                                        <TextBlock Text="{Binding PingStatusBadgeText}" Foreground="{Binding PingBadgeForeground}" FontWeight="SemiBold" FontSize="11"/>
+                                    </Border>
+                                    <ui:Button Margin="8,0,0,0" Padding="8,2"
+                                               Content="{DynamicResource Removal_Ping_RetryButton}"
+                                               Command="{Binding RetryCurrentMachineCommand}"
+                                               Appearance="Secondary"
+                                               Visibility="{Binding IsComputerOffline, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding QueuesLoadError}" Foreground="#FFD13438" TextWrapping="Wrap" Margin="0,4,0,0"
+                                           Visibility="{Binding QueuesLoadError, Converter={StaticResource StringEmptyToVisibilityConverter}}"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="1"
+                                       Content="{DynamicResource Removal_ResetSpoolerButton}"
+                                       Command="{Binding ResetCurrentMachineSpoolerCommand}"
+                                       Appearance="Secondary"
+                                       Padding="10,4"/>
+                        </Grid>
                         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
                             <ui:Button Content="{DynamicResource Removal_Next}" Command="{Binding NextQueueStepCommand}" Padding="16,6" Appearance="Primary"/>
                         </StackPanel>
@@ -188,11 +214,27 @@
                                        Foreground="#FF5C5C5C" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24"
                                        IsHitTestVisible="False"
                                        Visibility="{Binding ShowQueuesEmptyHint, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <!-- Mensagem informativa quando o computador estiver offline -->
+                            <Border Background="#FFFDF7F7" BorderBrush="#FFF0C4C4" BorderThickness="1" CornerRadius="8"
+                                    Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520"
+                                    Visibility="{Binding ShowComputerOfflineHint, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="36" Foreground="#FFD13438" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                    <TextBlock Text="{DynamicResource Removal_Ping_Offline}" FontSize="16" FontWeight="SemiBold" Foreground="#FFD13438" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{DynamicResource Removal_Queues_OfflineHint}" TextWrapping="Wrap" TextAlignment="Center" Foreground="#FF5C5C5C" Margin="0,0,0,16"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <ui:Button Content="{DynamicResource Removal_Ping_RetryButton}" Command="{Binding RetryCurrentMachineCommand}" Appearance="Secondary" Margin="0,0,8,0" Padding="14,6"/>
+                                        <ui:Button Content="{DynamicResource Removal_Next}" Command="{Binding NextQueueStepCommand}" Appearance="Primary" Padding="14,6"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
                             <Border Background="#E6F5F5F5"
                                     Visibility="{Binding IsLoadingQueues, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="16">
                                     <ui:ProgressRing IsIndeterminate="True" Width="44" Height="44"/>
-                                    <TextBlock Text="{DynamicResource Removal_LoadingPrinters}" Margin="0,12,0,0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    <TextBlock Text="{Binding LoadingStatusMessage}" Margin="0,12,0,0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" FontWeight="Medium"/>
                                 </StackPanel>
                             </Border>
                         </Grid>

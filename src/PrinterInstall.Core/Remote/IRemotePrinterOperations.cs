@@ -42,4 +42,7 @@ public interface IRemotePrinterOperations
 
     Task InstallPrinterDriverAsync(string computerName, NetworkCredential credential, LocalDriverPackage package, IProgress<string>? log, CancellationToken cancellationToken = default)
         => throw new NotImplementedException();
+
+    Task<SpoolerResetResult> ResetSpoolerServiceAsync(string computerName, NetworkCredential credential, bool purgeJobs = true, CancellationToken cancellationToken = default)
+        => throw new NotImplementedException();
 }

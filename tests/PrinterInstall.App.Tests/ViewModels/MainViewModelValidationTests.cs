@@ -37,7 +37,7 @@ public class MainViewModelValidationTests
     }
 
     [Fact]
-    public async Task DeployAsync_InvertedDisplayNameAndHost_BlocksAndLogsInversionWarning()
+    public async Task DeployAsync_InvertedDisplayNameAndHost_WhenUserCancelsDialog_BlocksAndLogsCancellation()
     {
         var session = new SessionContext
         {
@@ -45,7 +45,11 @@ public class MainViewModelValidationTests
             DomainName = "corp"
         };
 
-        var sut = CreateSut(session);
+        var mockDialog = new Mock<IConfirmationDialogService>();
+        mockDialog.Setup(d => d.ConfirmInversionCorrectionAsync(It.IsAny<IReadOnlyList<string>>()))
+            .ReturnsAsync(false);
+
+        var sut = CreateSut(session, mockDialog.Object);
 
         sut.ComputersText = "target-pc";
         sut.PrinterRows[0].Brand = PrinterBrand.Epson;
@@ -54,8 +58,77 @@ public class MainViewModelValidationTests
 
         await sut.DeployCommand.ExecuteAsync(null);
 
-        Assert.Contains("Inversão detectada", sut.LogText, StringComparison.OrdinalIgnoreCase);
+        mockDialog.Verify(d => d.ConfirmInversionCorrectionAsync(It.Is<IReadOnlyList<string>>(list => list.Count == 1)), Times.Once);
+        Assert.Contains("cancelada", sut.LogText, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("10.1.152.218", sut.PrinterRows[0].DisplayName);
+        Assert.Equal("Multifuncional", sut.PrinterRows[0].PrinterHostAddress);
         Assert.Empty(sut.Targets);
+    }
+
+    [Fact]
+    public async Task DeployAsync_InvertedDisplayNameAndHost_WhenUserAcceptsDialog_InvertsFieldsAndContinuesDeploy()
+    {
+        var session = new SessionContext
+        {
+            Credential = new NetworkCredential("admin", "pass", "corp"),
+            DomainName = "corp"
+        };
+
+        var mockDialog = new Mock<IConfirmationDialogService>();
+        mockDialog.Setup(d => d.ConfirmInversionCorrectionAsync(It.IsAny<IReadOnlyList<string>>()))
+            .ReturnsAsync(true);
+
+        var sut = CreateSut(session, mockDialog.Object);
+
+        sut.ComputersText = "target-pc";
+        sut.PrinterRows[0].Brand = PrinterBrand.Epson;
+        sut.PrinterRows[0].DisplayName = "10.1.152.218";
+        sut.PrinterRows[0].PrinterHostAddress = "Multifuncional";
+
+        await sut.DeployCommand.ExecuteAsync(null);
+
+        mockDialog.Verify(d => d.ConfirmInversionCorrectionAsync(It.Is<IReadOnlyList<string>>(list => list.Count == 1)), Times.Once);
+        Assert.Equal("Multifuncional", sut.PrinterRows[0].DisplayName);
+        Assert.Equal("10.1.152.218", sut.PrinterRows[0].PrinterHostAddress);
+        Assert.Contains("Inversão corrigida automaticamente", sut.LogText, StringComparison.OrdinalIgnoreCase);
+        Assert.NotEmpty(sut.Targets);
+    }
+
+    [Fact]
+    public async Task DeployAsync_MultipleInvertedRows_WhenUserAccepts_InvertsAllRowsAndLogsCorrections()
+    {
+        var session = new SessionContext
+        {
+            Credential = new NetworkCredential("admin", "pass", "corp"),
+            DomainName = "corp"
+        };
+
+        var mockDialog = new Mock<IConfirmationDialogService>();
+        mockDialog.Setup(d => d.ConfirmInversionCorrectionAsync(It.IsAny<IReadOnlyList<string>>()))
+            .ReturnsAsync(true);
+
+        var sut = CreateSut(session, mockDialog.Object);
+
+        sut.ComputersText = "target-pc";
+        sut.PrinterRows[0].Brand = PrinterBrand.Epson;
+        sut.PrinterRows[0].DisplayName = "10.1.152.218";
+        sut.PrinterRows[0].PrinterHostAddress = "Multifuncional";
+
+        sut.AddPrinterRowCommand.Execute(null);
+        sut.PrinterRows[1].Brand = PrinterBrand.Lexmark;
+        sut.PrinterRows[1].DisplayName = "10.1.152.219";
+        sut.PrinterRows[1].PrinterHostAddress = "Lexmark_Office";
+
+        await sut.DeployCommand.ExecuteAsync(null);
+
+        mockDialog.Verify(d => d.ConfirmInversionCorrectionAsync(It.Is<IReadOnlyList<string>>(list => list.Count == 2)), Times.Once);
+        Assert.Equal("Multifuncional", sut.PrinterRows[0].DisplayName);
+        Assert.Equal("10.1.152.218", sut.PrinterRows[0].PrinterHostAddress);
+        Assert.Equal("Lexmark_Office", sut.PrinterRows[1].DisplayName);
+        Assert.Equal("10.1.152.219", sut.PrinterRows[1].PrinterHostAddress);
+        Assert.Contains("Nome definido como 'Multifuncional' e IP como '10.1.152.218'", sut.LogText);
+        Assert.Contains("Nome definido como 'Lexmark_Office' e IP como '10.1.152.219'", sut.LogText);
+        Assert.NotEmpty(sut.Targets);
     }
 
     [Fact]
@@ -158,4 +231,29 @@ public class MainViewModelValidationTests
         mockDialog.Verify(d => d.ConfirmDeployWarningAsync(It.IsAny<IReadOnlyList<string>>()), Times.Never);
         Assert.NotEmpty(sut.Targets);
     }
+
+    [Fact]
+    public async Task DeployAsync_WhenComputersEmpty_InvokesNoComputersWarningDialogAndLogsWarning()
+    {
+        var session = new SessionContext
+        {
+            Credential = new NetworkCredential("admin", "pass", "corp"),
+            DomainName = "corp"
+        };
+
+        var mockDialog = new Mock<IConfirmationDialogService>();
+        var sut = CreateSut(session, mockDialog.Object);
+
+        sut.ComputersText = "   ";
+        sut.PrinterRows[0].Brand = PrinterBrand.Epson;
+        sut.PrinterRows[0].DisplayName = "Epson_Recepcao";
+        sut.PrinterRows[0].PrinterHostAddress = "10.1.1.50";
+
+        await sut.DeployCommand.ExecuteAsync(null);
+
+        mockDialog.Verify(d => d.ShowNoComputersWarningAsync(), Times.Once);
+        Assert.Contains("Informe pelo menos um nome de computador", sut.LogText);
+        Assert.Empty(sut.Targets);
+    }
 }
+

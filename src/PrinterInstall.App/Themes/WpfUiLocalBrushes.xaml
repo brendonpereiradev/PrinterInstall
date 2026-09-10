@@ -4,5 +4,4 @@
   <SolidColorBrush x:Key="LoginFormTitleBrush" Color="#FF2E4A6E"/>
   <SolidColorBrush x:Key="LoginFieldBorderBrush" Color="#FFD8D8D8"/>
   <SolidColorBrush x:Key="LoginFieldIconBrush" Color="#FF6B6B6B"/>
-  <SolidColorBrush x:Key="LoginFieldReadOnlyBackgroundBrush" Color="#FFF7F7F7"/>
 </ResourceDictionary>
