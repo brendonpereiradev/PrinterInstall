@@ -20,6 +20,9 @@
     <RootNamespace>PrinterInstall.App</RootNamespace>
     <AssemblyTitle>Printer Install</AssemblyTitle>
     <Product>Printer Install</Product>
+    <Version>1.3.0</Version>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <FileVersion>1.3.0.0</FileVersion>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
