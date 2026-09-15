@@ -105,4 +105,27 @@ public class AppSettingsStoreTests : IDisposable
         Assert.Equal("padrao.test", loaded.DomainName);
         Assert.False(File.Exists(_filePath));
     }
+
+    [Fact]
+    public void Save_WithTheme_SavesAndLoadsCorrectly()
+    {
+        var sut = CreateSut();
+        var expected = new AppSettings("empresa.test", "ldap.empresa.test", "Dark");
+
+        sut.Save(expected);
+        var loaded = sut.Load();
+
+        Assert.Equal("Dark", loaded.Theme);
+    }
+
+    [Fact]
+    public void Load_WhenFileHasNoThemeField_DefaultsToLight()
+    {
+        File.WriteAllText(_filePath, """{"domainName":"empresa.test"}""");
+        var sut = CreateSut();
+
+        var loaded = sut.Load();
+
+        Assert.Equal("Light", loaded.Theme);
+    }
 }

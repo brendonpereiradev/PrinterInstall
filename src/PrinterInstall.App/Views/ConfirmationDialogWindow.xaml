@@ -10,6 +10,8 @@
         MaxHeight="620"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
+        Background="{DynamicResource AppCanvasBackgroundBrush}"
+        TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}"
         UseLayoutRounding="True">
     <Window.Resources>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
@@ -59,17 +61,18 @@
 
                 <TextBlock Grid.Column="1"
                            x:Name="HeaderTextBlock"
-                           Text="Atenção: Possível divergência de modelo"
+                           Text="Atenção: possível divergência de modelo"
                            FontSize="15"
                            FontWeight="SemiBold"
+                           Foreground="{DynamicResource AppTextPrimaryBrush}"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center"/>
             </Grid>
 
             <!-- Detalhes / Lista de Avisos -->
             <Border Grid.Row="1"
-                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    Background="{DynamicResource AppSurfaceCardBrush}"
+                    BorderBrush="{DynamicResource AppSurfaceCardBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="6"
                     Padding="12,10"
@@ -84,8 +87,8 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="• " FontWeight="Bold" Margin="0,0,6,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap" FontSize="12.5"/>
+                                    <TextBlock Grid.Column="0" Text="• " FontWeight="Bold" Margin="0,0,6,0" Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding}" Foreground="{DynamicResource AppTextPrimaryBrush}" TextWrapping="Wrap" FontSize="12.5"/>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -99,6 +102,7 @@
                        Text="Deseja continuar mesmo assim?"
                        FontWeight="SemiBold"
                        FontSize="13"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"
                        Margin="0,0,0,16"
                        TextWrapping="Wrap"/>
 

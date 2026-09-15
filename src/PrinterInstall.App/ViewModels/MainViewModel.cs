@@ -28,6 +28,7 @@ public partial class MainViewModel : ObservableObject
     private readonly ILogExportService _logExportService;
     private readonly IDeploymentNotificationService _notificationService;
     private readonly IConfirmationDialogService _dialogService;
+    private readonly IThemeService? _themeService;
     private CancellationTokenSource? _deployCts;
 
     public MainViewModel(
@@ -38,7 +39,8 @@ public partial class MainViewModel : ObservableObject
         LocalMachineIdentity localMachineIdentity,
         ILogExportService? logExportService = null,
         IDeploymentNotificationService? notificationService = null,
-        IConfirmationDialogService? dialogService = null)
+        IConfirmationDialogService? dialogService = null,
+        IThemeService? themeService = null)
     {
         _session = session;
         _orchestrator = orchestrator;
@@ -48,11 +50,46 @@ public partial class MainViewModel : ObservableObject
         _logExportService = logExportService ?? new LogExportService();
         _notificationService = notificationService ?? new DeploymentNotificationService();
         _dialogService = dialogService ?? new ConfirmationDialogService();
+        _themeService = themeService;
+
+        if (_themeService != null)
+        {
+            _isDarkMode = _themeService.IsDarkMode;
+            _themeService.ThemeChanged += (_, _) =>
+            {
+                IsDarkMode = _themeService.IsDarkMode;
+            };
+        }
+
         PrinterRows.Add(new PrinterFormRowViewModel());
+        PrinterRows.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CanRemovePrinterRow));
+            RemovePrinterRowCommand.NotifyCanExecuteChanged();
+        };
         Targets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowStatusEmptyHint));
     }
 
     public bool ShowStatusEmptyHint => Targets.Count == 0;
+
+    public bool CanRemovePrinterRow => PrinterRows.Count > 1;
+
+    [ObservableProperty]
+    private bool _isDarkMode;
+
+    [RelayCommand]
+    private void ToggleTheme()
+    {
+        if (_themeService != null)
+        {
+            _themeService.ToggleTheme();
+            IsDarkMode = _themeService.IsDarkMode;
+        }
+        else
+        {
+            IsDarkMode = !IsDarkMode;
+        }
+    }
 
     [ObservableProperty]
     private string _computersText = "";
@@ -110,7 +147,7 @@ public partial class MainViewModel : ObservableObject
         PrinterRows.Add(new PrinterFormRowViewModel());
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanRemovePrinterRow))]
     private void RemovePrinterRow(PrinterFormRowViewModel? row)
     {
         if (PrinterRows.Count <= 1)

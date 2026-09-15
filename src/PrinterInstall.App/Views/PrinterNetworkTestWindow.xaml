@@ -9,12 +9,14 @@
         Width="480"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Background="{DynamicResource AppCanvasBackgroundBrush}"
+        UseLayoutRounding="True">
     <Window.Resources>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
     </Window.Resources>
-    <Grid Margin="16">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -22,23 +24,38 @@
 
         <StackPanel Grid.Row="0">
             <TextBlock Text="{DynamicResource NetworkTest_Hint}"
+                       FontSize="14"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"
+                       LineHeight="20"
                        TextWrapping="Wrap"
-                       Margin="0,0,0,12"/>
+                       Margin="0,0,0,16"/>
 
-            <StackPanel Margin="0,0,0,8">
-                <TextBlock Text="{DynamicResource NetworkTest_BrandLabel}" Margin="0,0,0,4"/>
+            <StackPanel Margin="0,0,0,12">
+                <TextBlock Text="{DynamicResource NetworkTest_BrandLabel}"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource AppTextPrimaryBrush}"
+                           Margin="0,0,0,6"/>
                 <ComboBox ItemsSource="{Binding BrandChoices}" SelectedItem="{Binding SelectedBrand}"/>
             </StackPanel>
 
-            <StackPanel Margin="0,0,0,8"
+            <StackPanel Margin="0,0,0,12"
                         Visibility="{Binding IsGainschaBrand, Converter={StaticResource BoolToVis}}">
-                <TextBlock Text="{DynamicResource Main_GainschaLabelPresetLabel}" Margin="0,0,0,4"/>
+                <TextBlock Text="{DynamicResource Main_GainschaLabelPresetLabel}"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource AppTextPrimaryBrush}"
+                           Margin="0,0,0,6"/>
                 <ComboBox ItemsSource="{Binding GainschaLabelPresetChoices}"
                           SelectedItem="{Binding SelectedGainschaLabelPreset}"/>
             </StackPanel>
 
-            <StackPanel Margin="0,0,0,8">
-                <TextBlock Text="{DynamicResource NetworkTest_HostLabel}" Margin="0,0,0,4"/>
+            <StackPanel Margin="0,0,0,14">
+                <TextBlock Text="{DynamicResource NetworkTest_HostLabel}"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource AppTextPrimaryBrush}"
+                           Margin="0,0,0,6"/>
                 <TextBox Text="{Binding HostAddress, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
 
@@ -47,6 +64,7 @@
                           Margin="0,0,0,8"
                           Visibility="{Binding StatusMessage, Converter={StaticResource StringToVis}, ConverterParameter=Invert}">
                 <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{DynamicResource AppTextPrimaryBrush}"
                            TextWrapping="Wrap"/>
             </ScrollViewer>
         </StackPanel>
@@ -54,13 +72,15 @@
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
-                    Margin="0,4,0,0">
+                    Margin="0,6,0,0">
             <ui:Button Content="{DynamicResource NetworkTest_RunButton}"
                        Command="{Binding RunTestCommand}"
                        Appearance="Primary"
+                       Padding="16,6"
                        Margin="0,0,8,0"/>
             <ui:Button Content="{DynamicResource NetworkTest_CloseButton}"
                        IsCancel="True"
+                       Padding="16,6"
                        Appearance="Secondary"/>
         </StackPanel>
     </Grid>

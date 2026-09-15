@@ -79,8 +79,9 @@ public partial class SettingsViewModel : ObservableObject
             return false;
         }
 
+        var current = _settingsStore.Load();
         var customLdap = string.IsNullOrWhiteSpace(LdapHost) ? null : LdapHost.Trim();
-        _settingsStore.Save(new AppSettings(DomainName.Trim(), customLdap));
+        _settingsStore.Save(new AppSettings(DomainName.Trim(), customLdap, current.Theme));
 
         StatusMessage = "Configurações salvas com sucesso!";
         IsSuccessMessage = true;

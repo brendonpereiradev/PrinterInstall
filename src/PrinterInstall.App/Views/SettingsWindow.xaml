@@ -9,13 +9,15 @@
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="White"
+        Background="{DynamicResource AppCanvasBackgroundBrush}"
         UseLayoutRounding="True">
     <Window.Resources>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
         <Style x:Key="SettingsInnerTextBoxStyle" TargetType="TextBox">
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource AppTextPrimaryBrush}"/>
             <Setter Property="Padding" Value="0,2"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
@@ -30,25 +32,21 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Cabeçalho -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-            <TextBlock Text="{DynamicResource Settings_Header}"
-                       FontSize="18"
-                       FontWeight="Bold"
-                       Foreground="{DynamicResource LoginFormTitleBrush}"/>
-            <TextBlock Text="{DynamicResource Settings_Hint}"
-                       FontSize="12"
-                       Foreground="#FF666666"
-                       TextWrapping="Wrap"
-                       Margin="0,4,0,0"/>
-        </StackPanel>
+        <!-- Subtítulo explicativo -->
+        <TextBlock Grid.Row="0"
+                   Text="{DynamicResource Settings_Hint}"
+                   FontSize="14"
+                   Foreground="{DynamicResource AppTextPrimaryBrush}"
+                   LineHeight="20"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,18"/>
 
         <!-- Campo: Domínio Padrão -->
         <StackPanel Grid.Row="1" Margin="0,0,0,14">
             <TextBlock Text="{DynamicResource Settings_DomainLabel}"
                        FontSize="13"
                        FontWeight="SemiBold"
-                       Foreground="#FF444444"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"
                        Margin="0,0,0,6"/>
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -58,9 +56,9 @@
                 <Border Grid.Column="0"
                         Height="38"
                         CornerRadius="6"
-                        BorderBrush="{DynamicResource LoginFieldBorderBrush}"
+                        BorderBrush="{DynamicResource AppInputBorderBrush}"
                         BorderThickness="1"
-                        Background="White"
+                        Background="{DynamicResource AppInputBackgroundBrush}"
                         Margin="0,0,8,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -71,7 +69,7 @@
                                    FontFamily="Segoe MDL2 Assets"
                                    Text="&#xE774;"
                                    FontSize="15"
-                                   Foreground="{DynamicResource LoginFieldIconBrush}"
+                                   Foreground="{DynamicResource AppTextSecondaryBrush}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"/>
                         <TextBox Grid.Column="1"
@@ -90,7 +88,7 @@
             </Grid>
             <TextBlock Text="{DynamicResource Settings_DomainHint}"
                        FontSize="11"
-                       Foreground="#FF888888"
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"
                        Margin="2,4,0,0"/>
         </StackPanel>
 
@@ -99,13 +97,13 @@
             <TextBlock Text="{DynamicResource Settings_LdapHostLabel}"
                        FontSize="13"
                        FontWeight="SemiBold"
-                       Foreground="#FF444444"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"
                        Margin="0,0,0,6"/>
             <Border Height="38"
                     CornerRadius="6"
-                    BorderBrush="{DynamicResource LoginFieldBorderBrush}"
+                    BorderBrush="{DynamicResource AppInputBorderBrush}"
                     BorderThickness="1"
-                    Background="White">
+                    Background="{DynamicResource AppInputBackgroundBrush}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="36"/>
@@ -115,7 +113,7 @@
                                FontFamily="Segoe MDL2 Assets"
                                Text="&#xE838;"
                                FontSize="15"
-                               Foreground="{DynamicResource LoginFieldIconBrush}"
+                               Foreground="{DynamicResource AppTextSecondaryBrush}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"/>
                     <TextBox Grid.Column="1"
@@ -126,7 +124,7 @@
             </Border>
             <TextBlock Text="{DynamicResource Settings_LdapHostHint}"
                        FontSize="11"
-                       Foreground="#FF888888"
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"
                        Margin="2,4,0,0"/>
         </StackPanel>
 
@@ -139,10 +137,10 @@
                        FontSize="12">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="#FFB00020"/>
+                        <Setter Property="Foreground" Value="{DynamicResource AppBadgeDangerForegroundBrush}"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsSuccessMessage}" Value="True">
-                                <Setter Property="Foreground" Value="#FF2E7D32"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AppBadgeSuccessForegroundBrush}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -151,7 +149,7 @@
         </Border>
 
         <!-- Separador -->
-        <Separator Grid.Row="4" Margin="0,4,0,16" Background="#FFE0E0E0"/>
+        <Separator Grid.Row="4" Margin="0,4,0,16" Background="{DynamicResource AppSurfaceCardBorderBrush}"/>
 
         <!-- Botões de Ação -->
         <Grid Grid.Row="5">

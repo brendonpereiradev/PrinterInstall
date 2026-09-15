@@ -142,13 +142,10 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
               .ReturnsAsync(new[] { "Other" });
         remote.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
-        var seq = new Queue<Func<Task>>(new Func<Task>[]
-        {
-            () => throw new InvalidOperationException("boom"),
-            () => Task.CompletedTask
-        });
-        remote.Setup(m => m.InstallPrinterDriverAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<LocalDriverPackage>(), It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
-              .Returns(() => seq.Dequeue()());
+        remote.Setup(m => m.InstallPrinterDriverAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<LocalDriverPackage>(), It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
+              .ThrowsAsync(new InvalidOperationException("boom"));
+        remote.Setup(m => m.InstallPrinterDriverAsync("pc2", It.IsAny<NetworkCredential>(), It.IsAny<LocalDriverPackage>(), It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
+              .Returns(Task.CompletedTask);
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
         var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);

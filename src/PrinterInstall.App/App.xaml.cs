@@ -30,7 +30,7 @@ public partial class App : Application
 
         ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
         ApplicationAccentColorManager.Apply(
-            Color.FromRgb(61, 90, 128),
+            Color.FromRgb(37, 99, 235),
             ApplicationTheme.Light);
 
         var builder = Host.CreateApplicationBuilder();
@@ -47,6 +47,7 @@ public partial class App : Application
 
         builder.Services.AddSingleton<ISessionContext, SessionContext>();
         builder.Services.AddSingleton<IAppSettingsStore, AppSettingsStore>();
+        builder.Services.AddSingleton<IThemeService, ThemeService>();
         builder.Services.AddSingleton<IDomainDetector, DomainDetector>();
         builder.Services.AddSingleton<IRememberedUserStore, RememberedUserStore>();
         builder.Services.AddSingleton<ILdapCredentialValidator, LdapCredentialValidator>();
@@ -110,6 +111,9 @@ public partial class App : Application
         builder.Services.AddTransient<SettingsWindow>();
 
         _host = builder.Build();
+
+        var themeService = _host.Services.GetRequiredService<IThemeService>() as ThemeService;
+        themeService?.Initialize();
 
         // Dispara extração dos drivers embutidos em segundo plano para inicialização rápida
         var extractor = _host.Services.GetRequiredService<IEmbeddedDriverPackageExtractor>();

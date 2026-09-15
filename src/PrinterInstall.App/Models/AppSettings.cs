@@ -5,4 +5,11 @@ namespace PrinterInstall.App.Models;
 /// </summary>
 public sealed record AppSettings(
     string DomainName = "laboratorio.test",
-    string? LdapHost = null);
+    string? LdapHost = null,
+    string Theme = "Light")
+{
+    public AppSettings(string domainName, string? ldapHost)
+        : this(domainName, ldapHost, "Light")
+    {
+    }
+}
