@@ -83,7 +83,8 @@ public class SettingsViewModelTests
         Assert.True(saved);
         Assert.True(sut.IsSaved);
         Assert.True(sut.IsSuccessMessage);
-        _mockSettingsStore.Verify(s => s.Save(new AppSettings("novo.dominio.local", "10.0.0.5")), Times.Once);
+        var expected = new AppSettings("novo.dominio.local", "10.0.0.5", "Light");
+        _mockSettingsStore.Verify(s => s.Save(expected), Times.Once);
     }
 
     [Fact]

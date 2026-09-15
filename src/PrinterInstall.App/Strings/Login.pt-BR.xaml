@@ -4,7 +4,15 @@
   <sys:String x:Key="Login_WindowTitle">Printer Install</sys:String>
   <sys:String x:Key="Login_Header">Entrar no domínio</sys:String>
   <sys:String x:Key="Login_UserLabel">Usuário</sys:String>
+  <sys:String x:Key="Login_UserPlaceholder">Ex: 17308051757 ou domínio\usuário</sys:String>
   <sys:String x:Key="Login_PasswordLabel">Senha</sys:String>
+  <sys:String x:Key="Login_PasswordPlaceholder">Digite sua senha de rede</sys:String>
   <sys:String x:Key="Login_SignInButton">Entrar</sys:String>
+  <sys:String x:Key="Login_SigningInButton">Autenticando...</sys:String>
   <sys:String x:Key="Login_RememberMeLabel">Lembrar-me</sys:String>
+  <sys:String x:Key="Login_ThemeToggle_DarkToolTip">Alternar para modo escuro</sys:String>
+  <sys:String x:Key="Login_ThemeToggle_LightToolTip">Alternar para modo claro</sys:String>
+  <sys:String x:Key="Login_SettingsToolTip">Configurações de domínio e rede</sys:String>
+  <sys:String x:Key="Login_ShowPasswordToolTip">Mostrar senha</sys:String>
+  <sys:String x:Key="Login_HidePasswordToolTip">Ocultar senha</sys:String>
 </ResourceDictionary>

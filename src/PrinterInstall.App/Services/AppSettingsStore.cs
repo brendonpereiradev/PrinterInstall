@@ -47,7 +47,8 @@ public sealed class AppSettingsStore : IAppSettingsStore
 
             var domain = dto.DomainName.Trim();
             var ldapHost = string.IsNullOrWhiteSpace(dto.LdapHost) ? null : dto.LdapHost.Trim();
-            return new AppSettings(domain, ldapHost);
+            var theme = string.IsNullOrWhiteSpace(dto.Theme) ? "Light" : dto.Theme.Trim();
+            return new AppSettings(domain, ldapHost, theme);
         }
         catch (JsonException)
         {
@@ -74,7 +75,8 @@ public sealed class AppSettingsStore : IAppSettingsStore
             var dto = new AppSettingsDto
             {
                 DomainName = settings.DomainName.Trim(),
-                LdapHost = string.IsNullOrWhiteSpace(settings.LdapHost) ? null : settings.LdapHost.Trim()
+                LdapHost = string.IsNullOrWhiteSpace(settings.LdapHost) ? null : settings.LdapHost.Trim(),
+                Theme = string.IsNullOrWhiteSpace(settings.Theme) ? "Light" : settings.Theme.Trim()
             };
 
             var json = JsonSerializer.Serialize(dto, JsonOptions);
@@ -116,5 +118,6 @@ public sealed class AppSettingsStore : IAppSettingsStore
     {
         public string DomainName { get; set; } = "";
         public string? LdapHost { get; set; }
+        public string? Theme { get; set; } = "Light";
     }
 }

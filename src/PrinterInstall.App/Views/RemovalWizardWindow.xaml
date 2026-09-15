@@ -6,10 +6,17 @@
         Title="{DynamicResource Removal_WindowTitle}"
         Icon="pack://application:,,,/Assets/app.ico"
         Height="640" Width="900"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppCanvasBackgroundBrush}"
+        TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringEmptyToVisibilityConverter"/>
+        <Style TargetType="TabControl">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
         <Style TargetType="TabItem">
             <Setter Property="Visibility" Value="Collapsed"/>
         </Style>
@@ -20,25 +27,29 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" LastChildFill="True">
-            <Border DockPanel.Dock="Top" Height="4" Background="{DynamicResource AppHeaderAccentBrush}"/>
-            <TextBlock Text="{DynamicResource Removal_WindowTitle}" FontSize="16" FontWeight="SemiBold" Margin="12,8,12,4"/>
-        </DockPanel>
+        <Border Grid.Row="0" Height="3" Background="{DynamicResource AppHeaderAccentBrush}"/>
 
-        <Grid Grid.Row="1" Margin="12,0,12,12">
-            <TabControl SelectedIndex="{Binding CurrentStepIndex}">
+        <Grid Grid.Row="1" Margin="16,14,16,16">
+            <TabControl SelectedIndex="{Binding CurrentStepIndex}"
+                        BorderThickness="0"
+                        Background="Transparent"
+                        Padding="0">
                 <TabItem>
                     <DockPanel LastChildFill="True">
-                        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                <TextBlock Text="{DynamicResource Removal_Step0Intro}" TextWrapping="Wrap"/>
+                                <TextBlock Text="{DynamicResource Removal_Step0Intro}"
+                                           FontSize="14"
+                                           Foreground="{DynamicResource AppTextPrimaryBrush}"
+                                           LineHeight="20"
+                                           TextWrapping="Wrap"/>
                                 <TextBlock Text="{DynamicResource Removal_Step0KeyboardHint}"
                                            FontSize="12"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Foreground="{DynamicResource AppTextSecondaryBrush}"
                                            TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
                             <ui:Button Grid.Column="1"
@@ -59,90 +70,132 @@
                 <TabItem>
                     <DockPanel LastChildFill="True">
                         <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding CurrentStepLabel}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                                    <Border Margin="12,0,0,0" Padding="8,2" CornerRadius="4" VerticalAlignment="Center"
-                                            Visibility="{Binding HasPingBadge, Converter={StaticResource BoolToVisibilityConverter}}"
-                                            Background="{Binding PingBadgeBackground}">
-                                        <TextBlock Text="{Binding PingStatusBadgeText}" Foreground="{Binding PingBadgeForeground}" FontWeight="SemiBold" FontSize="11"/>
-                                    </Border>
-                                    <ui:Button Margin="8,0,0,0" Padding="8,2"
-                                               Content="{DynamicResource Removal_Ping_RetryButton}"
-                                               Command="{Binding RetryCurrentMachineCommand}"
-                                               Appearance="Secondary"
-                                               Visibility="{Binding IsComputerOffline, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                </StackPanel>
-                                <TextBlock Text="{Binding QueuesLoadError}" Foreground="#FFD13438" TextWrapping="Wrap" Margin="0,4,0,0"
-                                           Visibility="{Binding QueuesLoadError, Converter={StaticResource StringEmptyToVisibilityConverter}}"/>
+                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding CurrentStepLabel}" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource AppTextPrimaryBrush}" VerticalAlignment="Center"/>
+                                <Border Margin="12,0,0,0" Padding="8,3" CornerRadius="12" VerticalAlignment="Center"
+                                        Visibility="{Binding HasPingBadge, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        Background="{Binding PingBadgeBackground}"
+                                        BorderBrush="{Binding PingBadgeBorder}"
+                                        BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding PingBadgeIcon}"
+                                                   FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="10"
+                                                   Foreground="{Binding PingBadgeIconForeground}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,5,0"/>
+                                        <TextBlock Text="{Binding PingStatusBadgeText}"
+                                                   Foreground="{Binding PingBadgeForeground}"
+                                                   FontWeight="Medium"
+                                                   FontSize="11"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <ui:Button Margin="8,0,0,0" Padding="8,2"
+                                           Content="{DynamicResource Removal_Ping_RetryButton}"
+                                           Command="{Binding RetryCurrentMachineCommand}"
+                                           Appearance="Secondary"
+                                           VerticalAlignment="Center"
+                                           Visibility="{Binding IsComputerOffline, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </StackPanel>
-                            <ui:Button Grid.Column="1"
+                            <ui:Button Grid.Row="0" Grid.Column="1"
                                        Content="{DynamicResource Removal_ResetSpoolerButton}"
                                        Command="{Binding ResetCurrentMachineSpoolerCommand}"
                                        Appearance="Secondary"
+                                       VerticalAlignment="Center"
                                        Padding="10,4"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Text="{Binding QueuesLoadError}" Foreground="#FFD13438" TextWrapping="Wrap" Margin="0,4,0,0"
+                                       Visibility="{Binding QueuesLoadError, Converter={StaticResource StringEmptyToVisibilityConverter}}"/>
                         </Grid>
                         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
                             <ui:Button Content="{DynamicResource Removal_Next}" Command="{Binding NextQueueStepCommand}" Padding="16,6" Appearance="Primary"/>
                         </StackPanel>
-                        <Grid>
-                            <DataGrid ItemsSource="{Binding QueuesForCurrentComputer}"
-                                      AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
-                                      SelectionMode="Single"
-                                      GridLinesVisibility="None"
-                                      RowBackground="#FFFFFFFF"
-                                      AlternatingRowBackground="#FFF8FAFD"
-                                      Background="#FFF4F7FB"
-                                      BorderBrush="#FFD4DCE7"
-                                      BorderThickness="1">
-                                <!-- WPF has no SelectionMode.None; "None" crashes at load. Hide row/cell selection visuals. -->
-                                <DataGrid.Resources>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FF000000"/>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#FF000000"/>
-                                </DataGrid.Resources>
-                                <DataGrid.ColumnHeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="Background" Value="#FFEFF3F8"/>
-                                        <Setter Property="BorderBrush" Value="#FFD7DFEA"/>
-                                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                        <Setter Property="FontWeight" Value="SemiBold"/>
-                                        <Setter Property="Padding" Value="8,10,8,14"/>
-                                        <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                    </Style>
-                                </DataGrid.ColumnHeaderStyle>
-                                <DataGrid.RowStyle>
-                                    <Style TargetType="DataGridRow">
-                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                        <Setter Property="MinHeight" Value="40"/>
-                                        <Setter Property="BorderThickness" Value="0"/>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#FFEAF2FC"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGrid.RowStyle>
-                                <DataGrid.CellStyle>
-                                    <Style TargetType="DataGridCell">
-                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                        <Setter Property="VerticalAlignment" Value="Stretch"/>
-                                        <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="10,14,10,14"/>
-                                        <Setter Property="BorderThickness" Value="0"/>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Background" Value="Transparent"/>
-                                                <Setter Property="BorderBrush" Value="Transparent"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGrid.CellStyle>
+                        <Border Background="{DynamicResource AppSurfaceCardBrush}"
+                                BorderBrush="{DynamicResource AppSurfaceCardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="4">
+                            <Grid>
+                                <DataGrid ItemsSource="{Binding QueuesForCurrentComputer}"
+                                          AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
+                                          SelectionMode="Single"
+                                          GridLinesVisibility="Horizontal"
+                                          HorizontalGridLinesBrush="{DynamicResource AppTableGridLineBrush}"
+                                          VerticalGridLinesBrush="{x:Null}"
+                                          RowBackground="Transparent"
+                                          AlternatingRowBackground="Transparent"
+                                          Background="Transparent"
+                                          BorderThickness="0">
+                                    <!-- WPF has no SelectionMode.None; "None" crashes at load. Hide row/cell selection visuals. -->
+                                    <DataGrid.Resources>
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
+                                    </DataGrid.Resources>
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource AppTableGridLineBrush}"/>
+                                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="FontSize" Value="12"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
+                                            <Setter Property="Padding" Value="10,8,10,8"/>
+                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="DataGridColumnHeader">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+                                    <DataGrid.RowStyle>
+                                        <Style TargetType="DataGridRow">
+                                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                            <Setter Property="MinHeight" Value="40"/>
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource AppTableGridLineBrush}"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="{DynamicResource AppTableHoverBrush}"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.RowStyle>
+                                    <DataGrid.CellStyle>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                            <Setter Property="VerticalAlignment" Value="Stretch"/>
+                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                            <Setter Property="Padding" Value="10,8,10,8"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.CellStyle>
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Header="{DynamicResource Removal_ColumnRemove}" Width="80">
                                         <DataGridTemplateColumn.CellTemplate>
@@ -171,10 +224,10 @@
                                     <DataGridTemplateColumn Header="{DynamicResource Removal_ColumnNewName}" Width="220">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <Border BorderBrush="#FFD0D8E5"
+                                                <Border BorderBrush="{DynamicResource AppInputBorderBrush}"
                                                         BorderThickness="1"
-                                                        CornerRadius="5"
-                                                        Background="#FFFFFFFF"
+                                                        CornerRadius="6"
+                                                        Background="{DynamicResource AppInputBackgroundBrush}"
                                                         Padding="4,2"
                                                         VerticalAlignment="Center">
                                                     <Grid>
@@ -185,7 +238,7 @@
                                                         <TextBlock Grid.Column="0"
                                                                    Text="&#xE70F;"
                                                                    FontFamily="Segoe MDL2 Assets"
-                                                                   Foreground="#FF6F7E93"
+                                                                   Foreground="{DynamicResource AppTextSecondaryBrush}"
                                                                    FontSize="12"
                                                                    VerticalAlignment="Center"
                                                                    HorizontalAlignment="Center"/>
@@ -195,9 +248,11 @@
                                                                      VerticalAlignment="Center"
                                                                      BorderThickness="0"
                                                                      Background="Transparent"
+                                                                     Foreground="{DynamicResource AppTextPrimaryBrush}"
+                                                                     CaretBrush="{DynamicResource AppTextPrimaryBrush}"
                                                                      Padding="2,0"/>
                                                             <TextBlock Text="{DynamicResource Removal_RenamePlaceholder}"
-                                                                       Foreground="#FF8A97A8"
+                                                                       Foreground="{DynamicResource AppTextSecondaryBrush}"
                                                                        Margin="4,0,0,0"
                                                                        VerticalAlignment="Center"
                                                                        IsHitTestVisible="False"
@@ -211,18 +266,20 @@
                                 </DataGrid.Columns>
                             </DataGrid>
                             <TextBlock Text="{DynamicResource Removal_NoPrintersFound}" TextWrapping="Wrap" TextAlignment="Center"
-                                       Foreground="#FF5C5C5C" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24"
+                                       Foreground="{DynamicResource AppTextSecondaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24"
                                        IsHitTestVisible="False"
                                        Visibility="{Binding ShowQueuesEmptyHint, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                             <!-- Mensagem informativa quando o computador estiver offline -->
-                            <Border Background="#FFFDF7F7" BorderBrush="#FFF0C4C4" BorderThickness="1" CornerRadius="8"
+                            <Border Background="{DynamicResource AppBadgeDangerBackgroundBrush}"
+                                    BorderBrush="{DynamicResource AppBadgeDangerBorderBrush}"
+                                    BorderThickness="1" CornerRadius="8"
                                     Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520"
                                     Visibility="{Binding ShowComputerOfflineHint, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="36" Foreground="#FFD13438" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                                    <TextBlock Text="{DynamicResource Removal_Ping_Offline}" FontSize="16" FontWeight="SemiBold" Foreground="#FFD13438" HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                                    <TextBlock Text="{DynamicResource Removal_Queues_OfflineHint}" TextWrapping="Wrap" TextAlignment="Center" Foreground="#FF5C5C5C" Margin="0,0,0,16"/>
+                                    <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="36" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                    <TextBlock Text="{DynamicResource Removal_Ping_Offline}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{DynamicResource Removal_Queues_OfflineHint}" TextWrapping="Wrap" TextAlignment="Center" Foreground="{DynamicResource AppTextSecondaryBrush}" Margin="0,0,0,16"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <ui:Button Content="{DynamicResource Removal_Ping_RetryButton}" Command="{Binding RetryCurrentMachineCommand}" Appearance="Secondary" Margin="0,0,8,0" Padding="14,6"/>
                                         <ui:Button Content="{DynamicResource Removal_Next}" Command="{Binding NextQueueStepCommand}" Appearance="Primary" Padding="14,6"/>
@@ -230,44 +287,131 @@
                                 </StackPanel>
                             </Border>
 
-                            <Border Background="#E6F5F5F5"
+                            <Border Background="{DynamicResource AppCanvasBackgroundBrush}" Opacity="0.9"
                                     Visibility="{Binding IsLoadingQueues, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="16">
                                     <ui:ProgressRing IsIndeterminate="True" Width="44" Height="44"/>
-                                    <TextBlock Text="{Binding LoadingStatusMessage}" Margin="0,12,0,0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding LoadingStatusMessage}" Foreground="{DynamicResource AppTextPrimaryBrush}" Margin="0,12,0,0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" FontWeight="Medium"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
-                    </DockPanel>
-                </TabItem>
+                    </Border>
+                </DockPanel>
+            </TabItem>
 
-                <TabItem>
-                    <DockPanel LastChildFill="True">
-                        <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Removal_ReviewHeader}" FontWeight="Bold" Margin="0,0,0,8"/>
-                        <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,8,0,0">
-                            <ui:Button Content="{DynamicResource Removal_ExecuteButton}" Command="{Binding ExecuteCommand}"
-                                    IsEnabled="{Binding CanExecute}" HorizontalAlignment="Right" Padding="16,6" Appearance="Primary"/>
-                        </StackPanel>
-                        <TextBox Text="{Binding ReviewSummary, Mode=OneWay}" IsReadOnly="True"
-                                 VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
-                    </DockPanel>
-                </TabItem>
+            <!-- Etapa 2: Revisão do Plano -->
+            <TabItem>
+                <DockPanel LastChildFill="True">
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <TextBlock Text="{DynamicResource Removal_ReviewHeader}"
+                                   FontWeight="SemiBold"
+                                   FontSize="15"
+                                   Foreground="{DynamicResource AppTextPrimaryBrush}"
+                                   Margin="0,0,0,8"/>
 
-                <TabItem>
-                    <DockPanel LastChildFill="True">
-                        <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Removal_LogHeader}" FontWeight="Bold" Margin="0,0,0,8"/>
-                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-                            <ui:Button Content="{DynamicResource Removal_ExportLogButton}"
-                                       Command="{Binding ExportLogCommand}"
-                                       Padding="16,6" Margin="0,0,8,0" Appearance="Secondary"/>
-                            <ui:Button Content="{DynamicResource Removal_CloseButton}"
-                                       Command="{Binding CloseCommand}" IsEnabled="{Binding CanClose}"
-                                       Padding="16,6" Appearance="Primary"/>
-                        </StackPanel>
-                        <TextBox Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True"
-                                 VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
-                    </DockPanel>
-                </TabItem>
+                        <!-- Barra de métricas rápidas -->
+                        <Border Background="{DynamicResource AppSurfaceCardBrush}"
+                                BorderBrush="{DynamicResource AppSurfaceCardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,8">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Remoções -->
+                                <Border Background="{DynamicResource AppBadgeDangerBackgroundBrush}"
+                                        BorderBrush="{DynamicResource AppBadgeDangerBorderBrush}"
+                                        BorderThickness="1" CornerRadius="12" Padding="8,3" Margin="0,0,10,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Remoções: " FontSize="11" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding ReviewTotalRemovals}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <!-- Renomeações -->
+                                <Border Background="{DynamicResource AppBadgeInfoBackgroundBrush}"
+                                        BorderBrush="{DynamicResource AppBadgeInfoBorderBrush}"
+                                        BorderThickness="1" CornerRadius="12" Padding="8,3" Margin="0,0,10,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource AppBadgeInfoForegroundBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Renomeações: " FontSize="11" Foreground="{DynamicResource AppBadgeInfoForegroundBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding ReviewTotalRenames}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AppBadgeInfoForegroundBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <!-- Computadores -->
+                                <Border Background="{DynamicResource AppBadgeNeutralBackgroundBrush}"
+                                        BorderBrush="{DynamicResource AppBadgeNeutralBorderBrush}"
+                                        BorderThickness="1" CornerRadius="12" Padding="8,3">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource AppBadgeNeutralForegroundBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Computadores: " FontSize="11" Foreground="{DynamicResource AppBadgeNeutralForegroundBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding ReviewTotalComputers}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AppBadgeNeutralForegroundBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,10,0,0">
+                        <ui:Button Content="{DynamicResource Removal_ExecuteButton}" Command="{Binding ExecuteCommand}"
+                                   IsEnabled="{Binding CanExecute}" HorizontalAlignment="Right" Padding="18,7" Appearance="Primary"/>
+                    </StackPanel>
+
+                    <!-- Console moderno para detalhamento do plano -->
+                    <Border Background="{DynamicResource AppConsoleBackgroundBrush}"
+                            BorderBrush="{DynamicResource AppConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12">
+                        <TextBox Text="{Binding ReviewSummary, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalScrollBarVisibility="Auto"
+                                 TextWrapping="Wrap"
+                                 FontFamily="Consolas, Cascadia Code, Courier New"
+                                 FontSize="12"
+                                 Foreground="{DynamicResource AppConsoleForegroundBrush}"
+                                 CaretBrush="{DynamicResource AppConsoleForegroundBrush}"/>
+                    </Border>
+                </DockPanel>
+            </TabItem>
+
+            <!-- Etapa 3: Log de Execução -->
+            <TabItem>
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top"
+                               Text="{DynamicResource Removal_LogHeader}"
+                               FontWeight="SemiBold"
+                               FontSize="15"
+                               Foreground="{DynamicResource AppTextPrimaryBrush}"
+                               Margin="0,0,0,10"/>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <ui:Button Content="{DynamicResource Removal_ExportLogButton}"
+                                   Command="{Binding ExportLogCommand}"
+                                   Padding="16,6" Margin="0,0,8,0" Appearance="Secondary"/>
+                        <ui:Button Content="{DynamicResource Removal_CloseButton}"
+                                   Command="{Binding CloseCommand}" IsEnabled="{Binding CanClose}"
+                                   Padding="16,6" Appearance="Primary"/>
+                    </StackPanel>
+
+                    <!-- Console moderno para saída de log -->
+                    <Border Background="{DynamicResource AppConsoleBackgroundBrush}"
+                            BorderBrush="{DynamicResource AppConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12">
+                        <TextBox Text="{Binding LogText, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 VerticalScrollBarVisibility="Auto"
+                                 TextWrapping="Wrap"
+                                 FontFamily="Consolas, Cascadia Code, Courier New"
+                                 FontSize="12"
+                                 Foreground="{DynamicResource AppConsoleForegroundBrush}"
+                                 CaretBrush="{DynamicResource AppConsoleForegroundBrush}"/>
+                    </Border>
+                </DockPanel>
+            </TabItem>
             </TabControl>
         </Grid>
     </Grid>

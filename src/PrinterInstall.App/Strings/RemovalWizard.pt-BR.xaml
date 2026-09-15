@@ -17,7 +17,7 @@
   <sys:String x:Key="Removal_LogHeader">Log de execução</sys:String>
   <sys:String x:Key="Removal_ExportLogButton">Exportar log</sys:String>
   <sys:String x:Key="Removal_CloseButton">Fechar</sys:String>
-  <sys:String x:Key="Removal_ResetSpoolerButton">Reiniciar Spooler</sys:String>
-  <sys:String x:Key="Removal_Ping_RetryButton">Testar Novamente</sys:String>
+  <sys:String x:Key="Removal_ResetSpoolerButton">Reiniciar spooler</sys:String>
+  <sys:String x:Key="Removal_Ping_RetryButton">Testar novamente</sys:String>
   <sys:String x:Key="Removal_Queues_OfflineHint">O computador está desligado ou inacessível. Clique em "Avançar" para continuar.</sys:String>
 </ResourceDictionary>

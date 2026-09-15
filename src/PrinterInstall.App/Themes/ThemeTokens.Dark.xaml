@@ -1,0 +1,68 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ============================================================ -->
+  <!-- SISTEMA DE TOKENS SEMÂNTICOS — TEMA ESCURO (DARK MODE)        -->
+  <!-- Baseado nos princípios de elevação e contraste frontend-design-->
+  <!-- ============================================================ -->
+
+  <!-- Nível 0: Fundo Geral da Janela (Canvas) -->
+  <SolidColorBrush x:Key="AppCanvasBackgroundBrush" Color="#FF0D0D10"/>
+  <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#FF0D0D10"/>
+
+  <!-- Nível 1: Superfície Elevada de Cards e Seções -->
+  <SolidColorBrush x:Key="AppSurfaceCardBrush" Color="#FF16161A"/>
+  <SolidColorBrush x:Key="AppSurfaceCardBorderBrush" Color="#FF26262E"/>
+
+  <!-- Nível 2: Campos de Entrada (Inputs / ComboBox) -->
+  <SolidColorBrush x:Key="AppInputBackgroundBrush" Color="#FF0F0F12"/>
+  <SolidColorBrush x:Key="AppInputBorderBrush" Color="#FF2E2E38"/>
+
+  <!-- Nível 2: Consoles de Diagnóstico e Logs (Terminal Moderno) -->
+  <SolidColorBrush x:Key="AppConsoleBackgroundBrush" Color="#FF0A0A0C"/>
+  <SolidColorBrush x:Key="AppConsoleBorderBrush" Color="#FF22222A"/>
+  <SolidColorBrush x:Key="AppConsoleForegroundBrush" Color="#FFE4E4E7"/>
+
+  <!-- Tipografia e Hierarquia Visual -->
+  <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="#FFF4F4F5"/>
+  <SolidColorBrush x:Key="AppTextSecondaryBrush" Color="#FFA1A1AA"/>
+  <SolidColorBrush x:Key="AppTextMutedBrush" Color="#FF71717A"/>
+
+  <!-- Acentos e Identidade Visual -->
+  <SolidColorBrush x:Key="AppBrandAccentBrush" Color="#FF3B82F6"/>
+  <SolidColorBrush x:Key="AppHeaderAccentBrush" Color="#FF3B82F6"/>
+  <SolidColorBrush x:Key="AppAccentHoverBrush" Color="#FF60A5FA"/>
+
+  <!-- Tabelas e Listas Modernas -->
+  <SolidColorBrush x:Key="AppTableGridLineBrush" Color="#FF242428"/>
+  <SolidColorBrush x:Key="AppTableHoverBrush" Color="#FF202025"/>
+  <SolidColorBrush x:Key="AppTableRowHoverBrush" Color="#FF202025"/>
+  <SolidColorBrush x:Key="AppTableRowSelectedBrush" Color="#FF272730"/>
+  <SolidColorBrush x:Key="AppTableDividerBrush" Color="#FF242428"/>
+
+  <!-- Badges Semânticos Adaptativos (Escuro: Fundo escuro matizado + borda definida + texto luminoso) -->
+  <SolidColorBrush x:Key="AppBadgeSuccessBackgroundBrush" Color="#FF0D2818"/>
+  <SolidColorBrush x:Key="AppBadgeSuccessBorderBrush" Color="#FF166534"/>
+  <SolidColorBrush x:Key="AppBadgeSuccessForegroundBrush" Color="#FF4ADE80"/>
+
+  <SolidColorBrush x:Key="AppBadgeDangerBackgroundBrush" Color="#FF2D1214"/>
+  <SolidColorBrush x:Key="AppBadgeDangerBorderBrush" Color="#FF991B1B"/>
+  <SolidColorBrush x:Key="AppBadgeDangerForegroundBrush" Color="#FFF87171"/>
+
+  <SolidColorBrush x:Key="AppBadgeInfoBackgroundBrush" Color="#FF0F2137"/>
+  <SolidColorBrush x:Key="AppBadgeInfoBorderBrush" Color="#FF1D4ED8"/>
+  <SolidColorBrush x:Key="AppBadgeInfoForegroundBrush" Color="#FF60A5FA"/>
+
+  <SolidColorBrush x:Key="AppBadgeWarningBackgroundBrush" Color="#FF291C0E"/>
+  <SolidColorBrush x:Key="AppBadgeWarningBorderBrush" Color="#FF92400E"/>
+  <SolidColorBrush x:Key="AppBadgeWarningForegroundBrush" Color="#FFFBBF24"/>
+
+  <SolidColorBrush x:Key="AppBadgeNeutralBackgroundBrush" Color="#FF1C1C20"/>
+  <SolidColorBrush x:Key="AppBadgeNeutralBorderBrush" Color="#FF323238"/>
+  <SolidColorBrush x:Key="AppBadgeNeutralForegroundBrush" Color="#FFA1A1AA"/>
+
+  <!-- Compatibilidade Legada -->
+  <SolidColorBrush x:Key="LoginFormTitleBrush" Color="#FFF4F4F5"/>
+  <SolidColorBrush x:Key="LoginFieldBorderBrush" Color="#FF323238"/>
+  <SolidColorBrush x:Key="LoginFieldIconBrush" Color="#FFA1A1AA"/>
+</ResourceDictionary>

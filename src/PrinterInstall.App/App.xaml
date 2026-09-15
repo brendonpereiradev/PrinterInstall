@@ -9,7 +9,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Light" />
                 <ui:ControlsDictionary />
-                <ResourceDictionary Source="Themes/WpfUiLocalBrushes.xaml"/>
+                <ResourceDictionary Source="Themes/ThemeTokens.Light.xaml"/>
                 <ResourceDictionary Source="Strings/Main.pt-BR.xaml"/>
                 <ResourceDictionary Source="Strings/Login.pt-BR.xaml"/>
                 <ResourceDictionary Source="Strings/RemovalWizard.pt-BR.xaml"/>

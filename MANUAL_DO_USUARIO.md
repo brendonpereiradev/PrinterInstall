@@ -23,7 +23,7 @@
 5. [Ferramenta de Teste de Rede Direto](#5-ferramenta-de-teste-de-rede-direto)
 6. [Tabela de Referência de Etiquetas Gainscha](#6-tabela-de-referência-de-etiquetas-gainscha)
 7. [Resolução de Problemas Mais Frequentes (FAQ)](#7-resolução-de-problemas-mais-frequentes-faq)
-8. [Configurações de Domínio e Rede](#8-configurações-de-domínio-e-rede)
+8. [Configurações de domínio e rede](#8-configurações-de-domínio-e-rede)
 9. [Como Criar e Publicar Releases no GitHub](#9-como-criar-e-publicar-releases-no-github)
 
 ---
@@ -278,19 +278,19 @@ Ao instalar ou testar impressoras térmicas **Gainscha GA-2408T**, use a tabela 
 ---
 
 ### ❓ 5. Onde ficam salvos os relatórios e logs?
-- Os relatórios gerados ficam salvos na pasta de logs da aplicação e também podem ser exportados para a sua **Área de Trabalho** ou pasta de sua escolha clicando no botão **"Exportar Logs"**.
+- Os relatórios gerados ficam salvos na pasta de logs da aplicação e também podem ser exportados para a sua **Área de Trabalho** ou pasta de sua escolha clicando no botão **"Exportar log"**.
 
 ---
 
-## 8. Configurações de Domínio e Rede
+## 8. Configurações de domínio e rede
 
 Para que o **PrinterInstall** funcione em qualquer ambiente de TI (diferentes domínios corporativos, filiais ou redes isoladas), você pode configurar os parâmetros de domínio e rede antes de fazer login:
 
 1. Na tela de **Login**, clique no **ícone de engrenagem** (⚙️) no canto superior direito.
-2. A janela **Configurações de Domínio e Rede** será aberta:
-   - **Domínio Padrão:** Digite o nome do domínio Active Directory (ex: `hospital.local` ou `HOSPITAL`).
-   - **Botão Detectar Domínio:** Clica para detectar automaticamente o domínio da máquina em que você está logado no momento.
-   - **Servidor / Host LDAP Alternativo (Opcional):** Permite apontar diretamente para o IP ou FQDN de um Controlador de Domínio específico (caso o DNS local não resolva automaticamente).
+2. A janela **Configurações de domínio e rede** será aberta:
+   - **Domínio padrão:** Digite o nome do domínio Active Directory (ex: `hospital.local` ou `HOSPITAL`).
+   - **Botão detectar domínio:** Clica para detectar automaticamente o domínio da máquina em que você está logado no momento.
+   - **Servidor / host LDAP alternativo (opcional):** Permite apontar diretamente para o IP ou FQDN de um Controlador de Domínio específico (caso o DNS local não resolva automaticamente).
 3. Clique em **Salvar**. As preferências são salvas em `%LocalAppData%\PrinterInstall\settings.json` e persistirão mesmo ao atualizar ou mover o executável único.
 
 ---

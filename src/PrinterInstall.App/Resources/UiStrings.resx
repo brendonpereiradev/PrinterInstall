@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="Main_NotAuthenticated" xml:space="preserve"><value>Não autenticado.</value></data>
   <data name="Main_Validation_ComputersRequired" xml:space="preserve"><value>Informe pelo menos um nome de computador.</value></data>
-  <data name="Main_Validation_DisplayNameRequired" xml:space="preserve"><value>O nome de exibição (fila) é obrigatório.</value></data>
+  <data name="Main_Validation_DisplayNameRequired" xml:space="preserve"><value>O nome da impressora é obrigatório.</value></data>
   <data name="Main_Validation_PrinterHostRequired" xml:space="preserve"><value>O endereço do host da impressora é obrigatório.</value></data>
   <data name="Main_Validation_GainschaLabelPresetRequired" xml:space="preserve"><value>Selecione o tamanho de etiqueta para impressoras Gainscha.</value></data>
   <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Formato de nome de computador inválido.</value></data>
@@ -49,7 +49,7 @@
   <data name="Removal_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} aviso(s), {2} erro(s).</value></data>
   <data name="Removal_SummaryFailuresHeader" xml:space="preserve"><value>Falhas registradas:</value></data>
   <data name="Removal_Cancelled" xml:space="preserve"><value>Operação cancelada pelo utilizador.</value></data>
-  <data name="Main_DeployWarningDialogTitle" xml:space="preserve"><value>Atenção: Possível divergência de modelo</value></data>
+  <data name="Main_DeployWarningDialogTitle" xml:space="preserve"><value>Atenção: possível divergência de modelo</value></data>
   <data name="Main_DeployWarningHeader" xml:space="preserve"><value>Foram identificadas possíveis divergências na configuração de modelos:</value></data>
   <data name="Main_DeployWarningQuestion" xml:space="preserve"><value>Deseja continuar com a implantação mesmo assim?</value></data>
   <data name="Main_DeployWarningProceedButton" xml:space="preserve"><value>Prosseguir mesmo assim</value></data>
@@ -57,32 +57,32 @@
   <data name="Main_DeployCancelledByMismatchWarning" xml:space="preserve"><value>Implantação cancelada pelo utilizador após alerta de divergência de modelo/driver.</value></data>
   <data name="NetworkTest_ConfirmDialogTitle" xml:space="preserve"><value>Confirmar teste de impressora</value></data>
   <data name="NetworkTest_ConfirmHeader" xml:space="preserve"><value>Deseja enviar uma página de teste de rede para a impressora?</value></data>
-  <data name="NetworkTest_ConfirmHostFormat" xml:space="preserve"><value>Endereço IP/Host: {0}</value></data>
+  <data name="NetworkTest_ConfirmHostFormat" xml:space="preserve"><value>Endereço IP/host: {0}</value></data>
   <data name="NetworkTest_ConfirmBrandFormat" xml:space="preserve"><value>Modelo: {0}</value></data>
   <data name="NetworkTest_ConfirmPresetFormat" xml:space="preserve"><value>Tamanho de etiqueta: {0}</value></data>
   <data name="NetworkTest_ConfirmProceedButton" xml:space="preserve"><value>Enviar teste</value></data>
   <data name="NetworkTest_ConfirmCancelButton" xml:space="preserve"><value>Cancelar</value></data>
-  <data name="Removal_ResetSpoolerConfirmTitle" xml:space="preserve"><value>Confirmar reinício do Spooler</value></data>
-  <data name="Removal_ResetSpoolerConfirmMessage" xml:space="preserve"><value>Deseja interromper o serviço Spooler, expurgar todos os trabalhos presos e reiniciar o serviço no computador '{0}'?</value></data>
-  <data name="Removal_ResetSpoolerRunning" xml:space="preserve"><value>Reiniciando serviço Spooler e expurgando arquivos de impressão em '{0}'…</value></data>
+  <data name="Removal_ResetSpoolerConfirmTitle" xml:space="preserve"><value>Confirmar reinício do spooler</value></data>
+  <data name="Removal_ResetSpoolerConfirmMessage" xml:space="preserve"><value>Deseja interromper o serviço spooler, expurgar todos os trabalhos presos e reiniciar o serviço no computador '{0}'?</value></data>
+  <data name="Removal_ResetSpoolerRunning" xml:space="preserve"><value>Reiniciando serviço spooler e expurgando arquivos de impressão em '{0}'…</value></data>
   <data name="Removal_ResetSpoolerSuccess" xml:space="preserve"><value>Serviço Spooler reiniciado e fila limpa com sucesso em '{0}'.</value></data>
   <data name="Removal_ResetSpoolerErrorFormat" xml:space="preserve"><value>Falha ao reiniciar Spooler em '{0}': {1}</value></data>
-  <data name="Removal_Ping_Checking" xml:space="preserve"><value>Testando ping…</value></data>
-  <data name="Removal_Ping_Online" xml:space="preserve"><value>Online (Ping OK)</value></data>
-  <data name="Removal_Ping_Offline" xml:space="preserve"><value>Offline / Desligado</value></data>
+  <data name="Removal_Ping_Checking" xml:space="preserve"><value>Verificando…</value></data>
+  <data name="Removal_Ping_Online" xml:space="preserve"><value>Online</value></data>
+  <data name="Removal_Ping_Offline" xml:space="preserve"><value>Offline</value></data>
   <data name="Removal_Ping_TestingHostFormat" xml:space="preserve"><value>Testando conexão (ping) com o computador '{0}'…</value></data>
-  <data name="Removal_Ping_ConnectedLoadingPrinters" xml:space="preserve"><value>Conexão confirmada (Ping OK). Carregando impressoras…</value></data>
+  <data name="Removal_Ping_ConnectedLoadingPrinters" xml:space="preserve"><value>Conexão confirmada (ping OK). Carregando impressoras…</value></data>
   <data name="Removal_Ping_ComputerOfflineFormat" xml:space="preserve"><value>O computador '{0}' não respondeu ao ping nem às portas de gerenciamento (está desligado ou inacessível na rede).</value></data>
-  <data name="Main_InversionDialogTitle" xml:space="preserve"><value>Atenção: Inversão de campos detectada</value></data>
-  <data name="Main_InversionDialogHeader" xml:space="preserve"><value>Possível inversão entre Nome da Impressora e IP/Host</value></data>
-  <data name="Main_InversionDialogItemFormat" xml:space="preserve"><value>A fila '{0}' parece ser um endereço IP, enquanto o host '{1}' parece ser um nome amigável.</value></data>
+  <data name="Main_InversionDialogTitle" xml:space="preserve"><value>Atenção: inversão de campos detectada</value></data>
+  <data name="Main_InversionDialogHeader" xml:space="preserve"><value>Possível inversão entre nome da impressora e IP/host</value></data>
+  <data name="Main_InversionDialogItemFormat" xml:space="preserve"><value>O nome da impressora '{0}' parece ser um endereço IP, enquanto o host '{1}' parece ser um nome amigável.</value></data>
   <data name="Main_InversionDialogQuestion" xml:space="preserve"><value>Deseja inverter automaticamente esses campos e prosseguir com a implantação?</value></data>
   <data name="Main_InversionDialogProceedButton" xml:space="preserve"><value>Inverter e implantar</value></data>
   <data name="Main_InversionDialogCancelButton" xml:space="preserve"><value>Cancelar e corrigir</value></data>
   <data name="Main_InversionCorrectedLogFormat" xml:space="preserve"><value>Inversão corrigida automaticamente: Nome definido como '{0}' e IP como '{1}'.</value></data>
   <data name="Main_DeployCancelledByInversionWarning" xml:space="preserve"><value>Implantação cancelada pelo operador para correção da inversão de campos.</value></data>
-  <data name="Main_NoComputersDialogTitle" xml:space="preserve"><value>Atenção: Nenhum computador alvo informado</value></data>
+  <data name="Main_NoComputersDialogTitle" xml:space="preserve"><value>Atenção: nenhum computador alvo informado</value></data>
   <data name="Main_NoComputersDialogHeader" xml:space="preserve"><value>Nenhum computador foi configurado para implantação</value></data>
   <data name="Main_NoComputersDialogMessage" xml:space="preserve"><value>Informe pelo menos um nome ou endereço IP de computador na lista à esquerda antes de iniciar a implantação (ou clique em 'Adicionar este PC').</value></data>
-  <data name="Main_NoComputersDialogButton" xml:space="preserve"><value>Entendido / Corrigir</value></data>
+  <data name="Main_NoComputersDialogButton" xml:space="preserve"><value>Entendido / corrigir</value></data>
 </root>

@@ -4,6 +4,7 @@ using System.Text;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PrinterInstall.App.Converters;
 using PrinterInstall.App.Resources;
 using PrinterInstall.App.Services;
 using PrinterInstall.Core.Logging;
@@ -78,29 +79,85 @@ public partial class RemovalWizardViewModel : ObservableObject
     [ObservableProperty] private bool _isComputerOffline;
     [ObservableProperty] private string _pingStatusBadgeText = "";
 
+    [ObservableProperty] private int _reviewTotalRemovals;
+    [ObservableProperty] private int _reviewTotalRenames;
+    [ObservableProperty] private int _reviewTotalComputers;
+
     public bool HasPingBadge => PingStatus != ComputerPingStatus.None;
 
-    public string PingBadgeBackground => PingStatus switch
+    private static bool IsCurrentDarkTheme()
     {
-        ComputerPingStatus.Checking => "#FFFDF3D8",
-        ComputerPingStatus.Online => "#FFE6F4EA",
-        ComputerPingStatus.Offline => "#FFFCE8E6",
+        try
+        {
+            return TargetMachineStateToBrushConverter.IsDarkTheme ||
+                   Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme() == Wpf.Ui.Appearance.ApplicationTheme.Dark;
+        }
+        catch
+        {
+            return TargetMachineStateToBrushConverter.IsDarkTheme;
+        }
+    }
+
+    public string PingBadgeBackground => (PingStatus, IsCurrentDarkTheme()) switch
+    {
+        (ComputerPingStatus.Checking, true) => "#FF291C0E",
+        (ComputerPingStatus.Checking, false) => "#FFFFF4E5",
+        (ComputerPingStatus.Online, true) => "#FF0D2818",
+        (ComputerPingStatus.Online, false) => "#FFE7F6EC",
+        (ComputerPingStatus.Offline, true) => "#FF2D1214",
+        (ComputerPingStatus.Offline, false) => "#FFFCE8E8",
         _ => "Transparent"
     };
 
-    public string PingBadgeForeground => PingStatus switch
+    public string PingBadgeBorder => (PingStatus, IsCurrentDarkTheme()) switch
     {
-        ComputerPingStatus.Checking => "#FF8F6B00",
-        ComputerPingStatus.Online => "#FF137333",
-        ComputerPingStatus.Offline => "#FFC5221F",
-        _ => "#FF000000"
+        (ComputerPingStatus.Checking, true) => "#FF92400E",
+        (ComputerPingStatus.Checking, false) => "#FFE2BD7A",
+        (ComputerPingStatus.Online, true) => "#FF166534",
+        (ComputerPingStatus.Online, false) => "#FF87C79B",
+        (ComputerPingStatus.Offline, true) => "#FF991B1B",
+        (ComputerPingStatus.Offline, false) => "#FFE59A9A",
+        _ => "Transparent"
+    };
+
+    public string PingBadgeForeground => (PingStatus, IsCurrentDarkTheme()) switch
+    {
+        (ComputerPingStatus.Checking, true) => "#FFFBBF24",
+        (ComputerPingStatus.Checking, false) => "#FF8A5A00",
+        (ComputerPingStatus.Online, true) => "#FF4ADE80",
+        (ComputerPingStatus.Online, false) => "#FF1F6B35",
+        (ComputerPingStatus.Offline, true) => "#FFF87171",
+        (ComputerPingStatus.Offline, false) => "#FF8C1D1D",
+        _ => "#FFA1A1AA"
+    };
+
+    public string PingBadgeIcon => PingStatus switch
+    {
+        ComputerPingStatus.Checking => "\uE895",
+        ComputerPingStatus.Online => "\uE73E",
+        ComputerPingStatus.Offline => "\uEB90",
+        _ => ""
+    };
+
+    public string PingBadgeIconForeground => (PingStatus, IsCurrentDarkTheme()) switch
+    {
+        (ComputerPingStatus.Checking, true) => "#FFFBBF24",
+        (ComputerPingStatus.Checking, false) => "#FFCA8A04",
+        (ComputerPingStatus.Online, true) => "#FF4ADE80",
+        (ComputerPingStatus.Online, false) => "#FF16A34A",
+        (ComputerPingStatus.Offline, true) => "#FFF87171",
+        (ComputerPingStatus.Offline, false) => "#FFDC2626",
+        _ => "Transparent"
     };
 
     partial void OnPingStatusChanged(ComputerPingStatus value)
     {
         OnPropertyChanged(nameof(HasPingBadge));
         OnPropertyChanged(nameof(PingBadgeBackground));
+        OnPropertyChanged(nameof(PingBadgeBorder));
         OnPropertyChanged(nameof(PingBadgeForeground));
+        OnPropertyChanged(nameof(PingBadgeIcon));
+        OnPropertyChanged(nameof(PingBadgeIconForeground));
     }
 
     partial void OnIsComputerOfflineChanged(bool value)
@@ -634,6 +691,9 @@ public partial class RemovalWizardViewModel : ObservableObject
     private void BuildReviewSummary()
     {
         var lines = new List<string>();
+        var totalRemoves = 0;
+        var totalRenames = 0;
+        var totalComputers = 0;
         foreach (var computer in _machineOrder)
         {
             _selectionsByComputer.TryGetValue(computer, out var queues);
@@ -645,6 +705,9 @@ public partial class RemovalWizardViewModel : ObservableObject
                 lines.Add(string.Format(UiStrings.Removal_ReviewNothingFormat, computer));
                 continue;
             }
+            totalComputers++;
+            totalRemoves += queues.Count;
+            totalRenames += renames.Count;
             foreach (var rename in renames)
             {
                 lines.Add(string.Format(
@@ -663,6 +726,9 @@ public partial class RemovalWizardViewModel : ObservableObject
             }
         }
         ReviewSummary = string.Join(Environment.NewLine, lines);
+        ReviewTotalRemovals = totalRemoves;
+        ReviewTotalRenames = totalRenames;
+        ReviewTotalComputers = totalComputers;
     }
 
     [RelayCommand(CanExecute = nameof(CanExportLog))]

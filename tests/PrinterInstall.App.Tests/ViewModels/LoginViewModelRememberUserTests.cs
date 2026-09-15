@@ -170,5 +170,32 @@ public class LoginViewModelRememberUserTests
         Assert.Equal("custom.domain.local", session.DomainName);
         Assert.Equal("custom.domain.local", store.Stored?.DomainName);
         Assert.Equal("operador", store.Stored?.UserName);
+        Assert.False(sut.IsAuthenticating);
+    }
+
+    [Fact]
+    public void TogglePasswordVisibility_FlipsState()
+    {
+        var sut = CreateSut(new FakeRememberedUserStore());
+        Assert.False(sut.IsPasswordRevealed);
+
+        sut.TogglePasswordVisibilityCommand.Execute(null);
+        Assert.True(sut.IsPasswordRevealed);
+
+        sut.TogglePasswordVisibilityCommand.Execute(null);
+        Assert.False(sut.IsPasswordRevealed);
+    }
+
+    [Fact]
+    public async Task TryLoginAsync_ResetsIsAuthenticating_EvenOnEmptyUserFailure()
+    {
+        var sut = CreateSut(new FakeRememberedUserStore());
+        sut.UserName = "";
+
+        var result = await sut.TryLoginAsync();
+
+        Assert.False(result.Success);
+        Assert.False(sut.IsAuthenticating);
+        Assert.NotNull(sut.ErrorMessage);
     }
 }
