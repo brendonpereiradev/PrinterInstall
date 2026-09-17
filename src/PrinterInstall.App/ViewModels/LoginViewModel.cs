@@ -132,25 +132,8 @@ public partial class LoginViewModel : ObservableObject
         }
     }
 
-    internal static (string UserName, string DomainName) ParseCredentialIdentity(string rawUserName, string configuredDomain)
-    {
-        var trimmed = rawUserName.Trim();
-        if (trimmed.Contains('\\', StringComparison.Ordinal))
-        {
-            var parts = trimmed.Split('\\', 2, StringSplitOptions.TrimEntries);
-            if (parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
-                return (parts[1], parts[0]);
-        }
-
-        if (trimmed.Contains('@', StringComparison.Ordinal))
-        {
-            var parts = trimmed.Split('@', 2, StringSplitOptions.TrimEntries);
-            if (parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
-                return (parts[0], parts[1]);
-        }
-
-        return (trimmed, configuredDomain.Trim());
-    }
+    internal static (string UserName, string DomainName) ParseCredentialIdentity(string rawUserName, string configuredDomain) =>
+        CredentialHelper.SplitDomainAndUser(rawUserName, configuredDomain);
 
     internal static string ResolveLdapHost(string parsedDomain, string configuredDomain) =>
         parsedDomain.Contains('.', StringComparison.Ordinal)

@@ -1,5 +1,6 @@
-using System.Management;
+﻿using System.Management;
 using System.Net;
+using PrinterInstall.Core.Auth;
 
 namespace PrinterInstall.Core.Remote;
 
@@ -20,9 +21,7 @@ public sealed class WmiRemoteProcessRunner : IRemoteProcessRunner, IRemoteWmiPro
         {
             Impersonation = ImpersonationLevel.Impersonate,
             Authentication = AuthenticationLevel.PacketPrivacy,
-            Username = string.IsNullOrEmpty(credential.Domain)
-                ? credential.UserName
-                : $"{credential.Domain}\\{credential.UserName}",
+            Username = CredentialHelper.BuildCredentialUserName(credential),
             Password = credential.Password ?? "",
             EnablePrivileges = true
         };
