@@ -1,11 +1,12 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Net;
 using System.Runtime.InteropServices;
+using PrinterInstall.Core.Auth;
 
 namespace PrinterInstall.Core.Remote;
 
 /// <summary>
-/// Mounts a Windows SMB share (e.g. \\host\ADMIN$) with explicit credentials and releases it on dispose.
+/// Conecta a um compartilhamento SMB do Windows (ex: \\host\ADMIN$ ou \\host\IPC$) com credenciais explícitas e libera no dispose.
 /// </summary>
 public sealed class SmbShareConnection : IDisposable
 {
@@ -25,7 +26,7 @@ public sealed class SmbShareConnection : IDisposable
     }
 
     /// <summary>
-    /// Opens a connection to \\host\shareName (e.g. shareName = ADMIN$ or IPC$).
+    /// Abre uma conexão para \\host\shareName (ex: shareName = ADMIN$ ou IPC$).
     /// </summary>
     public static SmbShareConnection Open(string host, string shareName, NetworkCredential credential)
     {
@@ -39,9 +40,7 @@ public sealed class SmbShareConnection : IDisposable
             ResourceType = isIpc ? ResourceTypeAny : ResourceTypeDisk,
             RemoteName = remote
         };
-        var user = string.IsNullOrEmpty(credential.Domain)
-            ? credential.UserName
-            : $"{credential.Domain}\\{credential.UserName}";
+        var user = CredentialHelper.BuildCredentialUserName(credential);
         var password = credential.Password ?? "";
 
         var code = WNetAddConnection2(netResource, password, user, 0);

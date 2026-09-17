@@ -10,7 +10,8 @@
         mc:Ignorable="d"
         Title="{DynamicResource Main_WindowTitle}"
         Icon="pack://application:,,,/Assets/app.ico"
-        Height="800" Width="1100"
+        Height="680" Width="1000"
+        MinHeight="520" MinWidth="840"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource AppCanvasBackgroundBrush}">
     <Window.Resources>
@@ -165,7 +166,7 @@
         <Grid Grid.Row="1" Margin="16,0,16,16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="220" MinHeight="160"/>
+                <RowDefinition Height="180" MinHeight="100"/>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
@@ -179,7 +180,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="8"/>
-                        <RowDefinition Height="200"/>
+                        <RowDefinition Height="*" MinHeight="140"/>
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0" Background="{DynamicResource AppSurfaceCardBrush}"

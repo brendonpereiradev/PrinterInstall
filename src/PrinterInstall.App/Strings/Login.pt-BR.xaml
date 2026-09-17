@@ -4,7 +4,7 @@
   <sys:String x:Key="Login_WindowTitle">Printer Install</sys:String>
   <sys:String x:Key="Login_Header">Entrar no domínio</sys:String>
   <sys:String x:Key="Login_UserLabel">Usuário</sys:String>
-  <sys:String x:Key="Login_UserPlaceholder">Ex: 17308051757 ou domínio\usuário</sys:String>
+  <sys:String x:Key="Login_UserPlaceholder">Digite seu usuário de rede</sys:String>
   <sys:String x:Key="Login_PasswordLabel">Senha</sys:String>
   <sys:String x:Key="Login_PasswordPlaceholder">Digite sua senha de rede</sys:String>
   <sys:String x:Key="Login_SignInButton">Entrar</sys:String>

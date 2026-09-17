@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -29,8 +29,9 @@ public sealed class WindowsDomainCredentialValidator : ILdapCredentialValidator
                 LdapLoginErrorMessages.FromWin32Error(1326)));
         }
 
+        // 1. Tenta autenticação direta com o usuário fornecido
         var (logonUserName, logonDomain) = ResolveLogonIdentity(domainName, credential);
-        if (!LogonUser(
+        if (LogonUser(
                 logonUserName,
                 logonDomain,
                 credential.Password,
@@ -38,24 +39,50 @@ public sealed class WindowsDomainCredentialValidator : ILdapCredentialValidator
                 Logon32ProviderDefault,
                 out var token))
         {
-            return Task.FromResult(LdapValidationResult.Failure(
-                LdapLoginErrorMessages.FromWin32Error(Marshal.GetLastWin32Error())));
+            CloseHandle(token);
+            return Task.FromResult(LdapValidationResult.Success());
         }
 
-        CloseHandle(token);
-        return Task.FromResult(LdapValidationResult.Success());
+        int win32Error = Marshal.GetLastWin32Error();
+
+        // 2. Fallback: Se o usuário informou um CPF com formatação/pontuação (ex: 123.456.789-00), tenta com CPF sanitizado
+        var cleanUser = CredentialHelper.SanitizeCpf(credential.UserName);
+        if (!string.Equals(cleanUser, credential.UserName, StringComparison.Ordinal))
+        {
+            var sanitizedCred = new NetworkCredential(cleanUser, credential.Password, credential.Domain);
+            var (sanitizedLogonUser, sanitizedLogonDomain) = ResolveLogonIdentity(domainName, sanitizedCred);
+            if (LogonUser(
+                    sanitizedLogonUser,
+                    sanitizedLogonDomain,
+                    sanitizedCred.Password,
+                    Logon32LogonNetwork,
+                    Logon32ProviderDefault,
+                    out var sanitizedToken))
+            {
+                CloseHandle(sanitizedToken);
+                return Task.FromResult(LdapValidationResult.Success());
+            }
+
+            win32Error = Marshal.GetLastWin32Error();
+        }
+
+        return Task.FromResult(LdapValidationResult.Failure(
+            LdapLoginErrorMessages.FromWin32Error(win32Error)));
     }
 
     /// <summary>
-    /// LogonUser expects NetBIOS domain (PREVENTSENIOR) or UPN (user@domain.local with domain ".").
-    /// DNS-only domain names fail with ERROR_LOGON_FAILURE (1326) even with valid credentials.
+    /// LogonUser espera NetBIOS domain (PREVENTSENIOR) ou UPN (user@domain.local com domain ".").
+    /// Nomes de domínio somente DNS falham com ERROR_LOGON_FAILURE (1326) mesmo com credenciais válidas se passados no campo de domínio.
     /// </summary>
     internal static (string UserName, string Domain) ResolveLogonIdentity(
         string domainName,
         NetworkCredential credential)
     {
-        var domain = domainName.Trim();
-        var userName = credential.UserName;
+        var rawUser = credential.UserName ?? string.Empty;
+        var (extractedUser, extractedDomain) = CredentialHelper.SplitDomainAndUser(rawUser, domainName);
+
+        var domain = !string.IsNullOrWhiteSpace(extractedDomain) ? extractedDomain.Trim() : domainName.Trim();
+        var userName = extractedUser.Trim();
 
         if (domain.Contains('.', StringComparison.Ordinal))
             return ($"{userName}@{domain}", ".");

@@ -70,12 +70,8 @@ public static class WmiPrinterOperationsCore
         return (commaIndex >= 0 ? raw[..commaIndex] : raw).Trim();
     }
 
-    public static string BuildCredentialUserName(NetworkCredential credential)
-    {
-        if (!string.IsNullOrEmpty(credential.Domain))
-            return $"{credential.Domain}\\{credential.UserName}";
-        return credential.UserName;
-    }
+    public static string BuildCredentialUserName(NetworkCredential credential) =>
+        PrinterInstall.Core.Auth.CredentialHelper.BuildCredentialUserName(credential);
 
     public static string EscapeWql(string s) => s.Replace("\\", "\\\\").Replace("'", "\\'");
 
