@@ -23,8 +23,14 @@ public class RemoteHostSessionFactoryTests
     }
 
     [Fact]
-    public void ParseElevationProbeOutput_EmptyOutput_AssumesFiltered()
+    public void ParseElevationProbeOutput_EmptyOutput_DoesNotAssumeFiltered()
     {
-        Assert.True(RemoteHostSessionFactory.ParseElevationProbeOutput(string.Empty));
+        Assert.False(RemoteHostSessionFactory.ParseElevationProbeOutput(string.Empty));
+    }
+
+    [Fact]
+    public void ParseElevationProbeOutput_InconclusiveOutput_DoesNotAssumeFiltered()
+    {
+        Assert.False(RemoteHostSessionFactory.ParseElevationProbeOutput("Random error or unhandled text without marker"));
     }
 }

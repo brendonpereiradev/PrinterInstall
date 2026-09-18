@@ -247,8 +247,14 @@ try {{
             $archive.Dispose()
             Remove-Item -LiteralPath $zipFile -Force -ErrorAction SilentlyContinue
         }} catch {{
-            Write-Output ('STAGING>> Falha ao descompactar package.zip: ' + $_.Exception.Message)
+            throw ('Falha ao descompactar package.zip: ' + $_.Exception.Message)
+        }} finally {{
+            if ($archive) {{ $archive.Dispose() }}
         }}
+    }}
+
+    if (-not (Test-Path -LiteralPath $inf -PathType Leaf)) {{
+        throw ('Arquivo INF nao encontrado apos preparar pacote: ' + $inf)
     }}
 
     $catFiles = @(Get-ChildItem -LiteralPath $stagingRoot -Filter '*.cat' -ErrorAction SilentlyContinue)
@@ -287,24 +293,26 @@ try {{
         }}
     }}
 
-    $pnpOutput = & pnputil.exe /add-driver $inf /install 2>&1
+    # Prepara o pacote no Driver Store; o registro no spooler ocorre abaixo.
+    # /install atualiza dispositivos PnP existentes e pode retornar 259 sem falha no pacote.
+    $pnpOutput = & pnputil.exe /add-driver $inf 2>&1
     $pnpExit = $LASTEXITCODE
     $pnpOutputText = ($pnpOutput | Out-String).Trim()
     if ($pnpOutputText) {{ Write-Output ('PNPUTIL>> ' + $pnpOutputText) }}
 
-    $pnpSuccess = ($pnpExit -eq 0) -and ($pnpOutputText -match '(?i)(Driver package added successfully|Pacote de driver adicionado|Added driver packages:\s*[1-9]|Pacotes de driver adicionados:\s*[1-9])')
-    if ($pnpOutputText -match '(?i)(Failed to add|Falha ao adicionar|Access is denied|Acesso negado|Pacotes de driver adicionados:\s*0|Added driver packages:\s*0)') {{
+    $pnpPublishedPackage = $pnpOutputText -match '(?i)\boem\d+\.inf\b'
+    $pnpSuccess = ($pnpExit -eq 0 -or $pnpExit -eq 3010 -or ($pnpExit -eq 259 -and $pnpPublishedPackage))
+    if ($pnpOutputText -match '(?i)(Failed to add|Falha ao adicionar|Access is denied|Acesso negado)') {{
         $pnpSuccess = $false
     }}
+    if ($pnpExit -eq 3010) {{ Write-Output 'PNPUTIL>> Reinicializacao pendente informada pelo Windows (3010). Nenhum reinicio automatico sera realizado.' }}
+    if ($pnpExit -eq 259 -and $pnpSuccess) {{ Write-Output 'PNPUTIL>> Pacote publicado; nenhuma atualizacao PnP necessaria (259). Prosseguindo com o registro no spooler.' }}
 
     if (-not $pnpSuccess) {{
         $pnpDetail = 'pnputil exit code ' + $pnpExit
-        $pnpLines = @($pnpOutputText -split '\r?\n' | Where-Object {{ $_.Trim() -ne '' }})
-        for ($i = $pnpLines.Count - 1; $i -ge 0; $i--) {{
-            $line = $pnpLines[$i].Trim()
-            if ($line -match '^(?i)(Microsoft PnP Utility|Utilitário PnP da Microsoft|Utilitario PnP da Microsoft)$') {{ continue }}
-            $pnpDetail = $line
-            break
+        $pnpLines = @($pnpOutputText -split '\r?\n' | ForEach-Object {{ $_.Trim() }} | Where-Object {{ $_ -and $_ -notmatch '^(?i)(Microsoft PnP Utility|Utilitário PnP da Microsoft|Utilitario PnP da Microsoft)$' }})
+        if ($pnpLines.Count -gt 0) {{
+            $pnpDetail += ': ' + ($pnpLines -join ' | ')
         }}
         if ($pnpDetail -match '(?i)(Access is denied|Acesso negado)') {{
             $pnpDetail = $pnpDetail + ' Execute o Printer Install como administrador ou aceite o prompt UAC.'
@@ -463,7 +471,10 @@ catch {{
             return detail;
 
         var inline = detail["pnputil:".Length..].Trim();
-        if (!PnputilOutputParser.IsHeaderOnly(inline))
+        if (!PnputilOutputParser.IsHeaderOnly(inline)
+            && !System.Text.RegularExpressions.Regex.IsMatch(inline,
+                @"^(Added driver packages|Pacotes de driver adicionados):\s*\d+$",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             return detail;
 
         var pnputilSection = ExtractPnputilSection(installOutput);

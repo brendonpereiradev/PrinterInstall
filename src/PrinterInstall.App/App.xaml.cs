@@ -58,6 +58,7 @@ public partial class App : Application
         builder.Services.AddSingleton<IRemoteDriverFileStager, SmbRemoteDriverFileStager>();
         builder.Services.AddSingleton<WmiRemoteProcessRunner>();
         builder.Services.AddSingleton<IRemoteWmiProcessRunner>(sp => sp.GetRequiredService<WmiRemoteProcessRunner>());
+        builder.Services.AddSingleton<ISchtasksFallbackRunner, DefaultSchtasksFallbackRunner>();
         builder.Services.AddSingleton<RemoteHostSessionFactory>();
         builder.Services.AddSingleton<ElevatedRemoteProcessRunner>();
         builder.Services.AddSingleton<IRemoteProcessRunner>(sp => sp.GetRequiredService<WmiRemoteProcessRunner>());

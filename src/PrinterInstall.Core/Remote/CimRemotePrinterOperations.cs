@@ -392,19 +392,32 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
                     await ReadAndReportInstallLogAsync().ConfigureAwait(false);
 
                     if (runResult.ReturnValue != 0)
-                        throw new InvalidOperationException($"Install script could not start on {computerName} (WMI return {runResult.ReturnValue}).");
-                    if (runResult.TimedOut)
-                        throw new TimeoutException($"Install script timed out on {computerName} after {InstallTimeout}. Remote process was killed.");
-
-                    var installOutput = await _stager.ReadLogAsync(computerName, credential, paths, "install.log", cancellationToken).ConfigureAwait(false);
-                    var resultLine = WmiPrinterOperationsCore.ExtractResultLine(installOutput);
-                    if (!string.Equals(resultLine, "RESULT>> OK", StringComparison.Ordinal))
                     {
-                        var detail = string.IsNullOrEmpty(resultLine) ? "no RESULT line" : resultLine;
-                        throw new InvalidOperationException($"Add-PrinterDriver failed on {computerName}: {detail}");
+                        log?.Report($"Execução direta via WMI retornou código {runResult.ReturnValue} em {computerName}. Acionando execução elevada via tarefa agendada...");
+                        session.MarkRequiresElevatedExecution();
+                        runElevated = true;
+                        scriptContent = WmiPrinterOperationsCore.BuildInstallerScript(
+                            infLocal,
+                            package.ExpectedDriverName,
+                            installLogLocal,
+                            skipRunAsBlock: true);
                     }
+                    else if (runResult.TimedOut)
+                    {
+                        throw new TimeoutException($"Install script timed out on {computerName} after {InstallTimeout}. Remote process was killed.");
+                    }
+                    else
+                    {
+                        var installOutput = await _stager.ReadLogAsync(computerName, credential, paths, "install.log", cancellationToken).ConfigureAwait(false);
+                        var resultLine = WmiPrinterOperationsCore.ExtractResultLine(installOutput);
+                        if (!string.Equals(resultLine, "RESULT>> OK", StringComparison.Ordinal))
+                        {
+                            var detail = string.IsNullOrEmpty(resultLine) ? "no RESULT line" : resultLine;
+                            throw new InvalidOperationException($"Add-PrinterDriver failed on {computerName}: {detail}");
+                        }
 
-                    return;
+                        return;
+                    }
                 }
                 catch (Exception ex) when (AccessDeniedDetector.IsAccessDenied(ex))
                 {
@@ -421,14 +434,28 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
 
             if (runElevated)
             {
-                await _elevatedRunner.RunElevatedScriptAsync(
-                    computerName,
-                    credential,
-                    scriptContent,
-                    InstallTimeout,
-                    log,
-                    cancellationToken).ConfigureAwait(false);
-                await ReadAndReportInstallLogAsync().ConfigureAwait(false);
+                try
+                {
+                    await _elevatedRunner.RunElevatedScriptAsync(
+                        computerName,
+                        credential,
+                        scriptContent,
+                        InstallTimeout,
+                        log,
+                        cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    // Capture o diagnóstico antes da limpeza, inclusive quando a tarefa falha.
+                    try
+                    {
+                        await ReadAndReportInstallLogAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        log?.Report($"Nao foi possivel ler install.log de {computerName}: {ex.Message}");
+                    }
+                }
             }
         }
         finally

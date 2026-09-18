@@ -14,6 +14,7 @@ internal static class WmiProcessRunnerCore
         using var processClass = new ManagementClass(scope, new ManagementPath("Win32_Process"), null);
         using var inParams = processClass.GetMethodParameters("Create");
         inParams["CommandLine"] = commandLine;
+        inParams["CurrentDirectory"] = @"C:\Windows\System32";
 
         using var outParams = processClass.InvokeMethod("Create", inParams, null);
         var returnValue = Convert.ToUInt32(outParams["ReturnValue"], CultureInfo.InvariantCulture);
