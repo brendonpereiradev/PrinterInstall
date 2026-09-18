@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using Moq;
@@ -233,7 +234,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
         };
 
         var sut = new PrinterDeploymentOrchestrator(m.Object);
-        var events = new List<DeploymentProgressEvent>();
+        var events = new ConcurrentBag<DeploymentProgressEvent>();
         await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         Assert.True(maxConcurrent > 1, $"Esperava concorrência simultânea > 1, mas obteve {maxConcurrent}.");
