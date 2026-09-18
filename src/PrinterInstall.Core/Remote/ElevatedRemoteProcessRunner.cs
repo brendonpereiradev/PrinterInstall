@@ -10,11 +10,16 @@ public sealed class ElevatedRemoteProcessRunner
 
     private readonly IRemoteWmiProcessRunner _wmiRunner;
     private readonly IRemoteDriverFileStager _stager;
+    private readonly ISchtasksFallbackRunner _schtasksFallbackRunner;
 
-    public ElevatedRemoteProcessRunner(IRemoteWmiProcessRunner wmiRunner, IRemoteDriverFileStager stager)
+    public ElevatedRemoteProcessRunner(
+        IRemoteWmiProcessRunner wmiRunner,
+        IRemoteDriverFileStager stager,
+        ISchtasksFallbackRunner? schtasksFallbackRunner = null)
     {
         _wmiRunner = wmiRunner;
         _stager = stager;
+        _schtasksFallbackRunner = schtasksFallbackRunner ?? new DefaultSchtasksFallbackRunner();
     }
 
     public async Task RunElevatedScriptAsync(
@@ -70,6 +75,7 @@ public sealed class ElevatedRemoteProcessRunner
         var scriptWithResultFile = AugmentScriptWithResultFile(scriptContent, resultLocal);
         var transcriptWrapper = WrapScriptWithTranscript(scriptWithResultFile, logLocal);
 
+        var usedFallback = false;
         try
         {
             log?.Report(runAsSystem
@@ -95,30 +101,119 @@ public sealed class ElevatedRemoteProcessRunner
 
             var createResult = await _wmiRunner.RunAsync(host, credential, createCmd, SchtasksBootstrapTimeout, cancellationToken)
                 .ConfigureAwait(false);
+
             if (createResult.ReturnValue != 0)
             {
-                throw new InvalidOperationException(runAsSystem
-                    ? $"schtasks /Create falhou em {host} (WMI return {createResult.ReturnValue}). Verifique permissão para criar tarefas agendadas como SYSTEM."
-                    : $"schtasks /Create falhou em {host} (WMI return {createResult.ReturnValue}). Verifique permissão para criar tarefa agendada como o usuário de deploy.");
+                log?.Report($"WMI Win32_Process retornou {createResult.ReturnValue} ao tentar iniciar schtasks em {host}. Tentando via RPC remoto (schtasks /S)...");
+
+                var remoteUser = SchtasksRunAsFormatter.FormatRunAsUser(credential);
+                var remotePass = credential.Password ?? string.Empty;
+
+                var fallbackCreateArgs = runAsSystem
+                    ? string.Format(
+                        CultureInfo.InvariantCulture,
+                        "/Create /S \"{0}\" /U \"{1}\" /P \"{2}\" /TN \"{3}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{4}\\\"\" /SC ONCE /ST 00:00 /RU SYSTEM /RL HIGHEST /F",
+                        host,
+                        SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
+                        SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
+                        taskName,
+                        scriptLocal)
+                    : string.Format(
+                        CultureInfo.InvariantCulture,
+                        "/Create /S \"{0}\" /U \"{1}\" /P \"{2}\" /TN \"{3}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{4}\\\"\" /SC ONCE /ST 00:00 /RU \"{5}\" /RP \"{6}\" /RL HIGHEST /F",
+                        host,
+                        SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
+                        SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
+                        taskName,
+                        scriptLocal,
+                        SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
+                        SchtasksRunAsFormatter.EscapeCmdArgument(remotePass));
+
+                var fallbackResult = await _schtasksFallbackRunner.RunAsync(fallbackCreateArgs, SchtasksBootstrapTimeout, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (fallbackResult.Result.ReturnValue != 0)
+                {
+                    var detail = !string.IsNullOrWhiteSpace(fallbackResult.StandardError)
+                        ? fallbackResult.StandardError.Trim()
+                        : (!string.IsNullOrWhiteSpace(fallbackResult.StandardOutput)
+                            ? fallbackResult.StandardOutput.Trim()
+                            : $"código {fallbackResult.Result.ReturnValue}");
+
+                    throw new InvalidOperationException(runAsSystem
+                        ? $"schtasks /Create falhou em {host} (WMI return {createResult.ReturnValue}; RPC fallback: {detail}). Verifique permissões para criar tarefas agendadas como SYSTEM ou restrições de criação de processo WMI."
+                        : $"schtasks /Create falhou em {host} (WMI return {createResult.ReturnValue}; RPC fallback: {detail}). Verifique permissões para criar tarefa agendada como o usuário de deploy ou restrições de processo WMI.");
+                }
+
+                usedFallback = true;
             }
 
-            var runCmd = $"schtasks /Run /TN \"{taskName}\"";
-            await _wmiRunner.RunAsync(host, credential, runCmd, SchtasksBootstrapTimeout, cancellationToken)
-                .ConfigureAwait(false);
+            if (usedFallback)
+            {
+                var remoteUser = SchtasksRunAsFormatter.FormatRunAsUser(credential);
+                var remotePass = credential.Password ?? string.Empty;
+                var fallbackRunArgs = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "/Run /S \"{0}\" /U \"{1}\" /P \"{2}\" /TN \"{3}\"",
+                    host,
+                    SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
+                    SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
+                    taskName);
+
+                var runResult = await _schtasksFallbackRunner.RunAsync(fallbackRunArgs, SchtasksBootstrapTimeout, cancellationToken)
+                    .ConfigureAwait(false);
+                if (runResult.Result.ReturnValue != 0)
+                {
+                    var detail = !string.IsNullOrWhiteSpace(runResult.StandardError)
+                        ? runResult.StandardError.Trim()
+                        : $"código {runResult.Result.ReturnValue}";
+                    throw new InvalidOperationException($"schtasks /Run falhou via RPC remoto em {host}: {detail}");
+                }
+            }
+            else
+            {
+                var runCmd = $"schtasks /Run /TN \"{taskName}\"";
+                await _wmiRunner.RunAsync(host, credential, runCmd, SchtasksBootstrapTimeout, cancellationToken)
+                    .ConfigureAwait(false);
+            }
 
             await PollForResultAsync(host, credential, paths, timeout, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
-            var deleteCmd = $"schtasks /Delete /TN \"{taskName}\" /F";
-            try
+            if (usedFallback)
             {
-                await _wmiRunner.RunAsync(host, credential, deleteCmd, SchtasksBootstrapTimeout, CancellationToken.None)
-                    .ConfigureAwait(false);
+                try
+                {
+                    var remoteUser = SchtasksRunAsFormatter.FormatRunAsUser(credential);
+                    var remotePass = credential.Password ?? string.Empty;
+                    var fallbackDeleteArgs = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "/Delete /S \"{0}\" /U \"{1}\" /P \"{2}\" /TN \"{3}\" /F",
+                        host,
+                        SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
+                        SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
+                        taskName);
+                    await _schtasksFallbackRunner.RunAsync(fallbackDeleteArgs, SchtasksBootstrapTimeout, CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch
+                {
+                    // best effort
+                }
             }
-            catch
+            else
             {
-                // best effort
+                var deleteCmd = $"schtasks /Delete /TN \"{taskName}\" /F";
+                try
+                {
+                    await _wmiRunner.RunAsync(host, credential, deleteCmd, SchtasksBootstrapTimeout, CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch
+                {
+                    // best effort
+                }
             }
 
             try

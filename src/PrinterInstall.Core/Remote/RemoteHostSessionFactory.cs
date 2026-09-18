@@ -67,18 +67,38 @@ public sealed class RemoteHostSessionFactory
         using (SmbShareConnection.Open(trimmedHost, "ADMIN$", credential))
             Directory.CreateDirectory(paths.UncRoot);
 
-        await _processRunner.RunAsync(trimmedHost, credential, probeCmd, TimeSpan.FromSeconds(30), cancellationToken)
-            .ConfigureAwait(false);
-
-        string probeText;
-        using (SmbShareConnection.Open(trimmedHost, "ADMIN$", credential))
+        var requiresElevated = false;
+        try
         {
-            var uncProbe = paths.UncLogPath("probe.log");
-            probeText = File.Exists(uncProbe) ? await File.ReadAllTextAsync(uncProbe, cancellationToken).ConfigureAwait(false) : string.Empty;
-            try { Directory.Delete(paths.UncRoot, recursive: true); } catch { /* best effort */ }
+            var probeResult = await _processRunner.RunAsync(trimmedHost, credential, probeCmd, TimeSpan.FromSeconds(30), cancellationToken)
+                .ConfigureAwait(false);
+
+            if (probeResult.ReturnValue == 0 && !probeResult.TimedOut)
+            {
+                string probeText;
+                using (SmbShareConnection.Open(trimmedHost, "ADMIN$", credential))
+                {
+                    var uncProbe = paths.UncLogPath("probe.log");
+                    probeText = File.Exists(uncProbe) ? await File.ReadAllTextAsync(uncProbe, cancellationToken).ConfigureAwait(false) : string.Empty;
+                    try { Directory.Delete(paths.UncRoot, recursive: true); } catch { /* best effort */ }
+                }
+
+                requiresElevated = ParseElevationProbeOutput(probeText);
+            }
+            else
+            {
+                using (SmbShareConnection.Open(trimmedHost, "ADMIN$", credential))
+                {
+                    try { Directory.Delete(paths.UncRoot, recursive: true); } catch { /* best effort */ }
+                }
+            }
+        }
+        catch
+        {
+            // Em caso de exceção no probe, assume falso para permitir a tentativa direta via WMI CIM.
+            requiresElevated = false;
         }
 
-        var requiresElevated = ParseElevationProbeOutput(probeText);
         var session = new RemoteHostSession(trimmedHost, requiresElevated);
         _cache[key] = session;
 
@@ -99,6 +119,6 @@ public sealed class RemoteHostSessionFactory
             if (line.Contains("ELEVATION_PROBE>> TRUE", StringComparison.OrdinalIgnoreCase))
                 return false;
         }
-        return true;
+        return false;
     }
 }

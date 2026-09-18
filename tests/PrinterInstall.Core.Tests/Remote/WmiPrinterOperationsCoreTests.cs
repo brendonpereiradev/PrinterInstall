@@ -5,6 +5,14 @@ namespace PrinterInstall.Core.Tests.Remote;
 public class WmiPrinterOperationsCoreTests
 {
     [Fact]
+    public void DescribeInstallScriptFailure_TrailingZeroCounter_RecoversOriginalError()
+    {
+        const string log = "PNPUTIL>> Utilitário PnP da Microsoft\nFalha ao adicionar pacote de driver: arquivo ausente.\nPacotes de driver adicionados: 0\nRESULT>> FAIL pnputil: Pacotes de driver adicionados: 0";
+        Assert.Equal("pnputil: Falha ao adicionar pacote de driver: arquivo ausente.",
+            WmiPrinterOperationsCore.DescribeInstallScriptFailure(log, 1));
+    }
+
+    [Fact]
     public void BuildPrintTestPageCommandLine_EscapesSingleQuotesInPrinterName()
     {
         var cmd = WmiPrinterOperationsCore.BuildPrintTestPageCommandLine("Recepção L'Andar");
@@ -42,7 +50,8 @@ public class WmiPrinterOperationsCoreTests
             "Lexmark Universal v4 XL",
             @"C:\Temp\pkg\install.log");
 
-        Assert.Contains("$pnpOutput = & pnputil.exe /add-driver $inf /install 2>&1", script, StringComparison.Ordinal);
+        Assert.Contains("$pnpOutput = & pnputil.exe /add-driver $inf 2>&1", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("/add-driver $inf /install", script, StringComparison.Ordinal);
         Assert.Contains("$pnpExit = $LASTEXITCODE", script, StringComparison.Ordinal);
         Assert.Contains("$pnpOutputText = ($pnpOutput | Out-String).Trim()", script, StringComparison.Ordinal);
         Assert.DoesNotContain("| Out-String\n        $pnpExit", script, StringComparison.Ordinal);
