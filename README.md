@@ -180,7 +180,6 @@ Antes de instalar uma fila Gainscha, confirme o rolo instalado na impressora fí
 
 - [Manual de Operação](MANUAL.txt): Guia com procedimentos de suporte, telas e resolução de problemas comuns
 - [Modelos testados](MODELOS_TESTADOS.txt): Relação de equipamentos e drivers validados por fabricante
-- [GEMINI.md](GEMINI.md): Diretrizes de desenvolvimento e referências de arquitetura
 
 ---
 
