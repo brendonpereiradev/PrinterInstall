@@ -180,7 +180,6 @@ Verify which roll is loaded in the physical printer before configuring a Gainsch
 
 - [Operational manual](MANUAL.txt): Operational guide with support procedures and troubleshooting (Portuguese)
 - [Tested models](MODELOS_TESTADOS.txt): Validated equipment and drivers by manufacturer
-- [GEMINI.md](GEMINI.md): Coding standards and architectural documentation (Portuguese)
 
 ---
 
