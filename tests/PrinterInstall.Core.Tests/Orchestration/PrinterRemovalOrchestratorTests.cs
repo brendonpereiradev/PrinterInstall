@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Moq;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Orchestration;
@@ -38,7 +38,7 @@ public class PrinterRemovalOrchestratorTests
             Request(Target("pc1")),
             new SyncProgress<PrinterRemovalProgressEvent>(e => events.Add(e)));
 
-        Assert.Contains(events, e => e.State == PrinterRemovalProgressState.TargetCompleted && e.Message.Contains("Nothing"));
+        Assert.Contains(events, e => e.State == PrinterRemovalProgressState.TargetCompleted && e.Message.Contains("Nenhuma alteração"));
         mock.Verify(m => m.RemovePrinterQueueAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         mock.Verify(m => m.CountPrintersUsingPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         mock.Verify(m => m.RemoveTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);

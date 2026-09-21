@@ -9,19 +9,19 @@
   <data name="Main_Validation_DisplayNameRequired" xml:space="preserve"><value>O nome da impressora é obrigatório.</value></data>
   <data name="Main_Validation_PrinterHostRequired" xml:space="preserve"><value>O endereço do host da impressora é obrigatório.</value></data>
   <data name="Main_Validation_GainschaLabelPresetRequired" xml:space="preserve"><value>Selecione o tamanho de etiqueta para impressoras Gainscha.</value></data>
-  <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Formato de nome de computador inválido.</value></data>
+  <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Nome inválido</value></data>
   <data name="Main_LocalComputerSuffix" xml:space="preserve"><value>(este PC)</value></data>
   <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} cancelado(s).</value></data>
   <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
   <data name="Main_SummaryDialogTitle" xml:space="preserve"><value>Resumo do lote</value></data>
-  <data name="Main_DeployCancelRequested" xml:space="preserve"><value>Cancelamento pedido pelo utilizador.</value></data>
-  <data name="Main_DeployRollbackStarting" xml:space="preserve"><value>A reverter alterações criadas nesta execução…</value></data>
+  <data name="Main_DeployCancelRequested" xml:space="preserve"><value>Cancelamento solicitado pelo operador.</value></data>
+  <data name="Main_DeployRollbackStarting" xml:space="preserve"><value>Revertendo alterações criadas nesta execução…</value></data>
   <data name="Main_DeployRollbackFinished" xml:space="preserve"><value>Reversão concluída (ver log).</value></data>
   <data name="Main_DeployRollbackErrorFormat" xml:space="preserve"><value>Erro durante a reversão: {0}</value></data>
   <data name="Main_DeployCooperativeCancelHint" xml:space="preserve"><value>Se uma fila tiver sido criada no alvo após o pedido de cancelamento, use Controle de impressoras para concluir a limpeza.</value></data>
-  <data name="Main_DeployCancelledRowMessage" xml:space="preserve"><value>Operação cancelada pelo utilizador.</value></data>
-  <data name="Main_RollbackPreparingOnHost" xml:space="preserve"><value>A preparar reversão neste computador…</value></data>
+  <data name="Main_DeployCancelledRowMessage" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="Main_RollbackPreparingOnHost" xml:space="preserve"><value>Preparando reversão</value></data>
   <data name="Main_SummaryRolledBackFormat" xml:space="preserve"><value>Revertido(s) nesta execução: {0}</value></data>
   <data name="Main_SummaryDeployCancelledFormat" xml:space="preserve"><value>Interrompido(s) após cancelamento (sem reversão ou antes da reversão): {0}</value></data>
   <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>O nome de usuário é obrigatório.</value></data>

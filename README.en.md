@@ -8,6 +8,12 @@
   <a href="README.md">Português</a> · <strong>English</strong>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/login.png" alt="Authentication Window" width="34%" />
+  &nbsp;
+  <img src="docs/screenshots/main.png" alt="Main Deployment Window" width="60%" />
+</p>
+
 ---
 
 ## About the project
@@ -53,6 +59,8 @@ The project relies on native Windows platform technologies for print spooler and
 
 ```
 PrinterInstall/
+├── docs/
+│   └── screenshots/                    # Application screenshots
 ├── drivers/
 │   ├── Brother/                        # Driver packages for Brother printers
 │   ├── Epson/                          # EPSON Universal Print Driver packages
@@ -90,7 +98,7 @@ PrinterInstall/
 │   └── PrinterInstall.Core.Tests/      # Unit tests for domain logic, catalog, and orchestration
 ├── GEMINI.md                           # Development guidelines and technical references
 ├── LICENSE                             # MIT license terms
-├── MANUAL_DO_USUARIO.md                # User manual with operational instructions (Portuguese)
+├── MANUAL.txt                          # User manual with operational instructions (Portuguese)
 ├── MODELOS_TESTADOS.txt                # List of validated printers and models
 ├── PrinterInstall.sln                  # .NET solution file
 └── README.md                           # Main repository documentation (Portuguese)
@@ -170,7 +178,7 @@ Verify which roll is loaded in the physical printer before configuring a Gainsch
 
 ## Documentation
 
-- [User manual](MANUAL_DO_USUARIO.md): Operational guide with screenshots and common troubleshooting (Portuguese)
+- [Operational manual](MANUAL.txt): Operational guide with support procedures and troubleshooting (Portuguese)
 - [Tested models](MODELOS_TESTADOS.txt): Validated equipment and drivers by manufacturer
 - [GEMINI.md](GEMINI.md): Coding standards and architectural documentation (Portuguese)
 

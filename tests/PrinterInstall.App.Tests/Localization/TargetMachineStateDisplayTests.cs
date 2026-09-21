@@ -9,7 +9,7 @@ public class TargetMachineStateDisplayTests
     public void CompletedSuccess_returns_Portuguese_label()
     {
         var label = TargetMachineStateDisplay.GetDisplay(TargetMachineState.CompletedSuccess);
-        Assert.Equal("Concluído com sucesso", label);
+        Assert.Equal("Concluído", label);
     }
 
     [Fact]
@@ -27,12 +27,24 @@ public class TargetMachineStateDisplayTests
     [Fact]
     public void SkippedAlreadyExists_returns_Portuguese_label()
     {
-        Assert.Equal("Ignorado (já existia)", TargetMachineStateDisplay.GetDisplay(TargetMachineState.SkippedAlreadyExists));
+        Assert.Equal("Já existe", TargetMachineStateDisplay.GetDisplay(TargetMachineState.SkippedAlreadyExists));
     }
 
     [Fact]
     public void RolledBack_returns_Portuguese_label()
     {
         Assert.Equal("Revertido", TargetMachineStateDisplay.GetDisplay(TargetMachineState.RolledBack));
+    }
+
+    [Fact]
+    public void ContactingRemote_returns_Portuguese_label()
+    {
+        Assert.Equal("Conectando", TargetMachineStateDisplay.GetDisplay(TargetMachineState.ContactingRemote));
+    }
+
+    [Fact]
+    public void RollbackRemovingQueue_returns_Portuguese_label()
+    {
+        Assert.Equal("Removendo fila", TargetMachineStateDisplay.GetDisplay(TargetMachineState.RollbackRemovingQueue));
     }
 }

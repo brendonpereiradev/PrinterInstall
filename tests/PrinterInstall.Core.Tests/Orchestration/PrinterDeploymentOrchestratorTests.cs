@@ -138,8 +138,7 @@ public class PrinterDeploymentOrchestratorTests
         await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         var done = Assert.Single(events.Where(e => e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: "Office" }));
-        Assert.Contains("test page failed", done.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("spooler", done.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Falha teste", done.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

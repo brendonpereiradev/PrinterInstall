@@ -23,7 +23,7 @@
   <sys:String x:Key="Main_TestPrinterButton">Testar impressora…</sys:String>
   <sys:String x:Key="Main_LogGroupHeader">Log</sys:String>
   <sys:String x:Key="Main_ExportLogButton">Exportar log</sys:String>
-  <sys:String x:Key="Main_StatusEmptyHint">Nenhum computador na lista. Adicione nomes à esquerda e clique em Implantar para ver o progresso aqui.</sys:String>
+  <sys:String x:Key="Main_StatusEmptyHint">Adicione os computadores acima e clique em Implantar para acompanhar o progresso.</sys:String>
   <sys:String x:Key="Main_PageSubtitle">Implantação remota de impressoras</sys:String>
   <sys:String x:Key="Main_ThemeToggle_DarkToolTip">Alternar para modo escuro</sys:String>
   <sys:String x:Key="Main_ThemeToggle_LightToolTip">Alternar para modo claro</sys:String>

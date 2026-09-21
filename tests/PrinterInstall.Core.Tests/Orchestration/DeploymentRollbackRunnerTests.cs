@@ -70,6 +70,6 @@ public class DeploymentRollbackRunnerTests
         await sut.RunAsync(journal, new NetworkCredential("u", "p"), new InlineProgress<PrinterRemovalProgressEvent>(events.Add), CancellationToken.None);
 
         remote.Verify(r => r.RemoveTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        Assert.Contains(events, e => e.State == PrinterRemovalProgressState.RollbackSucceeded && e.Message.Contains("kept"));
+        Assert.Contains(events, e => e.State == PrinterRemovalProgressState.RollbackSucceeded && e.Message.Contains("mantida"));
     }
 }

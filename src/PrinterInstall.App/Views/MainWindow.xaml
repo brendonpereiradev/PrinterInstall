@@ -10,8 +10,8 @@
         mc:Ignorable="d"
         Title="{DynamicResource Main_WindowTitle}"
         Icon="pack://application:,,,/Assets/app.ico"
-        Height="680" Width="1000"
-        MinHeight="520" MinWidth="840"
+        Height="700" Width="1000"
+        MinHeight="540" MinWidth="840"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource AppCanvasBackgroundBrush}">
     <Window.Resources>
@@ -94,6 +94,8 @@
         <Style x:Key="StatusTextElementStyle" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="ToolTip" Value="{Binding Message}"/>
         </Style>
 
         <Style x:Key="ModernStatusDataGridStyle" TargetType="DataGrid">
@@ -165,8 +167,9 @@
 
         <Grid Grid.Row="1" Margin="16,0,16,16">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="180" MinHeight="100"/>
+                <RowDefinition Height="*" MinHeight="260"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition Height="130" MinHeight="70"/>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
@@ -271,9 +274,9 @@
                     </Border>
                 </Grid>
 
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="{DynamicResource Main_PrintersGroupHeader}" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource AppTextPrimaryBrush}" Margin="0,0,0,6"/>
-                    <ScrollViewer MaxHeight="280" VerticalScrollBarVisibility="Auto" Margin="0,4,0,8">
+                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Main_PrintersGroupHeader}" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource AppTextPrimaryBrush}" Margin="0,0,0,6"/>
                         <ItemsControl ItemsSource="{Binding PrinterRows}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -313,31 +316,35 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </ScrollViewer>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <ui:Button Content="{DynamicResource Main_AddPrinterRow}" Command="{Binding AddPrinterRowCommand}" Appearance="Secondary" Margin="0,0,8,0"/>
-                        <ui:Button Content="{DynamicResource Main_RemovePrinterRow}" Command="{Binding RemovePrinterRowCommand}" CommandParameter="{x:Null}"
-                                   Visibility="{Binding CanRemovePrinterRow, Converter={StaticResource BoolToVis}}" Appearance="Secondary"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <ui:Button Content="{DynamicResource Main_AddPrinterRow}" Command="{Binding AddPrinterRowCommand}" Appearance="Secondary" Margin="0,0,8,0"/>
+                            <ui:Button Content="{DynamicResource Main_RemovePrinterRow}" Command="{Binding RemovePrinterRowCommand}" CommandParameter="{x:Null}"
+                                       Visibility="{Binding CanRemovePrinterRow, Converter={StaticResource BoolToVis}}" Appearance="Secondary"/>
+                        </StackPanel>
+                        <CheckBox Content="{DynamicResource Main_PrintTestPageLabel}" IsChecked="{Binding PrintTestPage}"
+                                  Margin="0,0,0,6"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <ui:Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
+                                       Appearance="Primary"/>
+                            <ui:Button Content="{DynamicResource Main_CancelDeployButton}" Command="{Binding CancelDeployCommand}"
+                                       Appearance="Secondary" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <ui:Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}"
+                                   Appearance="Secondary" Margin="0,0,0,6"/>
+                        <ui:Button Content="{DynamicResource Main_TestPrinterButton}"
+                                   Command="{Binding OpenPrinterNetworkTestCommand}"
+                                   Appearance="Secondary" Margin="0,0,0,0"/>
                     </StackPanel>
-                    <CheckBox Content="{DynamicResource Main_PrintTestPageLabel}" IsChecked="{Binding PrintTestPage}"
-                              Margin="0,0,0,8"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <ui:Button Content="{DynamicResource Main_DeployButton}" Command="{Binding DeployCommand}"
-                                   Appearance="Primary"/>
-                        <ui:Button Content="{DynamicResource Main_CancelDeployButton}" Command="{Binding CancelDeployCommand}"
-                                   Appearance="Secondary" Margin="8,0,0,0"/>
-                    </StackPanel>
-                    <ui:Button Content="{DynamicResource Main_RemovePrintersButton}" Command="{Binding OpenRemovalWizardCommand}"
-                               Appearance="Secondary" Margin="0,0,0,0"/>
-                    <ui:Button Content="{DynamicResource Main_TestPrinterButton}"
-                               Command="{Binding OpenPrinterNetworkTestCommand}"
-                               Appearance="Secondary" Margin="0,8,0,0"/>
-                </StackPanel>
+                </ScrollViewer>
             </Grid>
 
-            <Border Grid.Row="1" Background="{DynamicResource AppSurfaceCardBrush}"
+            <GridSplitter Grid.Row="1" Height="8" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                          Background="Transparent" ShowsPreview="False" Cursor="SizeNS"/>
+
+            <Border Grid.Row="2" Background="{DynamicResource AppSurfaceCardBrush}"
                     BorderBrush="{DynamicResource AppSurfaceCardBorderBrush}"
-                    BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
+                    BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,0">
                 <DockPanel LastChildFill="True">
                     <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
