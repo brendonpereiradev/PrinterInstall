@@ -178,7 +178,7 @@ Antes de instalar uma fila Gainscha, confirme o rolo instalado na impressora fí
 
 ## Documentação
 
-- [Manual de Operação](MANUAL.txt): Guia com procedimentos de suporte, telas e resolução de problemas comuns
+- [Manual de instrução](MANUAL.txt): Guia com procedimentos de suporte, telas e resolução de problemas comuns
 - [Modelos testados](MODELOS_TESTADOS.txt): Relação de equipamentos e drivers validados por fabricante
 
 ---
