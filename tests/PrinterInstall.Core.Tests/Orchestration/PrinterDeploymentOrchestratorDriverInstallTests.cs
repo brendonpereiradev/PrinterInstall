@@ -131,7 +131,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         await sut.RunAsync(MakeRequest(), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         var aborted = Assert.Single(events.Where(e => e is { State: TargetMachineState.AbortedDriverMissing, PrinterQueueName: "P1" }));
-        Assert.Contains("install unsupported on this channel", aborted.Message);
+        Assert.Contains("Instalação não suportada neste canal", aborted.Message);
     }
 
     [Fact]
@@ -192,5 +192,48 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
             "EPSON Universal Printer Driver",
             It.IsAny<string>(),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task InstallDriver_ReportsInternalLogToDiagnosticLog_WithoutPollutingProgressMessage()
+    {
+        var expected = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Gainscha);
+        var remote = new Mock<IRemotePrinterOperations>();
+        remote.SetupSequence(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(Array.Empty<string>())
+              .ReturnsAsync(new[] { expected });
+        remote.Setup(m => m.PrinterQueueExistsAsync("pc1", It.IsAny<NetworkCredential>(), "P1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        remote.Setup(m => m.InstallPrinterDriverAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<LocalDriverPackage>(), It.IsAny<IProgress<string>?>(), It.IsAny<CancellationToken>()))
+              .Callback<string, NetworkCredential, LocalDriverPackage, IProgress<string>?, CancellationToken>((_, _, _, log, _) =>
+              {
+                  log?.Report("WMI Win32_Process retornou 8 ao tentar iniciar schtasks em pc1. Tentando via RPC remoto...");
+              })
+              .Returns(Task.CompletedTask);
+        remote.Setup(m => m.CreateTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<string>(), "10.0.0.10", 9100, "RAW", It.IsAny<CancellationToken>()))
+              .Returns(Task.CompletedTask);
+        remote.Setup(m => m.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "P1", expected, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .Returns(Task.CompletedTask);
+        remote.Setup(m => m.ConfigureGainschaLabelPresetAsync("pc1", It.IsAny<NetworkCredential>(), "P1", GainschaLabelPreset.Paciente, It.IsAny<CancellationToken>()))
+              .Returns(Task.CompletedTask);
+
+        var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
+        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var events = new List<DeploymentProgressEvent>();
+        var diagnosticLogs = new List<string>();
+
+        await sut.RunAsync(
+            MakeRequest(printTestPage: false),
+            new DeploymentRollbackJournal(),
+            new InlineProgress<DeploymentProgressEvent>(events.Add),
+            CancellationToken.None,
+            new InlineProgress<string>(diagnosticLogs.Add));
+
+        // Garante que a mensagem de status da tabela NUNCA recebeu a mensagem técnica de WMI
+        Assert.DoesNotContain(events, e => e.Message.Contains("WMI Win32_Process"));
+        Assert.Contains(events, e => e.State == TargetMachineState.InstallingDriver && e.Message == "Instalando driver");
+
+        // Garante que a mensagem técnica foi devidamente enviada para o log de diagnóstico
+        Assert.Contains(diagnosticLogs, l => l.Contains("WMI Win32_Process retornou 8"));
     }
 }

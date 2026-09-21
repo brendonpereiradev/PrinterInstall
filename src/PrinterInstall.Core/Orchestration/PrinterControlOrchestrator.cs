@@ -21,11 +21,11 @@ public sealed class PrinterControlOrchestrator
 
             if (target.Renames.Count == 0 && target.QueuesToRemove.Count == 0)
             {
-                progress.Report(new PrinterRemovalProgressEvent(computer, PrinterRemovalProgressState.TargetCompleted, "Nothing to do"));
+                progress.Report(new PrinterRemovalProgressEvent(computer, PrinterRemovalProgressState.TargetCompleted, "Nenhuma alteração pendente."));
                 continue;
             }
 
-            progress.Report(new PrinterRemovalProgressEvent(computer, PrinterRemovalProgressState.ContactingRemote, "Starting..."));
+            progress.Report(new PrinterRemovalProgressEvent(computer, PrinterRemovalProgressState.ContactingRemote, "Iniciando..."));
 
             var orderedRenames = target.Renames
                 .OrderBy(r => r.CurrentName, StringComparer.OrdinalIgnoreCase)
@@ -38,7 +38,7 @@ public sealed class PrinterControlOrchestrator
                 progress.Report(new PrinterRemovalProgressEvent(
                     computer,
                     PrinterRemovalProgressState.RenamingQueue,
-                    $"Renaming '{rename.CurrentName}' to '{rename.NewName}'...",
+                    $"Renomeando '{rename.CurrentName}' para '{rename.NewName}'...",
                     PrinterQueueName: rename.CurrentName));
 
                 try
@@ -55,7 +55,7 @@ public sealed class PrinterControlOrchestrator
                     progress.Report(new PrinterRemovalProgressEvent(
                         computer,
                         PrinterRemovalProgressState.Error,
-                        $"Failed to rename '{rename.CurrentName}': {Flatten(ex)}",
+                        $"Falha ao renomear '{rename.CurrentName}': {Flatten(ex)}",
                         PrinterQueueName: rename.CurrentName));
                 }
             }
@@ -71,7 +71,7 @@ public sealed class PrinterControlOrchestrator
                 progress.Report(new PrinterRemovalProgressEvent(
                     computer,
                     PrinterRemovalProgressState.RemovingQueue,
-                    $"Removing '{item.PrinterName}'...",
+                    $"Removendo fila '{item.PrinterName}'...",
                     PrinterQueueName: item.PrinterName,
                     PortName: item.PortName));
 
@@ -88,7 +88,7 @@ public sealed class PrinterControlOrchestrator
                     progress.Report(new PrinterRemovalProgressEvent(
                         computer,
                         PrinterRemovalProgressState.Error,
-                        $"Failed to remove '{item.PrinterName}': {Flatten(ex)}",
+                        $"Falha ao remover '{item.PrinterName}': {Flatten(ex)}",
                         PrinterQueueName: item.PrinterName,
                         PortName: item.PortName));
                     continue;
@@ -99,7 +99,7 @@ public sealed class PrinterControlOrchestrator
                     progress.Report(new PrinterRemovalProgressEvent(
                         computer,
                         PrinterRemovalProgressState.RollbackSucceeded,
-                        "Queue removed.",
+                        "Fila removida com sucesso.",
                         PrinterQueueName: item.PrinterName));
                     continue;
                 }
@@ -118,7 +118,7 @@ public sealed class PrinterControlOrchestrator
                     progress.Report(new PrinterRemovalProgressEvent(
                         computer,
                         PrinterRemovalProgressState.Warning,
-                        $"Could not check port usage for '{item.PortName}': {Flatten(ex)}",
+                        $"Não foi possível verificar uso da porta '{item.PortName}': {Flatten(ex)}",
                         PrinterQueueName: item.PrinterName,
                         PortName: item.PortName));
                     continue;
@@ -129,7 +129,7 @@ public sealed class PrinterControlOrchestrator
                     progress.Report(new PrinterRemovalProgressEvent(
                         computer,
                         PrinterRemovalProgressState.RollbackSucceeded,
-                        "Queue removed; port still in use.",
+                        "Fila removida (porta em uso por outra impressora).",
                         PrinterQueueName: item.PrinterName,
                         PortName: item.PortName));
                     continue;
@@ -138,7 +138,7 @@ public sealed class PrinterControlOrchestrator
                 progress.Report(new PrinterRemovalProgressEvent(
                     computer,
                     PrinterRemovalProgressState.RemovingOrphanPort,
-                    $"Removing orphan port '{item.PortName}'...",
+                    $"Removendo porta órfã '{item.PortName}'...",
                     PrinterQueueName: item.PrinterName,
                     PortName: item.PortName));
 
@@ -148,7 +148,7 @@ public sealed class PrinterControlOrchestrator
                     progress.Report(new PrinterRemovalProgressEvent(
                         computer,
                         PrinterRemovalProgressState.RollbackSucceeded,
-                        "Queue and port removed.",
+                        "Fila e porta removidas com sucesso.",
                         PrinterQueueName: item.PrinterName,
                         PortName: item.PortName));
                 }
@@ -161,13 +161,13 @@ public sealed class PrinterControlOrchestrator
                     progress.Report(new PrinterRemovalProgressEvent(
                         computer,
                         PrinterRemovalProgressState.Warning,
-                        $"Could not remove orphan port '{item.PortName}': {Flatten(ex)}",
+                        $"Falha ao remover porta órfã '{item.PortName}': {Flatten(ex)}",
                         PrinterQueueName: item.PrinterName,
                         PortName: item.PortName));
                 }
             }
 
-            progress.Report(new PrinterRemovalProgressEvent(computer, PrinterRemovalProgressState.TargetCompleted, "Done."));
+            progress.Report(new PrinterRemovalProgressEvent(computer, PrinterRemovalProgressState.TargetCompleted, "Concluído com sucesso."));
         }
     }
 

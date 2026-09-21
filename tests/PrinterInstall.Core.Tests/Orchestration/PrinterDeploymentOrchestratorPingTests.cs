@@ -117,7 +117,7 @@ public class PrinterDeploymentOrchestratorPingTests
         remoteMock.Verify(x => x.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 
         // Deve emitir erro com mensagem amigável
-        Assert.Contains(events, e => e.State == TargetMachineState.Error && e.PrinterQueueName == "Q1" && e.Message.Contains("não respondeu ao ping"));
+        Assert.Contains(events, e => e.State == TargetMachineState.Error && e.PrinterQueueName == "Q1" && e.Message.Contains("offline"));
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class PrinterDeploymentOrchestratorPingTests
         await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         // Q1 falhou no ping
-        Assert.Contains(events, e => e.State == TargetMachineState.Error && e.PrinterQueueName == "Q1" && e.Message.Contains("não respondeu ao ping"));
+        Assert.Contains(events, e => e.State == TargetMachineState.Error && e.PrinterQueueName == "Q1" && e.Message.Contains("offline"));
 
         // Q2 instalou com sucesso
         Assert.Contains(events, e => e.State == TargetMachineState.CompletedSuccess && e.PrinterQueueName == "Q2");

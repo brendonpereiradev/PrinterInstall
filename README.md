@@ -8,6 +8,12 @@
   <strong>Português</strong> · <a href="README.en.md">English</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/login.png" alt="Tela de Autenticação" width="34%" />
+  &nbsp;
+  <img src="docs/screenshots/main.png" alt="Tela Principal de Implantação" width="60%" />
+</p>
+
 ---
 
 ## Sobre o projeto
@@ -53,6 +59,8 @@ O projeto utiliza tecnologias nativas da plataforma Windows para gerenciamento d
 
 ```
 PrinterInstall/
+├── docs/
+│   └── screenshots/                    # Capturas de tela da aplicação
 ├── drivers/
 │   ├── Brother/                        # Pacotes de driver para impressoras Brother
 │   ├── Epson/                          # Pacotes de driver EPSON Universal Print Driver
@@ -90,7 +98,7 @@ PrinterInstall/
 │   └── PrinterInstall.Core.Tests/      # Testes unitários de regras de domínio, catálogo e orquestração
 ├── GEMINI.md                           # Diretrizes de desenvolvimento e documentação técnica
 ├── LICENSE                             # Termos da licença MIT
-├── MANUAL_DO_USUARIO.md                # Manual com instruções de operação
+├── MANUAL.txt                          # Manual com instruções de operação
 ├── MODELOS_TESTADOS.txt                # Lista de impressoras e modelos validados
 ├── PrinterInstall.sln                  # Arquivo da solução .NET
 └── README.md                           # Este arquivo
@@ -170,7 +178,7 @@ Antes de instalar uma fila Gainscha, confirme o rolo instalado na impressora fí
 
 ## Documentação
 
-- [Manual do Usuário](MANUAL_DO_USUARIO.md): Guia passo a passo com telas e resolução de problemas comuns
+- [Manual de Operação](MANUAL.txt): Guia com procedimentos de suporte, telas e resolução de problemas comuns
 - [Modelos testados](MODELOS_TESTADOS.txt): Relação de equipamentos e drivers validados por fabricante
 - [GEMINI.md](GEMINI.md): Diretrizes de desenvolvimento e referências de arquitetura
 

@@ -53,7 +53,7 @@ public sealed class DeploymentRollbackRunner
             progressSink.Report(new PrinterRemovalProgressEvent(
                 computer,
                 PrinterRemovalProgressState.RemovingOrphanPort,
-                $"Rollback: checking orphan port '{portName}'...",
+                $"Reversão: verificando porta órfã '{portName}'...",
                 PortName: portName));
 
             int count;
@@ -70,7 +70,7 @@ public sealed class DeploymentRollbackRunner
                 progressSink.Report(new PrinterRemovalProgressEvent(
                     computer,
                     PrinterRemovalProgressState.Warning,
-                    $"Rollback: could not check port '{portName}': {ex.Message}",
+                    $"Reversão: não foi possível verificar porta '{portName}': {ex.Message}",
                     PortName: portName));
                 continue;
             }
@@ -80,7 +80,7 @@ public sealed class DeploymentRollbackRunner
                 progressSink.Report(new PrinterRemovalProgressEvent(
                     computer,
                     PrinterRemovalProgressState.RollbackSucceeded,
-                    $"Rollback: port '{portName}' kept (in use by {count} printer(s)).",
+                    $"Reversão: porta '{portName}' mantida (em uso por {count} impressora(s)).",
                     PortName: portName));
                 continue;
             }
@@ -91,7 +91,7 @@ public sealed class DeploymentRollbackRunner
                 progressSink.Report(new PrinterRemovalProgressEvent(
                     computer,
                     PrinterRemovalProgressState.RollbackSucceeded,
-                    "Orphan port removed.",
+                    "Porta órfã removida com sucesso.",
                     PortName: portName));
             }
             catch (OperationCanceledException)
@@ -103,7 +103,7 @@ public sealed class DeploymentRollbackRunner
                 progressSink.Report(new PrinterRemovalProgressEvent(
                     computer,
                     PrinterRemovalProgressState.Warning,
-                    $"Rollback: could not remove port '{portName}': {ex.Message}",
+                    $"Reversão: não foi possível remover porta '{portName}': {ex.Message}",
                     PortName: portName));
             }
         }

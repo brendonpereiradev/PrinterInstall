@@ -409,9 +409,14 @@ public partial class MainViewModel : ObservableObject
             });
         });
 
+        var diagnosticProgress = new SynchronousProgress<string>(msg =>
+        {
+            RunOnUiDispatcher(() => AppendLog(msg));
+        });
+
         try
         {
-            await _orchestrator.RunAsync(request, journal, progress, _deployCts.Token).ConfigureAwait(true);
+            await _orchestrator.RunAsync(request, journal, progress, _deployCts.Token, diagnosticProgress).ConfigureAwait(true);
 
             LastSummaryText = BuildSummaryText();
             NotifyDeployCompletion();

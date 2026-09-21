@@ -48,7 +48,7 @@ public sealed class FastHostReachabilityChecker : IFastHostReachabilityChecker
             }
         }
 
-        return (false, $"Host inacessível na rede (sem resposta nas portas RPC 135 ou SMB 445 em {_probeTimeout.TotalSeconds:F1}s).");
+        return (false, "Host inacessível");
     }
 
     private static async Task<bool> ProbeSinglePortAsync(string host, int port, TimeSpan timeout, CancellationToken cancellationToken)

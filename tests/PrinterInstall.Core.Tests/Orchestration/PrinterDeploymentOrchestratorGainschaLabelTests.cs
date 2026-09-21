@@ -132,7 +132,7 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
         remote.Verify(m => m.ConfigureGainschaLabelPresetAsync(
             "pc1", It.IsAny<NetworkCredential>(), "Q1", GainschaLabelPreset.Paciente, It.IsAny<CancellationToken>()), Times.Once);
         Assert.Contains(events, e => e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: "Q1" }
-            && e.Message.Contains("fila já existia", StringComparison.OrdinalIgnoreCase));
+            && e.Message.Contains("Etiqueta configurada", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
