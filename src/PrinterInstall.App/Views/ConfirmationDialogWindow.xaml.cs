@@ -34,6 +34,17 @@ public partial class ConfirmationDialogWindow : Window
         IconBadgeBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF3, 0x9C, 0x12));
     }
 
+    public void ConfigureForPrinterIdentityBlock(
+        string title,
+        string header,
+        IEnumerable<string> reasons,
+        string buttonText)
+    {
+        ConfigureForDeployWarning(title, header, reasons, string.Empty, buttonText, string.Empty);
+        QuestionTextBlock.Visibility = Visibility.Collapsed;
+        SecondaryButton.Visibility = Visibility.Collapsed;
+    }
+
     public void ConfigureForInversionWarning(
         string title,
         string header,

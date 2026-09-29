@@ -10,12 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Lextm.SharpSnmpLib" Version="12.5.7" />
     <PackageReference Include="System.DirectoryServices.Protocols" Version="8.0.0" />
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="PrinterInstall.Core.Tests" />
+    <InternalsVisibleTo Include="PrinterInstall.App.Tests" />
   </ItemGroup>
 
   <ItemGroup>

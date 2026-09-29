@@ -62,7 +62,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
 
-        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
         await sut.RunAsync(MakeRequest(printTestPage: true), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
@@ -85,7 +85,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
               .Returns(Task.CompletedTask);
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
-        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
         await sut.RunAsync(MakeRequest(), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
@@ -104,7 +104,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
             .ReturnsAsync(false);
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, null);
-        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
         await sut.RunAsync(MakeRequest(), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
@@ -125,7 +125,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
               .ThrowsAsync(new NotImplementedException());
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
-        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
 
         await sut.RunAsync(MakeRequest(), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
@@ -148,7 +148,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
               .Returns(Task.CompletedTask);
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
-        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(remote.Object, catalog.Object);
         var request = MakeRequest(targets: new[] { "pc1", "pc2" });
         var events = new List<DeploymentProgressEvent>();
 
@@ -172,7 +172,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
               .Returns(Task.CompletedTask);
 
         var catalog = CatalogWith(PrinterBrand.Epson, MakePackage(PrinterBrand.Epson));
-        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(remote.Object, catalog.Object);
         var request = MakeRequest(brand: PrinterBrand.Epson);
         var events = new List<DeploymentProgressEvent>();
 
@@ -218,7 +218,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
               .Returns(Task.CompletedTask);
 
         var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
-        var sut = new PrinterDeploymentOrchestrator(remote.Object, catalog.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
         var diagnosticLogs = new List<string>();
 

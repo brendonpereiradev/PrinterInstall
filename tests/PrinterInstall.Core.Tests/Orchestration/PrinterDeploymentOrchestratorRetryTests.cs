@@ -45,7 +45,7 @@ public class PrinterDeploymentOrchestratorRetryTests
             .Returns(Task.CompletedTask);
 
         // Usamos atraso zero para execução rápida no teste unitário
-        var sut = new PrinterDeploymentOrchestrator(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
 
         var request = new PrinterDeploymentRequest
         {
@@ -76,7 +76,7 @@ public class PrinterDeploymentOrchestratorRetryTests
         mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new TimeoutException("Timeout persistente."));
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
 
         var request = new PrinterDeploymentRequest
         {
@@ -105,7 +105,7 @@ public class PrinterDeploymentOrchestratorRetryTests
         mock.Setup(m => m.GetInstalledDriverNamesAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Erro de estado não transitório."));
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 3, retryDelay: TimeSpan.Zero);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 3, retryDelay: TimeSpan.Zero);
 
         var request = new PrinterDeploymentRequest
         {
@@ -149,7 +149,7 @@ public class PrinterDeploymentOrchestratorRetryTests
         mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
 
         var request = new PrinterDeploymentRequest
         {
@@ -195,7 +195,7 @@ public class PrinterDeploymentOrchestratorRetryTests
         mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
 
         var request = new PrinterDeploymentRequest
         {
@@ -240,7 +240,7 @@ public class PrinterDeploymentOrchestratorRetryTests
                 return Task.CompletedTask;
             });
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object, new NullLocalDriverPackageCatalog(), maxRetryAttempts: 2, retryDelay: TimeSpan.Zero);
 
         var request = new PrinterDeploymentRequest
         {

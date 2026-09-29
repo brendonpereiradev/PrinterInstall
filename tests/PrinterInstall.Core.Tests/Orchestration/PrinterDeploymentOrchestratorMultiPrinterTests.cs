@@ -28,7 +28,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
         m.Setup(x => x.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), "Q2", epson, "10.0.0.2", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterDeploymentOrchestrator(m.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(m.Object);
         var events = new List<DeploymentProgressEvent>();
         var request = new PrinterDeploymentRequest
         {
@@ -108,7 +108,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
             MaxDegreeOfParallelism = 1
         };
 
-        var sut = new PrinterDeploymentOrchestrator(m.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(m.Object);
         var doneOrder = new List<(string Pc, string Q)>();
         await sut.RunAsync(
             request,
@@ -169,7 +169,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
             DomainCredential = new NetworkCredential("u", "p")
         };
 
-        var sut = new PrinterDeploymentOrchestrator(m.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(m.Object);
         var events = new List<DeploymentProgressEvent>();
         await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
@@ -233,7 +233,7 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
             MaxDegreeOfParallelism = 4
         };
 
-        var sut = new PrinterDeploymentOrchestrator(m.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(m.Object);
         var events = new ConcurrentBag<DeploymentProgressEvent>();
         await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 

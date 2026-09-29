@@ -68,5 +68,12 @@ public class ConfirmationDialogServiceTests
         await sut.ShowNoComputersWarningAsync();
         Assert.True(true);
     }
+
+    [Fact]
+    public async Task ShowPrinterIdentityBlockAsync_WhenAppCurrentNull_CompletesGracefully()
+    {
+        var sut = new ConfirmationDialogService();
+        await sut.ShowPrinterIdentityBlockAsync(new[] { "Impressora incompatível" }, true);
+    }
 }
 

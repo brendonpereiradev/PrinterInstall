@@ -7,6 +7,10 @@ public static class TargetMachineStateDisplay
     public static string GetDisplay(TargetMachineState state) => state switch
     {
         TargetMachineState.Pending => "Pendente",
+        TargetMachineState.IdentifyingPrinter => "Identificando impressora",
+        TargetMachineState.ValidatingPrinter => "Validando impressora",
+        TargetMachineState.PrinterIdentityMismatch => "Impressora incompatível",
+        TargetMachineState.PrinterIdentityUnknown => "Identificação inconclusiva",
         TargetMachineState.ContactingRemote => "Conectando",
         TargetMachineState.ValidatingDriver => "Validando driver",
         TargetMachineState.InstallingDriver => "Instalando driver",

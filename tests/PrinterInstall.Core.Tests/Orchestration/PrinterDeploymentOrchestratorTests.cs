@@ -28,7 +28,7 @@ public class PrinterDeploymentOrchestratorTests
         mock.Setup(m => m.PrinterQueueExistsAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
@@ -61,7 +61,7 @@ public class PrinterDeploymentOrchestratorTests
         mock.Setup(m => m.PrintTestPageAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
@@ -93,7 +93,7 @@ public class PrinterDeploymentOrchestratorTests
         mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
@@ -125,7 +125,7 @@ public class PrinterDeploymentOrchestratorTests
         mock.Setup(m => m.PrintTestPageAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("spooler"));
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
@@ -156,7 +156,7 @@ public class PrinterDeploymentOrchestratorTests
             .Returns(Task.CompletedTask);
 
         var journal = new DeploymentRollbackJournal();
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
@@ -190,7 +190,7 @@ public class PrinterDeploymentOrchestratorTests
             });
 
         var journal = new DeploymentRollbackJournal();
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
@@ -230,7 +230,7 @@ public class PrinterDeploymentOrchestratorTests
             });
 
         var journal = new DeploymentRollbackJournal();
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var def = new PrinterQueueDefinition
         {
             Brand = PrinterBrand.Gainscha,
@@ -272,7 +272,7 @@ public class PrinterDeploymentOrchestratorTests
         mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },
@@ -301,7 +301,7 @@ public class PrinterDeploymentOrchestratorTests
         mock.Setup(m => m.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var sut = new PrinterDeploymentOrchestrator(mock.Object);
+        var sut = TestDeploymentOrchestratorFactory.Create(mock.Object);
         var request = new PrinterDeploymentRequest
         {
             TargetComputerNames = new[] { "pc1" },

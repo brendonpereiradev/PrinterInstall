@@ -385,10 +385,15 @@ public partial class MainViewModel : ObservableObject
         _deployCts = new CancellationTokenSource();
         IsDeployRunning = true;
 
+        var identityBlockReasons = new List<string>();
         var progress = new SynchronousProgress<DeploymentProgressEvent>(e =>
         {
             RunOnUiDispatcher(() =>
             {
+                if (e.State is (TargetMachineState.PrinterIdentityMismatch or TargetMachineState.PrinterIdentityUnknown) &&
+                    !string.IsNullOrWhiteSpace(e.Detail))
+                    identityBlockReasons.Add(e.Detail);
+
                 if (e.PrinterQueueName is null)
                 {
                     foreach (var row in Targets.Where(t => t.ComputerName == e.ComputerName))
@@ -408,8 +413,11 @@ public partial class MainViewModel : ObservableObject
                     }
                 }
 
-                var q = e.PrinterQueueName is null ? "—" : e.PrinterQueueName;
-                AppendLog($"{e.ComputerName} [{q}]: {TargetMachineStateDisplay.GetDisplay(e.State)} — {e.Message}");
+                var q = e.PrinterQueueName ?? "geral";
+                var stateText = TargetMachineStateDisplay.GetDisplay(e.State);
+                var logMessage = e.Message.StartsWith(stateText, StringComparison.OrdinalIgnoreCase)
+                    ? e.Message : $"{stateText}: {e.Message}";
+                AppendLog($"{e.ComputerName} [{q}]: {logMessage}");
             });
         });
 
@@ -479,7 +487,16 @@ public partial class MainViewModel : ObservableObject
             IsDeployRunning = false;
         }
 
-        if (!string.IsNullOrEmpty(LastSummaryText) && Application.Current is not null)
+        var distinctIdentityBlockReasons = identityBlockReasons
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (distinctIdentityBlockReasons.Length > 0)
+        {
+            var confirmedMismatch = !Targets.Any(t => t.State == TargetMachineState.PrinterIdentityUnknown);
+            await _dialogService.ShowPrinterIdentityBlockAsync(distinctIdentityBlockReasons, confirmedMismatch);
+        }
+        else if (!string.IsNullOrEmpty(LastSummaryText) && Application.Current is not null)
         {
             MessageBox.Show(LastSummaryText, UiStrings.Main_SummaryDialogTitle, MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -505,7 +522,9 @@ public partial class MainViewModel : ObservableObject
     }
 
     private static bool IsIntermediateDeployState(TargetMachineState s) =>
-        s is TargetMachineState.ContactingRemote
+        s is TargetMachineState.IdentifyingPrinter
+            or TargetMachineState.ValidatingPrinter
+            or TargetMachineState.ContactingRemote
             or TargetMachineState.ValidatingDriver
             or TargetMachineState.InstallingDriver
             or TargetMachineState.DriverInstalledReconfirming
@@ -617,6 +636,8 @@ public partial class MainViewModel : ObservableObject
                 case TargetMachineState.CompletedSuccess: ok++; break;
                 case TargetMachineState.SkippedAlreadyExists: skipped++; break;
                 case TargetMachineState.Error: err++; break;
+                case TargetMachineState.PrinterIdentityMismatch: err++; break;
+                case TargetMachineState.PrinterIdentityUnknown: err++; break;
                 case TargetMachineState.AbortedDriverMissing: aborted++; break;
                 case TargetMachineState.RolledBack: rolledBack++; break;
                 case TargetMachineState.DeployCancelled: deployCancelled++; break;
@@ -635,7 +656,7 @@ public partial class MainViewModel : ObservableObject
 
         if (err > 0 || aborted > 0)
         {
-            foreach (var t in Targets.Where(x => x.State is TargetMachineState.Error or TargetMachineState.AbortedDriverMissing))
+            foreach (var t in Targets.Where(x => x.State is TargetMachineState.Error or TargetMachineState.AbortedDriverMissing or TargetMachineState.PrinterIdentityMismatch or TargetMachineState.PrinterIdentityUnknown))
             {
                 sb.AppendLine(
                     string.Format(UiStrings.Main_SummaryFailureLineFormat, t.ComputerName, t.PrinterQueueName, t.Message));
@@ -651,7 +672,7 @@ public partial class MainViewModel : ObservableObject
             return;
 
         var successCount = Targets.Count(t => t.State is TargetMachineState.CompletedSuccess or TargetMachineState.SkippedAlreadyExists);
-        var errorCount = Targets.Count(t => t.State is TargetMachineState.Error or TargetMachineState.AbortedDriverMissing);
+        var errorCount = Targets.Count(t => t.State is TargetMachineState.Error or TargetMachineState.AbortedDriverMissing or TargetMachineState.PrinterIdentityMismatch or TargetMachineState.PrinterIdentityUnknown);
         var cancelCount = Targets.Count(t => t.State is TargetMachineState.DeployCancelled or TargetMachineState.RolledBack);
 
         if (cancelCount > 0)

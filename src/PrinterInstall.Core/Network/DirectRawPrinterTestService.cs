@@ -1,4 +1,5 @@
 using PrinterInstall.Core.Models;
+using PrinterInstall.Core.Validation;
 
 namespace PrinterInstall.Core.Network;
 
@@ -9,15 +10,22 @@ public sealed class DirectRawPrinterTestService : IDirectRawPrinterTestService
     private static readonly TimeSpan SendTimeout = TimeSpan.FromSeconds(10);
 
     private readonly IRawPrinterConnectionFactory _connectionFactory;
+    private readonly IPrinterIdentityService _identityService;
 
     public DirectRawPrinterTestService()
-        : this(new TcpRawPrinterConnectionFactory())
+        : this(new TcpRawPrinterConnectionFactory(), new NetworkPrinterIdentityService())
     {
     }
 
-    internal DirectRawPrinterTestService(IRawPrinterConnectionFactory connectionFactory)
+    public DirectRawPrinterTestService(IPrinterIdentityService identityService)
+        : this(new TcpRawPrinterConnectionFactory(), identityService)
+    {
+    }
+
+    internal DirectRawPrinterTestService(IRawPrinterConnectionFactory connectionFactory, IPrinterIdentityService identityService)
     {
         _connectionFactory = connectionFactory;
+        _identityService = identityService;
     }
 
     public async Task<DirectRawPrinterTestResult> RunAsync(
@@ -27,6 +35,24 @@ public sealed class DirectRawPrinterTestService : IDirectRawPrinterTestService
         CancellationToken cancellationToken = default)
     {
         var trimmedHost = host.Trim();
+        PrinterIdentityResult identity;
+        try
+        {
+            identity = await _identityService.IdentifyAsync(trimmedHost, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            return Fail(DirectRawPrinterTestPhase.Identity, $"Não foi possível identificar {trimmedHost}: {ex.Message}");
+        }
+
+        var compatibility = PrinterCompatibilityValidator.Check(identity, brand);
+        if (!compatibility.Compatible)
+            return Fail(DirectRawPrinterTestPhase.Identity, compatibility.Message);
+
         await using var connection = _connectionFactory.Create();
 
         try

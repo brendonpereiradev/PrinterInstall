@@ -45,7 +45,7 @@ public class MainViewModelRollbackStateTests
         remoteMock.Setup(m => m.RemoveTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var orchestrator = new PrinterDeploymentOrchestrator(remoteMock.Object);
+        var orchestrator = TestOrchestratorFactory.Create(remoteMock.Object);
         var rollbackRunner = new DeploymentRollbackRunner(remoteMock.Object, new PrinterControlOrchestrator(remoteMock.Object));
         var identity = new LocalMachineIdentity();
 

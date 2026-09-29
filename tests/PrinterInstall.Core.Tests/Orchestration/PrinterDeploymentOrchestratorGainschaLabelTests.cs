@@ -49,7 +49,7 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
             PrintTestPage = false
         };
 
-        await new PrinterDeploymentOrchestrator(remote.Object).RunAsync(
+        await TestDeploymentOrchestratorFactory.Create(remote.Object).RunAsync(
             request,
             journal,
             new InlineProgress<DeploymentProgressEvent>(_ => { }));
@@ -91,7 +91,7 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
             PrintTestPage = false
         };
 
-        await new PrinterDeploymentOrchestrator(remote.Object).RunAsync(
+        await TestDeploymentOrchestratorFactory.Create(remote.Object).RunAsync(
             request,
             journal,
             new InlineProgress<DeploymentProgressEvent>(events.Add));
@@ -124,7 +124,7 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
             PrintTestPage = false
         };
 
-        await new PrinterDeploymentOrchestrator(remote.Object).RunAsync(
+        await TestDeploymentOrchestratorFactory.Create(remote.Object).RunAsync(
             request,
             new DeploymentRollbackJournal(),
             new InlineProgress<DeploymentProgressEvent>(events.Add));
@@ -168,7 +168,7 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
             PrintTestPage = false
         };
 
-        await new PrinterDeploymentOrchestrator(remote.Object).RunAsync(
+        await TestDeploymentOrchestratorFactory.Create(remote.Object).RunAsync(
             request,
             journal,
             new InlineProgress<DeploymentProgressEvent>(_ => { }));
@@ -212,7 +212,7 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
             PrintTestPage = true
         };
 
-        var orchestrator = new PrinterDeploymentOrchestrator(
+        var orchestrator = TestDeploymentOrchestratorFactory.Create(
             remote.Object,
             new NullLocalDriverPackageCatalog(),
             rawService.Object);
