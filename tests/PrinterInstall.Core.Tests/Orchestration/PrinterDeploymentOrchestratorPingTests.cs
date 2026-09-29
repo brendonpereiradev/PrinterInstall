@@ -30,7 +30,7 @@ public class PrinterDeploymentOrchestratorPingTests
         pingMock.Setup(p => p.PingAsync("10.0.0.50", It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        var sut = new PrinterDeploymentOrchestrator(
+        var sut = TestDeploymentOrchestratorFactory.Create(
             remoteMock.Object,
             new NullLocalDriverPackageCatalog(),
             new DirectRawPrinterTestService(),
@@ -80,7 +80,7 @@ public class PrinterDeploymentOrchestratorPingTests
         pingMock.Setup(p => p.PingAsync("10.0.0.50", It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var sut = new PrinterDeploymentOrchestrator(
+        var sut = TestDeploymentOrchestratorFactory.Create(
             remoteMock.Object,
             new NullLocalDriverPackageCatalog(),
             new DirectRawPrinterTestService(),
@@ -142,7 +142,7 @@ public class PrinterDeploymentOrchestratorPingTests
         pingMock.Setup(p => p.PingAsync("10.0.0.51", It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);  // Q2 responde
 
-        var sut = new PrinterDeploymentOrchestrator(
+        var sut = TestDeploymentOrchestratorFactory.Create(
             remoteMock.Object,
             new NullLocalDriverPackageCatalog(),
             new DirectRawPrinterTestService(),
@@ -201,7 +201,7 @@ public class PrinterDeploymentOrchestratorPingTests
         pingMock.Setup(p => p.PingAsync("10.0.0.50", It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new OperationCanceledException(cts.Token));
 
-        var sut = new PrinterDeploymentOrchestrator(
+        var sut = TestDeploymentOrchestratorFactory.Create(
             remoteMock.Object,
             new NullLocalDriverPackageCatalog(),
             new DirectRawPrinterTestService(),

@@ -25,6 +25,36 @@ public class ConfirmationDialogService : IConfirmationDialogService
         return dispatcher.InvokeAsync(() => ShowDeployWarningDialog(warnings)).Task;
     }
 
+    public Task ShowPrinterIdentityBlockAsync(IReadOnlyList<string> reasons, bool confirmedMismatch)
+    {
+        if (reasons.Count == 0 || Application.Current is null)
+            return Task.CompletedTask;
+
+        var dispatcher = Application.Current.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            ShowPrinterIdentityBlockDialog(reasons, confirmedMismatch);
+            return Task.CompletedTask;
+        }
+
+        return dispatcher.InvokeAsync(() => ShowPrinterIdentityBlockDialog(reasons, confirmedMismatch)).Task;
+    }
+
+    private static void ShowPrinterIdentityBlockDialog(IReadOnlyList<string> reasons, bool confirmedMismatch)
+    {
+        var dialog = new ConfirmationDialogWindow();
+        var owner = GetActiveOrMainWindow();
+        if (owner is not null && owner != dialog)
+            dialog.Owner = owner;
+
+        dialog.ConfigureForPrinterIdentityBlock(
+            UiStrings.Main_PrinterIdentityBlockTitle,
+            confirmedMismatch ? UiStrings.Main_PrinterIdentityBlockHeader : UiStrings.Main_PrinterIdentityUnknownHeader,
+            reasons,
+            UiStrings.Main_PrinterIdentityBlockButton);
+        dialog.ShowDialog();
+    }
+
     public Task<bool> ConfirmNetworkTestAsync(string hostAddress, PrinterBrand brand, GainschaLabelPreset? preset)
     {
         if (Application.Current is null)

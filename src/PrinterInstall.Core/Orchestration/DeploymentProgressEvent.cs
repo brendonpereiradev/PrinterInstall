@@ -6,4 +6,5 @@ public sealed record DeploymentProgressEvent(
     string ComputerName,
     TargetMachineState State,
     string Message,
-    string? PrinterQueueName = null);
+    string? PrinterQueueName = null,
+    string? Detail = null);

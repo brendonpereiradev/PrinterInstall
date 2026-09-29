@@ -51,6 +51,7 @@ public class UiStrings
     public static string NetworkTest_Validation_HostRequired => ResourceManager.GetString(nameof(NetworkTest_Validation_HostRequired), ResourceCulture)!;
     public static string NetworkTest_Progress_Connectivity => ResourceManager.GetString(nameof(NetworkTest_Progress_Connectivity), ResourceCulture)!;
     public static string NetworkTest_Progress_Sending => ResourceManager.GetString(nameof(NetworkTest_Progress_Sending), ResourceCulture)!;
+    public static string NetworkTest_Progress_Identity => ResourceManager.GetString(nameof(NetworkTest_Progress_Identity), ResourceCulture)!;
     public static string NetworkTest_Cancelled => ResourceManager.GetString(nameof(NetworkTest_Cancelled), ResourceCulture)!;
     public static string Main_Validation_InvalidHostAddressFormat => ResourceManager.GetString(nameof(Main_Validation_InvalidHostAddressFormat), ResourceCulture)!;
     public static string Main_Validation_InversionDetectedFormat => ResourceManager.GetString(nameof(Main_Validation_InversionDetectedFormat), ResourceCulture)!;
@@ -67,6 +68,10 @@ public class UiStrings
     public static string Main_DeployWarningQuestion => ResourceManager.GetString(nameof(Main_DeployWarningQuestion), ResourceCulture)!;
     public static string Main_DeployWarningProceedButton => ResourceManager.GetString(nameof(Main_DeployWarningProceedButton), ResourceCulture)!;
     public static string Main_DeployWarningCancelButton => ResourceManager.GetString(nameof(Main_DeployWarningCancelButton), ResourceCulture)!;
+    public static string Main_PrinterIdentityBlockTitle => ResourceManager.GetString(nameof(Main_PrinterIdentityBlockTitle), ResourceCulture)!;
+    public static string Main_PrinterIdentityBlockHeader => ResourceManager.GetString(nameof(Main_PrinterIdentityBlockHeader), ResourceCulture)!;
+    public static string Main_PrinterIdentityUnknownHeader => ResourceManager.GetString(nameof(Main_PrinterIdentityUnknownHeader), ResourceCulture)!;
+    public static string Main_PrinterIdentityBlockButton => ResourceManager.GetString(nameof(Main_PrinterIdentityBlockButton), ResourceCulture)!;
     public static string Main_DeployCancelledByMismatchWarning => ResourceManager.GetString(nameof(Main_DeployCancelledByMismatchWarning), ResourceCulture)!;
     public static string NetworkTest_ConfirmDialogTitle => ResourceManager.GetString(nameof(NetworkTest_ConfirmDialogTitle), ResourceCulture)!;
     public static string NetworkTest_ConfirmHeader => ResourceManager.GetString(nameof(NetworkTest_ConfirmHeader), ResourceCulture)!;

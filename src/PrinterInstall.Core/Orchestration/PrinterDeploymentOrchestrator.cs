@@ -5,6 +5,7 @@ using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Network;
 using PrinterInstall.Core.Remote;
+using PrinterInstall.Core.Validation;
 
 namespace PrinterInstall.Core.Orchestration;
 
@@ -18,9 +19,13 @@ public sealed class PrinterDeploymentOrchestrator
     private readonly IDirectRawPrinterTestService _rawTestService;
     private readonly IFastHostReachabilityChecker _reachabilityChecker;
     private readonly IPrinterPingService _printerPingService;
+    private readonly IPrinterIdentityService _identityService;
     private readonly int _maxRetryAttempts;
     private readonly TimeSpan _retryDelay;
     private readonly int? _configuredMaxDegreeOfParallelism;
+    private bool _skipIdentityValidationForLegacyTests;
+
+    internal void SkipIdentityValidationForLegacyTests() => _skipIdentityValidationForLegacyTests = true;
 
     public PrinterDeploymentOrchestrator(IRemotePrinterOperations remote)
         : this(remote, new NullLocalDriverPackageCatalog(), new DirectRawPrinterTestService(), new NullFastHostReachabilityChecker(), new NullPrinterPingService(), TransientRetryHelper.DefaultMaxAttempts, TransientRetryHelper.DefaultInitialDelay, null)
@@ -91,13 +96,15 @@ public sealed class PrinterDeploymentOrchestrator
         IPrinterPingService? printerPingService,
         int maxRetryAttempts,
         TimeSpan retryDelay,
-        int? configuredMaxDegreeOfParallelism = null)
+        int? configuredMaxDegreeOfParallelism = null,
+        IPrinterIdentityService? identityService = null)
     {
         _remote = remote;
         _localDrivers = localDrivers;
         _rawTestService = rawTestService;
         _reachabilityChecker = reachabilityChecker ?? new NullFastHostReachabilityChecker();
         _printerPingService = printerPingService ?? new NullPrinterPingService();
+        _identityService = identityService ?? new NetworkPrinterIdentityService();
         _maxRetryAttempts = maxRetryAttempts;
         _retryDelay = retryDelay;
         _configuredMaxDegreeOfParallelism = configuredMaxDegreeOfParallelism;
@@ -110,6 +117,13 @@ public sealed class PrinterDeploymentOrchestrator
         CancellationToken cancellationToken = default,
         IProgress<string>? diagnosticLog = null)
     {
+        if (request.TargetComputerNames.Count == 0)
+            return;
+
+        if (!_skipIdentityValidationForLegacyTests &&
+            !await ValidatePrinterIdentitiesAsync(request, progress, cancellationToken, diagnosticLog).ConfigureAwait(false))
+            return;
+
         var maxDegree = _configuredMaxDegreeOfParallelism
             ?? (request.MaxDegreeOfParallelism > 0 ? request.MaxDegreeOfParallelism : DefaultMaxDegreeOfParallelism);
 
@@ -142,6 +156,82 @@ public sealed class PrinterDeploymentOrchestrator
         {
             throw new OperationCanceledException(ex.Message, ex, cancellationToken);
         }
+    }
+
+    private async Task<bool> ValidatePrinterIdentitiesAsync(
+        PrinterDeploymentRequest request,
+        IProgress<DeploymentProgressEvent> progress,
+        CancellationToken cancellationToken,
+        IProgress<string>? diagnosticLog)
+    {
+        var identities = new Dictionary<string, PrinterIdentityResult>(StringComparer.OrdinalIgnoreCase);
+        foreach (var definition in request.Printers)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var host = definition.PrinterHostAddress?.Trim() ?? "";
+            if (identities.ContainsKey(host))
+                continue;
+
+            foreach (var computer in request.TargetComputerNames)
+                progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.IdentifyingPrinter,
+                    $"Identificando impressora em {host}", definition.DisplayName));
+
+            try
+            {
+                identities[host] = await _identityService.IdentifyAsync(host, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                identities[host] = new PrinterIdentityResult(host, null, null, "Rede", ex.Message);
+            }
+        }
+
+        var checks = request.Printers.Select(definition =>
+        {
+            var host = definition.PrinterHostAddress?.Trim() ?? "";
+            var identity = identities[host];
+            var check = PrinterCompatibilityValidator.Check(identity, definition.Brand);
+            var detected = identity.Brand is null ? "Modelo não identificado" : $"Modelo identificado: {identity.Brand} {identity.Model}".Trim();
+            var outcome = check.Compatible ? "Modelo validado." :
+                identity.Brand.HasValue && identity.Brand != definition.Brand && !identity.ConflictingEvidence
+                    ? "Implantação bloqueada por divergência de marca."
+                    : $"Implantação bloqueada: {check.Message}";
+            diagnosticLog?.Report($"Impressora '{definition.DisplayName}' ({host}): {detected} via {identity.Source}. Selecionado: {definition.Brand}. {outcome}");
+            return (Definition: definition, check.Compatible, check.Message, identity);
+        }).ToArray();
+
+        if (checks.All(c => c.Compatible))
+        {
+            foreach (var item in checks)
+                foreach (var computer in request.TargetComputerNames)
+                    progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ValidatingPrinter,
+                        item.Message, item.Definition.DisplayName));
+            return true;
+        }
+
+        foreach (var item in checks)
+        {
+            var state = item.Compatible ? TargetMachineState.DeployCancelled :
+                item.identity.ConflictingEvidence || item.identity.Brand is null || string.IsNullOrWhiteSpace(item.identity.Model)
+                    ? TargetMachineState.PrinterIdentityUnknown : TargetMachineState.PrinterIdentityMismatch;
+            var message = item.Compatible ? "Implantação bloqueada por outra impressora." :
+                item.identity.ConflictingEvidence ? "Identificação conflitante." :
+                state == TargetMachineState.PrinterIdentityUnknown ? "Modelo da impressora não identificado." :
+                item.identity.Brand != item.Definition.Brand
+                    ? $"{item.identity.Brand} ≠ {item.Definition.Brand}"
+                    : $"Modelo {item.identity.Model} não homologado.";
+            foreach (var computer in request.TargetComputerNames)
+                progress.Report(new DeploymentProgressEvent(computer, state, message, item.Definition.DisplayName,
+                    item.Compatible ? null : item.Message));
+        }
+
+        diagnosticLog?.Report("A implantação foi interrompida antes de alterar as máquinas-alvo.");
+
+        return false;
     }
 
     private async Task ProcessSingleTargetAsync(

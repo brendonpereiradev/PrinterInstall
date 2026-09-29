@@ -5,6 +5,7 @@ using PrinterInstall.App.Services;
 using PrinterInstall.Core.Gainscha;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Network;
+using PrinterInstall.Core.Validation;
 
 namespace PrinterInstall.App.ViewModels;
 
@@ -60,6 +61,12 @@ public partial class PrinterNetworkTestViewModel : ObservableObject
             return;
         }
 
+        if (!PrinterHostValidator.IsValidHostAddress(HostAddress))
+        {
+            StatusMessage = "Informe um endereço IP ou nome de host válido.";
+            return;
+        }
+
         var gainschaPreset = SelectedBrand == PrinterBrand.Gainscha
             ? SelectedGainschaLabelPreset
             : (GainschaLabelPreset?)null;
@@ -84,7 +91,7 @@ public partial class PrinterNetworkTestViewModel : ObservableObject
         try
         {
             await Task.Yield();
-            StatusMessage = UiStrings.NetworkTest_Progress_Sending;
+            StatusMessage = UiStrings.NetworkTest_Progress_Identity;
             var result = await _testService.RunAsync(
                 HostAddress.Trim(),
                 SelectedBrand,

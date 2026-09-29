@@ -38,6 +38,7 @@
   <data name="NetworkTest_Validation_HostRequired" xml:space="preserve"><value>O endereço IP ou hostname é obrigatório.</value></data>
   <data name="NetworkTest_Progress_Connectivity" xml:space="preserve"><value>A testar conectividade…</value></data>
   <data name="NetworkTest_Progress_Sending" xml:space="preserve"><value>A enviar página de teste…</value></data>
+  <data name="NetworkTest_Progress_Identity" xml:space="preserve"><value>Identificando impressora e verificando compatibilidade…</value></data>
   <data name="NetworkTest_Cancelled" xml:space="preserve"><value>Teste cancelado.</value></data>
   <data name="Main_Validation_InvalidHostAddressFormat" xml:space="preserve"><value>O endereço de host '{0}' é inválido. Informe um endereço IP (ex: 192.0.2.218) ou nome de host de rede válido.</value></data>
   <data name="Main_Validation_InversionDetectedFormat" xml:space="preserve"><value>Inversão detectada: o nome da impressora '{0}' parece ser um endereço IP, enquanto o host '{1}' parece ser um nome amigável. Corrija os campos antes de implantar.</value></data>
@@ -54,6 +55,10 @@
   <data name="Main_DeployWarningQuestion" xml:space="preserve"><value>Deseja continuar com a implantação mesmo assim?</value></data>
   <data name="Main_DeployWarningProceedButton" xml:space="preserve"><value>Prosseguir mesmo assim</value></data>
   <data name="Main_DeployWarningCancelButton" xml:space="preserve"><value>Cancelar e corrigir</value></data>
+  <data name="Main_PrinterIdentityBlockTitle" xml:space="preserve"><value>Atenção: validação da impressora bloqueou a implantação</value></data>
+  <data name="Main_PrinterIdentityBlockHeader" xml:space="preserve"><value>O modelo selecionado difere do modelo real da impressora:</value></data>
+  <data name="Main_PrinterIdentityUnknownHeader" xml:space="preserve"><value>Não foi possível identificar com segurança o modelo real da impressora:</value></data>
+  <data name="Main_PrinterIdentityBlockButton" xml:space="preserve"><value>Fechar e corrigir</value></data>
   <data name="Main_DeployCancelledByMismatchWarning" xml:space="preserve"><value>Implantação cancelada pelo utilizador após alerta de divergência de modelo/driver.</value></data>
   <data name="NetworkTest_ConfirmDialogTitle" xml:space="preserve"><value>Confirmar teste de impressora</value></data>
   <data name="NetworkTest_ConfirmHeader" xml:space="preserve"><value>Deseja enviar uma página de teste de rede para a impressora?</value></data>

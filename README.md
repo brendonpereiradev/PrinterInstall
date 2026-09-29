@@ -117,6 +117,18 @@ Operações que criam recursos no sistema registram suas ações no diário de r
 
 ---
 
+## Validação da identidade da impressora
+
+Antes de configurar qualquer máquina-alvo, o aplicativo consulta cada endereço de impressora informado e compara o fabricante e o modelo retornados com a marca selecionada e os modelos homologados para o driver correspondente. A regra funciona para qualquer endereço, sem cadastro fixo de IPs. Se uma impressora divergir ou não puder ser identificada, o lote inteiro é interrompido antes de instalar drivers, criar portas ou filas. O teste direto de impressão aplica a mesma verificação antes de enviar dados.
+
+A identificação usa SNMP v2c na porta UDP 161 e, quando necessário, tenta IPP nas portas 631, 80 e 443. Esses protocolos devem estar habilitados na impressora e acessíveis a partir do computador que executa o aplicativo. A comunidade SNMP padrão é `public`; para outra comunidade, defina a variável de ambiente `PRINTERINSTALL_SNMP_COMMUNITY` antes de iniciar o aplicativo. Um valor vazio desativa a consulta SNMP e mantém a tentativa por IPP. Não salve a comunidade nos logs nem a confunda com as credenciais de domínio.
+
+Os modelos aceitos inicialmente são os registrados em `MODELOS_TESTADOS.txt`: Epson M1180, WF-M5899, WF-M5799, WF-C5890 e WF-C5790; Lexmark CX532adwe; Brother HL-L5212DW; e Gainscha GA-2408T. Modelos adicionais exigem homologação e inclusão explícita no catálogo. Uma marca correta sem modelo confirmado não libera a instalação. A disponibilidade de SNMP/IPP e o formato da identificação da Gainscha precisam ser conferidos em equipamento real; até lá, uma resposta inconclusiva bloqueará essa configuração.
+
+Para consultar um endereço sem configurar máquinas, use `dotnet run --project scripts/PrinterIdentityProbe -- <IP-ou-host> <Epson|Lexmark|Brother|Gainscha>`. O utilitário mostra a identidade detectada e a decisão de compatibilidade. Em 29/09/2026, a consulta ao IP de exemplo `192.0.2.216` identificou uma Lexmark CX532ADWE via SNMP e bloqueou a seleção Epson. O endereço é apenas um exemplo de diagnóstico, sem regra especial no aplicativo.
+
+---
+
 ## Presets de etiquetas Gainscha
 
 | Preset | Dimensões | Uso no ambiente hospitalar |

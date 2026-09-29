@@ -14,7 +14,7 @@ public class MainViewModelPrinterRowsTests
 
     private MainViewModel CreateSut()
     {
-        var orchestrator = new PrinterDeploymentOrchestrator(_remoteOpsMock.Object);
+        var orchestrator = TestOrchestratorFactory.Create(_remoteOpsMock.Object);
         var controlOrchestrator = new PrinterControlOrchestrator(_remoteOpsMock.Object);
         var rollbackRunner = new DeploymentRollbackRunner(_remoteOpsMock.Object, controlOrchestrator);
         var localMachineIdentity = new LocalMachineIdentity();

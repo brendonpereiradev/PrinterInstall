@@ -18,6 +18,16 @@ public class TargetMachineStateDisplayTests
         Assert.Equal("Erro", TargetMachineStateDisplay.GetDisplay(TargetMachineState.Error));
     }
 
+    [Theory]
+    [InlineData(TargetMachineState.IdentifyingPrinter, "Identificando impressora")]
+    [InlineData(TargetMachineState.ValidatingPrinter, "Validando impressora")]
+    [InlineData(TargetMachineState.PrinterIdentityMismatch, "Impressora incompatível")]
+    [InlineData(TargetMachineState.PrinterIdentityUnknown, "Identificação inconclusiva")]
+    public void PrinterIdentityStates_ReturnPortugueseLabels(TargetMachineState state, string label)
+    {
+        Assert.Equal(label, TargetMachineStateDisplay.GetDisplay(state));
+    }
+
     [Fact]
     public void Pending_returns_Portuguese_label()
     {

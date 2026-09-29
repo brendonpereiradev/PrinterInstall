@@ -14,6 +14,11 @@ public interface IConfirmationDialogService
     Task<bool> ConfirmDeployWarningAsync(IReadOnlyList<string> warnings);
 
     /// <summary>
+    /// Exibe um bloqueio obrigatório quando a impressora detectada não pode ser validada.
+    /// </summary>
+    Task ShowPrinterIdentityBlockAsync(IReadOnlyList<string> reasons, bool confirmedMismatch);
+
+    /// <summary>
     /// Exibe diálogo de confirmação antes de disparar o teste raw na porta 9100.
     /// Retorna verdadeiro se o usuário confirmar o envio.
     /// </summary>

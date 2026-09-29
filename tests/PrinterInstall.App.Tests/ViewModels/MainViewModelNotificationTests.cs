@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +44,7 @@ public class MainViewModelNotificationTests
             DomainName = "domain"
         };
         var remoteMock = new Mock<IRemotePrinterOperations>();
-        var orchestrator = new PrinterDeploymentOrchestrator(remoteMock.Object);
+        var orchestrator = TestOrchestratorFactory.Create(remoteMock.Object);
         var rollbackRunner = new DeploymentRollbackRunner(remoteMock.Object, new PrinterControlOrchestrator(remoteMock.Object));
         var identity = new LocalMachineIdentity();
         var fakeNotification = new FakeNotificationService();
