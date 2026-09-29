@@ -1,4 +1,5 @@
 using System.Net;
+using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Remote;
 
@@ -103,7 +104,7 @@ public sealed class DeploymentRollbackRunner
                 progressSink.Report(new PrinterRemovalProgressEvent(
                     computer,
                     PrinterRemovalProgressState.Warning,
-                    $"Reversão: não foi possível remover porta '{portName}': {ex.Message}",
+                    $"Reversão: não foi possível remover porta '{portName}': {DiagnosticLogFormatter.FormatException(ex)}",
                     PortName: portName));
             }
         }

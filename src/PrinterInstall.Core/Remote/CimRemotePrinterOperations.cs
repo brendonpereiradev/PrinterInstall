@@ -2,6 +2,7 @@ using System.Management;
 using System.Net;
 using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Gainscha;
+using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
@@ -279,27 +280,23 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
             });
     }
 
-    public async Task RenamePrinterQueueAsync(string computerName, NetworkCredential credential, string currentName, string newName, CancellationToken cancellationToken = default)
+    public Task RenamePrinterQueueAsync(string computerName, NetworkCredential credential, string currentName, string newName, CancellationToken cancellationToken = default)
     {
-        await ExecuteMutationAsync(
+        return ExecuteMutationAsync(
             computerName,
             credential,
             log: null,
             cancellationToken,
-            direct: async () =>
+            direct: () => Task.Run(() =>
             {
-                var cmd = WmiPrinterOperationsCore.BuildRenamePrinterCommandLine(currentName, newName);
-                var runResult = await _processRunner.RunAsync(computerName, credential, cmd, RenameOperationTimeout, cancellationToken).ConfigureAwait(false);
-                if (runResult.TimedOut)
-                    throw new TimeoutException($"Renomear a fila em {computerName} excedeu o tempo de {RenameOperationTimeout}.");
-                if (runResult.ReturnValue != 0)
-                    throw new InvalidOperationException($"Renomear a fila em {computerName} falhou (WMI return {runResult.ReturnValue}).");
-            },
+                var scope = ConnectRemote(computerName, credential);
+                WmiPrinterOperationsCore.RenamePrinter(scope, currentName, newName);
+            }, cancellationToken),
             elevated: () =>
             {
                 var script = RemoteElevatedScriptBuilder.BuildRenamePrinterScript(currentName, newName);
                 return _elevatedRunner.RunElevatedScriptAsync(computerName, credential, script, RenameOperationTimeout, null, cancellationToken);
-            }).ConfigureAwait(false);
+            });
     }
 
     public Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
@@ -325,16 +322,33 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
             credential,
             log: null,
             cancellationToken,
-            direct: () => Task.Run(() =>
+            direct: () => Task.Run(async () =>
             {
                 var scope = ConnectRemote(computerName, credential);
                 var query = new ObjectQuery($"SELECT * FROM Win32_TCPIPPrinterPort WHERE Name='{WmiPrinterOperationsCore.EscapeWql(portName)}'");
-                using var searcher = new ManagementObjectSearcher(scope, query);
-                foreach (ManagementObject mo in searcher.Get())
+                Exception? lastEx = null;
+                for (var attempt = 1; attempt <= 2; attempt++)
                 {
-                    using (mo)
-                        mo.Delete();
+                    cancellationToken.ThrowIfCancellationRequested();
+                    try
+                    {
+                        using var searcher = new ManagementObjectSearcher(scope, query);
+                        foreach (ManagementObject mo in searcher.Get())
+                        {
+                            using (mo)
+                                mo.Delete();
+                        }
+                        return;
+                    }
+                    catch (ManagementException ex) when (attempt < 2 && !AccessDeniedDetector.IsAccessDenied(ex))
+                    {
+                        lastEx = ex;
+                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                    }
                 }
+
+                if (lastEx != null)
+                    throw lastEx;
             }, cancellationToken),
             elevated: () =>
             {
@@ -489,10 +503,23 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
         {
             await direct().ConfigureAwait(false);
         }
-        catch (Exception ex) when (AccessDeniedDetector.IsAccessDenied(ex))
+        catch (OperationCanceledException)
         {
-            session.MarkRequiresElevatedExecution();
-            log?.Report($"Token administrativo filtrado detectado em {computerName} — execução elevada temporária");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            if (AccessDeniedDetector.IsAccessDenied(ex) ||
+                (ex is ManagementException mgmt && mgmt.ErrorCode == ManagementStatus.PrivilegeNotHeld))
+            {
+                session.MarkRequiresElevatedExecution();
+                log?.Report($"Token administrativo filtrado detectado em {computerName} — execução elevada temporária");
+            }
+            else
+            {
+                log?.Report($"Operação direta WMI falhou em {computerName} ({DiagnosticLogFormatter.FormatException(ex)}) — acionando fallback elevado");
+            }
+
             await RunElevatedAsync().ConfigureAwait(false);
         }
     }

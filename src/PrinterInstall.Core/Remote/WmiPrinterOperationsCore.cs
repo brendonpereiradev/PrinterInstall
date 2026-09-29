@@ -115,6 +115,59 @@ try {{
     Stop-Transcript | Out-Null
 }}";
 
+    /// <summary>
+    /// Renomeia uma fila de impressão usando o método WMI Win32_Printer.RenamePrinter.
+    /// </summary>
+    public static void RenamePrinter(ManagementScope scope, string currentName, string newName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(currentName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(newName);
+
+        if (string.Equals(currentName.Trim(), newName.Trim(), StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var query = new ObjectQuery($"SELECT * FROM Win32_Printer WHERE Name='{EscapeWql(currentName)}'");
+        using var searcher = new ManagementObjectSearcher(scope, query);
+        ManagementObject? targetMo = null;
+        try
+        {
+            foreach (ManagementObject mo in searcher.Get())
+            {
+                targetMo = mo;
+                break;
+            }
+
+            if (targetMo == null)
+            {
+                if (PrinterExists(scope, newName))
+                    return;
+
+                throw new InvalidOperationException($"Fila de impressão '{currentName}' não foi encontrada.");
+            }
+
+            using var inParams = targetMo.GetMethodParameters("RenamePrinter");
+            inParams["NewPrinterName"] = newName;
+            using var outParams = targetMo.InvokeMethod("RenamePrinter", inParams, null)
+                ?? throw new InvalidOperationException("RenamePrinter retornou resposta nula.");
+
+            var returnValue = Convert.ToUInt32(outParams["ReturnValue"], CultureInfo.InvariantCulture);
+            if (returnValue == 0)
+                return;
+
+            if (returnValue == 5)
+                throw new UnauthorizedAccessException($"Acesso negado ao renomear a fila '{currentName}' para '{newName}'.");
+
+            if (returnValue == 1801)
+                throw new ArgumentException($"O nome da impressora '{newName}' é inválido.");
+
+            throw new InvalidOperationException($"Falha ao renomear a fila '{currentName}' para '{newName}' (código de erro {returnValue}).");
+        }
+        finally
+        {
+            targetMo?.Dispose();
+        }
+    }
+
     public static string BuildRenamePrinterCommandLine(string currentName, string newName)
     {
         var n = EscapePs(currentName);

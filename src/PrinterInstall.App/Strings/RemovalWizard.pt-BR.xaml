@@ -16,8 +16,11 @@
   <sys:String x:Key="Removal_RenamePlaceholder">Digite o novo nome</sys:String>
   <sys:String x:Key="Removal_LogHeader">Log de execução</sys:String>
   <sys:String x:Key="Removal_ExportLogButton">Exportar log</sys:String>
+  <sys:String x:Key="Removal_OpenLogFolderButton">Abrir pasta de logs</sys:String>
   <sys:String x:Key="Removal_CloseButton">Fechar</sys:String>
   <sys:String x:Key="Removal_ResetSpoolerButton">Reiniciar spooler</sys:String>
+  <sys:String x:Key="Removal_ResetSpoolerHint">Reinicia o serviço de impressão. Disponível quando o computador está acessível e nenhuma operação está em andamento.</sys:String>
   <sys:String x:Key="Removal_Ping_RetryButton">Testar novamente</sys:String>
-  <sys:String x:Key="Removal_Queues_OfflineHint">O computador está desligado ou inacessível. Clique em "Avançar" para continuar.</sys:String>
+  <sys:String x:Key="Removal_Queues_OfflineTitle">Computador inacessível</sys:String>
+  <sys:String x:Key="Removal_Queues_OfflineHint">Verifique se o computador está ligado e conectado à rede. Você pode testar novamente ou avançar sem alterar este computador.</sys:String>
 </ResourceDictionary>

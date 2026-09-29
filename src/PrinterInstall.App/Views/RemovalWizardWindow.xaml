@@ -1,4 +1,4 @@
-<Window x:Class="PrinterInstall.App.Views.RemovalWizardWindow"
+﻿<Window x:Class="PrinterInstall.App.Views.RemovalWizardWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
@@ -99,16 +99,13 @@
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
-                                <ui:Button Margin="8,0,0,0" Padding="8,2"
-                                           Content="{DynamicResource Removal_Ping_RetryButton}"
-                                           Command="{Binding RetryCurrentMachineCommand}"
-                                           Appearance="Secondary"
-                                           VerticalAlignment="Center"
-                                           Visibility="{Binding IsComputerOffline, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </StackPanel>
                             <ui:Button Grid.Row="0" Grid.Column="1"
                                        Content="{DynamicResource Removal_ResetSpoolerButton}"
                                        Command="{Binding ResetCurrentMachineSpoolerCommand}"
+                                       ToolTip="{DynamicResource Removal_ResetSpoolerHint}"
+                                       ToolTipService.ShowOnDisabled="True"
+                                       AutomationProperties.HelpText="{DynamicResource Removal_ResetSpoolerHint}"
                                        Appearance="Secondary"
                                        VerticalAlignment="Center"
                                        Padding="10,4"/>
@@ -135,6 +132,15 @@
                                           AlternatingRowBackground="Transparent"
                                           Background="Transparent"
                                           BorderThickness="0">
+                                    <DataGrid.Style>
+                                        <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsComputerOffline}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.Style>
                                     <!-- WPF has no SelectionMode.None; "None" crashes at load. Hide row/cell selection visuals. -->
                                     <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
@@ -271,19 +277,14 @@
                                        Visibility="{Binding ShowQueuesEmptyHint, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                             <!-- Mensagem informativa quando o computador estiver offline -->
-                            <Border Background="{DynamicResource AppBadgeDangerBackgroundBrush}"
-                                    BorderBrush="{DynamicResource AppBadgeDangerBorderBrush}"
-                                    BorderThickness="1" CornerRadius="8"
-                                    Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520"
+                            <Border Background="Transparent"
+                                    Padding="24" Margin="16" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520"
                                     Visibility="{Binding ShowComputerOfflineHint, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="36" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                                    <TextBlock Text="{DynamicResource Removal_Ping_Offline}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{DynamicResource Removal_Queues_OfflineTitle}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AppTextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                                     <TextBlock Text="{DynamicResource Removal_Queues_OfflineHint}" TextWrapping="Wrap" TextAlignment="Center" Foreground="{DynamicResource AppTextSecondaryBrush}" Margin="0,0,0,16"/>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <ui:Button Content="{DynamicResource Removal_Ping_RetryButton}" Command="{Binding RetryCurrentMachineCommand}" Appearance="Secondary" Margin="0,0,8,0" Padding="14,6"/>
-                                        <ui:Button Content="{DynamicResource Removal_Next}" Command="{Binding NextQueueStepCommand}" Appearance="Primary" Padding="14,6"/>
-                                    </StackPanel>
+                                    <ui:Button Content="{DynamicResource Removal_Ping_RetryButton}" Command="{Binding RetryCurrentMachineCommand}" Appearance="Secondary" HorizontalAlignment="Center" Padding="14,6"/>
                                 </StackPanel>
                             </Border>
 
@@ -385,6 +386,7 @@
                                Foreground="{DynamicResource AppTextPrimaryBrush}"
                                Margin="0,0,0,10"/>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                        <ui:Button Content="{DynamicResource Removal_OpenLogFolderButton}" Command="{Binding OpenLogFolderCommand}" Padding="16,6" Margin="0,0,8,0" Appearance="Transparent"/>
                         <ui:Button Content="{DynamicResource Removal_ExportLogButton}"
                                    Command="{Binding ExportLogCommand}"
                                    Padding="16,6" Margin="0,0,8,0" Appearance="Secondary"/>

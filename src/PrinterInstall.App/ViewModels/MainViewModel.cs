@@ -29,6 +29,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IDeploymentNotificationService _notificationService;
     private readonly IConfirmationDialogService _dialogService;
     private readonly IThemeService? _themeService;
+    private readonly IDiagnosticFileLogger? _diagnosticLogger;
     private CancellationTokenSource? _deployCts;
 
     public MainViewModel(
@@ -40,7 +41,8 @@ public partial class MainViewModel : ObservableObject
         ILogExportService? logExportService = null,
         IDeploymentNotificationService? notificationService = null,
         IConfirmationDialogService? dialogService = null,
-        IThemeService? themeService = null)
+        IThemeService? themeService = null,
+        IDiagnosticFileLogger? diagnosticLogger = null)
     {
         _session = session;
         _orchestrator = orchestrator;
@@ -51,6 +53,7 @@ public partial class MainViewModel : ObservableObject
         _notificationService = notificationService ?? new DeploymentNotificationService();
         _dialogService = dialogService ?? new ConfirmationDialogService();
         _themeService = themeService;
+        _diagnosticLogger = diagnosticLogger;
 
         if (_themeService != null)
         {
@@ -199,7 +202,8 @@ public partial class MainViewModel : ObservableObject
             operatorId,
             _localMachineIdentity.GetPrimaryLocalName(),
             targetSummaries,
-            LogText);
+            LogText,
+            diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath);
 
         var defaultFileName = $"PrinterInstall_Deploy_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt";
         var result = _logExportService.ExportLog(defaultFileName, report);
@@ -682,6 +686,8 @@ public partial class MainViewModel : ObservableObject
 
     private void AppendLog(string line)
     {
+        _diagnosticLogger?.LogInfo(line, "MainDeploy");
+
         void Write()
         {
             var ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -689,6 +695,33 @@ public partial class MainViewModel : ObservableObject
         }
 
         RunOnUiDispatcher(Write);
+    }
+
+    [RelayCommand]
+    private void OpenLogFolder()
+    {
+        try
+        {
+            var dir = _diagnosticLogger?.LogDirectory ?? System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "PrinterInstall",
+                "Logs");
+
+            if (!System.IO.Directory.Exists(dir))
+            {
+                System.IO.Directory.CreateDirectory(dir);
+            }
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = dir,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"Não foi possível abrir a pasta de logs: {ex.Message}");
+        }
     }
 
     [RelayCommand]
