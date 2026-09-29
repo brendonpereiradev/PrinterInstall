@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Gainscha;
+using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.Core.Remote;
@@ -19,15 +20,22 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
     private static readonly TimeSpan PrintJobWaitTimeout = TimeSpan.FromSeconds(10);
 
     private readonly IGainschaLabelPreferenceConfigurator _gainschaLabelConfigurator;
+    private readonly LocalElevatedProcessRunner _elevatedRunner;
 
     public LocalPrinterOperations()
-        : this(new GainschaLabelPreferenceConfigurator())
+        : this(new GainschaLabelPreferenceConfigurator(), new LocalElevatedProcessRunner())
     {
     }
 
     internal LocalPrinterOperations(IGainschaLabelPreferenceConfigurator gainschaLabelConfigurator)
+        : this(gainschaLabelConfigurator, new LocalElevatedProcessRunner())
+    {
+    }
+
+    internal LocalPrinterOperations(IGainschaLabelPreferenceConfigurator gainschaLabelConfigurator, LocalElevatedProcessRunner elevatedRunner)
     {
         _gainschaLabelConfigurator = gainschaLabelConfigurator;
+        _elevatedRunner = elevatedRunner;
     }
 
     public Task<IReadOnlyList<string>> GetInstalledDriverNamesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
@@ -249,14 +257,13 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
         }, cancellationToken);
     }
 
-    public async Task RenamePrinterQueueAsync(string computerName, NetworkCredential credential, string currentName, string newName, CancellationToken cancellationToken = default)
+    public Task RenamePrinterQueueAsync(string computerName, NetworkCredential credential, string currentName, string newName, CancellationToken cancellationToken = default)
     {
-        var cmd = WmiPrinterOperationsCore.BuildRenamePrinterCommandLine(currentName, newName);
-        var runResult = await LocalProcessRunner.RunAsync(cmd, RenameOperationTimeout, cancellationToken).ConfigureAwait(false);
-        if (runResult.TimedOut)
-            throw new TimeoutException($"Renomear a fila localmente excedeu o tempo de {RenameOperationTimeout}.");
-        if (runResult.ReturnValue != 0)
-            throw new InvalidOperationException($"Renomear a fila localmente falhou (exit code {runResult.ReturnValue}).");
+        return Task.Run(() =>
+        {
+            var scope = WmiPrinterOperationsCore.CreateLocalScope();
+            WmiPrinterOperationsCore.RenamePrinter(scope, currentName, newName);
+        }, cancellationToken);
     }
 
     public Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
@@ -275,19 +282,62 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
         }, cancellationToken);
     }
 
-    public Task RemoveTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
+    public async Task RemoveTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() =>
+        Exception? wmiException = null;
+
+        for (var attempt = 1; attempt <= 2; attempt++)
         {
-            var scope = WmiPrinterOperationsCore.CreateLocalScope();
-            var query = new ObjectQuery($"SELECT * FROM Win32_TCPIPPrinterPort WHERE Name='{WmiPrinterOperationsCore.EscapeWql(portName)}'");
-            using var searcher = new ManagementObjectSearcher(scope, query);
-            foreach (ManagementObject mo in searcher.Get())
+            cancellationToken.ThrowIfCancellationRequested();
+            try
             {
-                using (mo)
-                    mo.Delete();
+                await Task.Run(() =>
+                {
+                    var scope = WmiPrinterOperationsCore.CreateLocalScope();
+                    var query = new ObjectQuery($"SELECT * FROM Win32_TCPIPPrinterPort WHERE Name='{WmiPrinterOperationsCore.EscapeWql(portName)}'");
+                    using var searcher = new ManagementObjectSearcher(scope, query);
+                    foreach (ManagementObject mo in searcher.Get())
+                    {
+                        using (mo)
+                            mo.Delete();
+                    }
+                }, cancellationToken).ConfigureAwait(false);
+
+                return;
             }
-        }, cancellationToken);
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                wmiException = ex;
+                if (attempt < 2)
+                {
+                    await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+
+        // Fallback: se WMI local falhar (ex: Generic failure por spooler lock ou privilégios), executa PowerShell
+        try
+        {
+            var script = RemoteElevatedScriptBuilder.BuildRemoveTcpPortScript(portName);
+            var staging = LocalElevatedStagingPaths.Create();
+            await _elevatedRunner.RunScriptAsync(staging, script, TimeSpan.FromMinutes(2), cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception fallbackEx)
+        {
+            var detail = wmiException != null
+                ? $"{DiagnosticLogFormatter.FormatException(wmiException)} | {DiagnosticLogFormatter.FormatException(fallbackEx)}"
+                : DiagnosticLogFormatter.FormatException(fallbackEx);
+
+            throw new InvalidOperationException($"Falha ao remover porta TCP local '{portName}': {detail}", fallbackEx);
+        }
     }
 
     public async Task InstallPrinterDriverAsync(string computerName, NetworkCredential credential, LocalDriverPackage package, IProgress<string>? log, CancellationToken cancellationToken = default)

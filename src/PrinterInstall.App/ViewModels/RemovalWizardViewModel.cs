@@ -35,6 +35,7 @@ public partial class RemovalWizardViewModel : ObservableObject
     private readonly IConfirmationDialogService _dialogService;
     private readonly IPrinterPingService _pingService;
     private readonly IFastHostReachabilityChecker _reachabilityChecker;
+    private readonly IDiagnosticFileLogger? _diagnosticLogger;
 
     private readonly Dictionary<string, List<PrinterRemovalQueueItem>> _selectionsByComputer = new();
     private readonly Dictionary<string, List<PrinterRenameItem>> _renamesByComputer = new();
@@ -51,7 +52,8 @@ public partial class RemovalWizardViewModel : ObservableObject
         IDeploymentNotificationService? notificationService = null,
         IConfirmationDialogService? dialogService = null,
         IPrinterPingService? pingService = null,
-        IFastHostReachabilityChecker? reachabilityChecker = null)
+        IFastHostReachabilityChecker? reachabilityChecker = null,
+        IDiagnosticFileLogger? diagnosticLogger = null)
     {
         _session = session;
         _remote = remote;
@@ -62,6 +64,7 @@ public partial class RemovalWizardViewModel : ObservableObject
         _dialogService = dialogService ?? new ConfirmationDialogService();
         _pingService = pingService ?? new NullPrinterPingService();
         _reachabilityChecker = reachabilityChecker ?? new NullFastHostReachabilityChecker();
+        _diagnosticLogger = diagnosticLogger;
         QueuesForCurrentComputer.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowQueuesEmptyHint));
     }
 
@@ -489,13 +492,15 @@ public partial class RemovalWizardViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            AppendLog(string.Format(UiStrings.Removal_LogErrorFormat, ex.Message));
+            _diagnosticLogger?.LogError(ex.Message, "RemovalWizard", ex);
+            var errorFormatted = DiagnosticLogFormatter.FormatException(ex);
+            AppendLog(string.Format(UiStrings.Removal_LogErrorFormat, errorFormatted));
             _notificationService.NotifyError();
 
             if (Application.Current is not null)
             {
                 MessageBox.Show(
-                    string.Format(UiStrings.Removal_LogErrorFormat, ex.Message),
+                    string.Format(UiStrings.Removal_LogErrorFormat, errorFormatted),
                     UiStrings.Removal_SummaryDialogTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -747,7 +752,8 @@ public partial class RemovalWizardViewModel : ObservableObject
             operatorId,
             Environment.MachineName,
             ReviewSummary,
-            LogText);
+            LogText,
+            diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath);
 
         var defaultFileName = $"PrinterInstall_Controle_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt";
         var result = _logExportService.ExportLog(defaultFileName, report);
@@ -762,6 +768,33 @@ public partial class RemovalWizardViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private void OpenLogFolder()
+    {
+        try
+        {
+            var dir = _diagnosticLogger?.LogDirectory ?? System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "PrinterInstall",
+                "Logs");
+
+            if (!System.IO.Directory.Exists(dir))
+            {
+                System.IO.Directory.CreateDirectory(dir);
+            }
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = dir,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"Não foi possível abrir a pasta de logs: {ex.Message}");
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(CanClose))]
     private void Close()
     {
@@ -771,6 +804,8 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     private void AppendLog(string line)
     {
+        _diagnosticLogger?.LogInfo(line, "RemovalWizard");
+
         void Write()
         {
             var ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");

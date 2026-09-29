@@ -111,23 +111,38 @@ public class RemoteElevatedScriptBuilderTests
 
 
     [Fact]
-
     public void WrapWithResultHandling_IncludesTryCatch()
-
     {
-
         var inner = "Write-Output 'hello'";
-
         var wrapped = RemoteElevatedScriptBuilder.WrapWithResultHandling(inner);
-
         Assert.Contains("$ErrorActionPreference = 'Stop'", wrapped, StringComparison.Ordinal);
-
         Assert.Contains("RESULT>> FAIL", wrapped, StringComparison.Ordinal);
-
         Assert.Contains("RESULT>> OK", wrapped, StringComparison.Ordinal);
-
     }
 
+    [Fact]
+    public void BuildRenamePrinterScript_EscapesQuotesAndIncludesIdempotency()
+    {
+        var script = RemoteElevatedScriptBuilder.BuildRenamePrinterScript(
+            "Impressora L'RH (Havaí)", "RH Havaí - P/B");
+
+        Assert.Contains("Impressora L''RH (Havaí)", script, StringComparison.Ordinal);
+        Assert.Contains("RH Havaí - P/B", script, StringComparison.Ordinal);
+        Assert.Contains("Rename-Printer", script, StringComparison.Ordinal);
+        Assert.Contains("RESULT>> OK", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BuildRemoveTcpPortScript_IncludesRetryLoopAndIdempotency()
+    {
+        var script = RemoteElevatedScriptBuilder.BuildRemoveTcpPortScript("192.0.2.115");
+
+        Assert.Contains("Get-PrinterPort -Name '192.0.2.115'", script, StringComparison.Ordinal);
+        Assert.Contains("Remove-PrinterPort -Name '192.0.2.115'", script, StringComparison.Ordinal);
+        Assert.Contains("$i -le 3", script, StringComparison.Ordinal);
+        Assert.Contains("Start-Sleep -Seconds 1", script, StringComparison.Ordinal);
+        Assert.Contains("RESULT>> OK", script, StringComparison.Ordinal);
+    }
 }
 
 

@@ -1,4 +1,5 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using System.Management;
 using System.Net;
 using System.Reflection;
 using Moq;
@@ -69,9 +70,46 @@ public class CimRemotePrinterOperationsElevationTests
                 return Task.CompletedTask;
             });
 
-        Assert.Equal(1, directCalls);
+            Assert.Equal(1, directCalls);
         Assert.True(elevatedCalled);
         Assert.True(session.RequiresElevatedExecution);
+    }
+
+    [Fact]
+    public async Task ExecuteMutationAsync_WhenDirectThrowsManagementGenericFailure_FallsBackToElevated()
+    {
+        var session = new RemoteHostSession(Host, requiresElevatedExecution: false);
+        var sessionFactory = CreateSessionFactoryWithCachedSession(Host, session);
+        var sut = CreateSut(sessionFactory);
+
+        var directCalls = 0;
+        var elevatedCalled = false;
+        var logReported = new List<string>();
+        var progressMock = new Mock<IProgress<string>>();
+        progressMock.Setup(p => p.Report(It.IsAny<string>()))
+            .Callback<string>(logReported.Add);
+
+        var mgmtEx = CreateManagementException(ManagementStatus.Failed, "Generic failure");
+
+        await sut.ExecuteMutationAsync(
+            Host,
+            Credential,
+            log: progressMock.Object,
+            CancellationToken.None,
+            direct: () =>
+            {
+                directCalls++;
+                throw mgmtEx;
+            },
+            elevated: () =>
+            {
+                elevatedCalled = true;
+                return Task.CompletedTask;
+            });
+
+        Assert.Equal(1, directCalls);
+        Assert.True(elevatedCalled);
+        Assert.Contains(logReported, l => l.Contains("Operação direta WMI falhou", StringComparison.OrdinalIgnoreCase) && l.Contains("Generic failure"));
     }
 
     [Fact]
@@ -156,6 +194,36 @@ public class CimRemotePrinterOperationsElevationTests
         Assert.Contains(messages, message => message.Contains(logUnreadable ? "log ocupado" : "motivo completo"));
     }
 
+    [Fact]
+    public async Task RenamePrinterQueueAsync_WhenSessionRequiresElevation_RunsElevatedScript()
+    {
+        var session = new RemoteHostSession(Host, requiresElevatedExecution: true);
+        var sessionFactory = CreateSessionFactoryWithCachedSession(Host, session);
+
+        var stager = new Mock<IRemoteDriverFileStager>();
+        var wmiRunner = new Mock<IRemoteWmiProcessRunner>();
+
+        string? writtenScript = null;
+        stager.Setup(x => x.WriteTextFileAsync(Host, Credential, It.IsAny<RemoteDriverStagingPaths>(), "task.ps1", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, NetworkCredential, RemoteDriverStagingPaths, string, string, CancellationToken>((_, _, _, _, script, _) => writtenScript = script)
+            .Returns(Task.CompletedTask);
+        stager.Setup(x => x.ReadLogAsync(Host, Credential, It.IsAny<RemoteDriverStagingPaths>(), "task.result", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("RESULT>> OK");
+        stager.Setup(x => x.CleanupAsync(Host, Credential, It.IsAny<RemoteDriverStagingPaths>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        wmiRunner.Setup(x => x.RunAsync(Host, Credential, It.Is<string>(s => s.Contains("schtasks")), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RemoteProcessResult(0, 123, TimedOut: false));
+
+        var elevatedRunner = new ElevatedRemoteProcessRunner(wmiRunner.Object, stager.Object);
+        var sut = new CimRemotePrinterOperations(stager.Object, sessionFactory, wmiRunner.Object, elevatedRunner);
+
+        await sut.RenamePrinterQueueAsync(Host, Credential, "OldQueue", "NewQueue", CancellationToken.None);
+
+        Assert.NotNull(writtenScript);
+        Assert.Contains("Rename-Printer -Name 'OldQueue' -NewName 'NewQueue'", writtenScript);
+    }
+
     private static CimRemotePrinterOperations CreateSut(RemoteHostSessionFactory sessionFactory)
     {
         var stager = new Mock<IRemoteDriverFileStager>();
@@ -173,5 +241,15 @@ public class CimRemotePrinterOperationsElevationTests
         var cache = (ConcurrentDictionary<string, RemoteHostSession>)field.GetValue(factory)!;
         cache[RemoteHostSessionFactory.NormalizeHostKey(host)] = session;
         return factory;
+    }
+
+    private static ManagementException CreateManagementException(ManagementStatus status, string message)
+    {
+        var ctor = typeof(ManagementException).GetConstructor(
+            BindingFlags.NonPublic | BindingFlags.Instance,
+            null,
+            new[] { typeof(ManagementStatus), typeof(string), typeof(ManagementBaseObject) },
+            null);
+        return (ManagementException)ctor!.Invoke(new object?[] { status, message, null });
     }
 }

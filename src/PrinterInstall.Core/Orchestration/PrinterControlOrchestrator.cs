@@ -1,3 +1,4 @@
+using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Remote;
 
@@ -104,6 +105,9 @@ public sealed class PrinterControlOrchestrator
                     continue;
                 }
 
+                // Dá um breve tempo de acomodação para o spooler desassociar a fila recém-excluída
+                await Task.Delay(300, cancellationToken).ConfigureAwait(false);
+
                 int count;
                 try
                 {
@@ -171,15 +175,5 @@ public sealed class PrinterControlOrchestrator
         }
     }
 
-    private static string Flatten(Exception ex)
-    {
-        var messages = new List<string>();
-        for (var e = ex; e is not null; e = e.InnerException)
-        {
-            var msg = e.Message?.Trim();
-            if (!string.IsNullOrEmpty(msg))
-                messages.Add(msg);
-        }
-        return string.Join(" | ", messages);
-    }
+    private static string Flatten(Exception ex) => DiagnosticLogFormatter.FormatException(ex);
 }

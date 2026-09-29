@@ -12,6 +12,7 @@ using PrinterInstall.App.ViewModels;
 using PrinterInstall.App.Views;
 using PrinterInstall.Core.Auth;
 using PrinterInstall.Core.Drivers;
+using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Network;
 using PrinterInstall.Core.Orchestration;
 using PrinterInstall.Core.Remote;
@@ -21,6 +22,7 @@ namespace PrinterInstall.App;
 public partial class App : Application
 {
     private IHost? _host;
+    private IDiagnosticFileLogger? _diagnosticLogger;
 
     private void App_OnStartup(object sender, StartupEventArgs e)
     {
@@ -45,6 +47,7 @@ public partial class App : Application
             }
         }
 
+        builder.Services.AddSingleton<IDiagnosticFileLogger, DiagnosticFileLogger>();
         builder.Services.AddSingleton<ISessionContext, SessionContext>();
         builder.Services.AddSingleton<IAppSettingsStore, AppSettingsStore>();
         builder.Services.AddSingleton<IThemeService, ThemeService>();
@@ -113,6 +116,23 @@ public partial class App : Application
 
         _host = builder.Build();
 
+        _diagnosticLogger = _host.Services.GetRequiredService<IDiagnosticFileLogger>();
+        _diagnosticLogger.CleanOldLogs();
+        _diagnosticLogger.LogInfo("Aplicação inicializada com sucesso.", "App");
+
+        DispatcherUnhandledException += (s, args) =>
+        {
+            _diagnosticLogger.LogError("Exceção não tratada na thread de UI (Dispatcher)", "Dispatcher", args.Exception);
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+        {
+            if (args.ExceptionObject is Exception ex)
+            {
+                _diagnosticLogger.LogError("Exceção não tratada no AppDomain", "AppDomain", ex);
+            }
+        };
+
         var themeService = _host.Services.GetRequiredService<IThemeService>() as ThemeService;
         themeService?.Initialize();
 
@@ -124,9 +144,9 @@ public partial class App : Application
             {
                 await extractor.EnsureExtractedAsync().ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignora falhas de pré-aquecimento silenciosamente
+                _diagnosticLogger?.LogWarning("Falha no pré-aquecimento dos drivers embutidos", "EmbeddedDrivers", ex);
             }
         });
 
@@ -138,6 +158,7 @@ public partial class App : Application
 
     private void App_OnExit(object sender, ExitEventArgs e)
     {
+        _diagnosticLogger?.LogInfo("Aplicação encerrada.", "App");
         _host?.Dispose();
     }
 }

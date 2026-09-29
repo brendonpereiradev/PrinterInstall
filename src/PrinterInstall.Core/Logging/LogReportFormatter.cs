@@ -21,12 +21,13 @@ public static class LogReportFormatter
         string? localMachineName,
         IEnumerable<(string ComputerName, string PrinterQueueName, string State, string? Message)>? targets,
         string? logText,
-        DateTime? exportTime = null)
+        DateTime? exportTime = null,
+        string? diagnosticLogPath = null)
     {
         var timestamp = (exportTime ?? DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss");
         var sb = new StringBuilder();
 
-        AppendHeader(sb, "Deploy de Impressoras", timestamp, operatorIdentity, localMachineName);
+        AppendHeader(sb, "Deploy de Impressoras", timestamp, operatorIdentity, localMachineName, diagnosticLogPath);
 
         sb.AppendLine(SeparatorMinor);
         sb.AppendLine("RESUMO DOS ALVOS");
@@ -62,12 +63,13 @@ public static class LogReportFormatter
         string? localMachineName,
         string? reviewSummary,
         string? logText,
-        DateTime? exportTime = null)
+        DateTime? exportTime = null,
+        string? diagnosticLogPath = null)
     {
         var timestamp = (exportTime ?? DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss");
         var sb = new StringBuilder();
 
-        AppendHeader(sb, "Controle e Remoção de Impressoras", timestamp, operatorIdentity, localMachineName);
+        AppendHeader(sb, "Controle e Remoção de Impressoras", timestamp, operatorIdentity, localMachineName, diagnosticLogPath);
 
         sb.AppendLine(SeparatorMinor);
         sb.AppendLine("PLANO / RESUMO DE AÇÕES");
@@ -94,7 +96,8 @@ public static class LogReportFormatter
         string operationTitle,
         string timestamp,
         string? operatorIdentity,
-        string? localMachineName)
+        string? localMachineName,
+        string? diagnosticLogPath = null)
     {
         sb.AppendLine(SeparatorMajor);
         sb.AppendLine("PrinterInstall — Relatório de Diagnóstico e Log de Execução");
@@ -104,7 +107,27 @@ public static class LogReportFormatter
         sb.AppendLine($"Operador: {(string.IsNullOrWhiteSpace(operatorIdentity) ? "Não informado" : operatorIdentity)}");
         sb.AppendLine($"Computador Local: {(string.IsNullOrWhiteSpace(localMachineName) ? Environment.MachineName : localMachineName)}");
         sb.AppendLine($"Ambiente do Sistema: {Environment.OSVersion} (.NET {Environment.Version})");
+        var isElevated = CheckIsElevated();
+        sb.AppendLine($"Privilégio Local: {(isElevated ? "Administrador (Elevado)" : "Usuário Padrão (Não Elevado)")}");
+        if (!string.IsNullOrWhiteSpace(diagnosticLogPath))
+        {
+            sb.AppendLine($"Arquivo de Logs em Disco: {diagnosticLogPath}");
+        }
         sb.AppendLine();
+    }
+
+    private static bool CheckIsElevated()
+    {
+        try
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static void AppendLogSection(StringBuilder sb, string? logText)

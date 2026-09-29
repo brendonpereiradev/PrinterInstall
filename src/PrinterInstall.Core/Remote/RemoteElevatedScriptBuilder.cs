@@ -102,23 +102,28 @@ try {{
 
 
     public static string BuildRemoveTcpPortScript(string portName)
-
     {
-
         var p = EscapePs(portName);
-
         var body = $@"
-
     Import-Module PrintManagement -ErrorAction Stop
-
     if (Get-PrinterPort -Name '{p}' -ErrorAction SilentlyContinue) {{
-
-        Remove-PrinterPort -Name '{p}' -ErrorAction Stop | Out-Null
-
+        for ($i = 1; $i -le 3; $i++) {{
+            try {{
+                Remove-PrinterPort -Name '{p}' -ErrorAction Stop | Out-Null
+                break
+            }} catch {{
+                if ($i -lt 3) {{
+                    Start-Sleep -Seconds 1
+                }} else {{
+                    if (Get-PrinterPort -Name '{p}' -ErrorAction SilentlyContinue) {{
+                        throw
+                    }}
+                }}
+            }}
+        }}
     }}";
 
         return WrapWithResultHandling(body);
-
     }
 
 
@@ -363,21 +368,16 @@ try {{
 
 
     public static string BuildRenamePrinterScript(string currentName, string newName)
-
     {
-
         var c = EscapePs(currentName);
-
         var n = EscapePs(newName);
-
         var body = $@"
-
     Import-Module PrintManagement -ErrorAction Stop
-
+    if (Get-Printer -Name '{n}' -ErrorAction SilentlyContinue) {{
+        if (-not (Get-Printer -Name '{c}' -ErrorAction SilentlyContinue)) {{ return }}
+    }}
     $null = Get-Printer -Name '{c}' -ErrorAction Stop
-
     Rename-Printer -Name '{c}' -NewName '{n}' -ErrorAction Stop | Out-Null";
-
         return WrapWithResultHandling(body);
     }
 

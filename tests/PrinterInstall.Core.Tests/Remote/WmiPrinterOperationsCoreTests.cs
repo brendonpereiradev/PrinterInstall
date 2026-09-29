@@ -149,4 +149,41 @@ public class WmiPrinterOperationsCoreTests
 
         Assert.Equal("pnputil: Access is denied.", detail);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void RenamePrinter_ThrowsOnNullOrWhiteSpace_CurrentName(string? currentName)
+    {
+        var scope = new System.Management.ManagementScope(@"root\cimv2");
+        Assert.ThrowsAny<ArgumentException>(() => WmiPrinterOperationsCore.RenamePrinter(scope, currentName!, "NewName"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void RenamePrinter_ThrowsOnNullOrWhiteSpace_NewName(string? newName)
+    {
+        var scope = new System.Management.ManagementScope(@"root\cimv2");
+        Assert.ThrowsAny<ArgumentException>(() => WmiPrinterOperationsCore.RenamePrinter(scope, "CurrentName", newName!));
+    }
+
+    [Fact]
+    public void RenamePrinter_SameNames_ReturnsEarlyWithoutQuerying()
+    {
+        var scope = new System.Management.ManagementScope(@"\\invalid-host-should-not-connect\root\cimv2");
+        var exception = Record.Exception(() => WmiPrinterOperationsCore.RenamePrinter(scope, "QueueName", "QueueName"));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void BuildRenamePrinterCommandLine_EscapesSingleQuotes()
+    {
+        var cmd = WmiPrinterOperationsCore.BuildRenamePrinterCommandLine("Impressora - RH (Havaí)", "RH Havaí - P/B");
+        Assert.Contains("Impressora - RH (Havaí)", cmd);
+        Assert.Contains("RH Havaí - P/B", cmd);
+        Assert.Contains("Rename-Printer", cmd);
+    }
 }
