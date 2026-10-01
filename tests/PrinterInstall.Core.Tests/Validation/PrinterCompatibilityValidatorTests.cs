@@ -6,6 +6,7 @@ namespace PrinterInstall.Core.Tests.Validation;
 public class PrinterCompatibilityValidatorTests
 {
     [Theory]
+    [InlineData("EPSON M1180 Series", PrinterBrand.Epson, "M1180")]
     [InlineData("EPSON WorkForce Pro WF-M5899", PrinterBrand.Epson, "WF-M5899")]
     [InlineData("Lexmark CX532adwe", PrinterBrand.Lexmark, "CX532ADWE")]
     [InlineData("Brother HL-L5212DW", PrinterBrand.Brother, "HL-L5212DW")]

@@ -3,7 +3,7 @@
 Data: 29/09/2026  
 Status: implementação de código concluída; homologação das demais marcas em equipamentos reais pendente.
 
-O código atual contém consulta SNMP/IPP, comparação de marca/modelo e bloqueio antes das alterações remotas. As listas abaixo registram o plano original; a homologação completa de hardware continua pendente. Os detalhes de operação estão no `README.md`.
+O código atual contém consulta SNMP/IPP e leitura da interface web HTTP/HTTPS, comparação de marca/modelo e bloqueio antes das alterações remotas. A leitura web cobre redirecionamentos, frames, campos de identificação, as duas versões do Web Config da Epson e a consulta dinâmica de informações da Gainscha. As listas abaixo registram o plano original; a homologação completa de hardware continua pendente. Os detalhes de operação estão no `README.md`.
 
 Verificação real em 29/09/2026: a consulta somente de leitura a `10.1.152.216` retornou `Lexmark CX532ADWE` por `SNMP sysDescr`. O utilitário de diagnóstico bloqueou a seleção Epson e aceitou Lexmark. Não foi executada instalação em máquina-alvo nessa verificação.
 
