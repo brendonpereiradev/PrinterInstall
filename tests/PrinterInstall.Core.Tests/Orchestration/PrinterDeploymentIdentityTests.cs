@@ -22,6 +22,25 @@ public class PrinterDeploymentIdentityTests
         }
     }
 
+    private sealed class GainschaInfoHttpHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Post)
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            var (body, contentType) = request.RequestUri!.AbsolutePath switch
+            {
+                "/" => ("<a href='jb_status_look.shtml'>Printer Info</a>", "text/html"),
+                "/jb_status_look.shtml" => ("<span id='print_model'>#</span><script>loadXMLDoc('/updata_message?', update);</script>", "text/html"),
+                _ => ("GA-2408T;SERIAL-TEST;firmware;boot;203;0;0;0;Ready;", "text/plain")
+            };
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(body, System.Text.Encoding.UTF8, contentType)
+            });
+        }
+    }
+
     private static PrinterQueueDefinition Printer(string host, string name, PrinterBrand brand) => new()
     {
         PrinterHostAddress = host,
@@ -146,5 +165,64 @@ public class PrinterDeploymentIdentityTests
 
         Assert.Contains(events, e => e.State == TargetMachineState.SkippedAlreadyExists);
         remote.Verify(r => r.GetInstalledDriverNamesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(PrinterBrand.Gainscha)]
+    [InlineData(PrinterBrand.Epson)]
+    public async Task RunAsync_GainschaDynamicWebIdentity_ContinuesOnlyWithMatchingDriver(PrinterBrand selected)
+    {
+        var remote = new Mock<IRemotePrinterOperations>(MockBehavior.Strict);
+        if (selected == PrinterBrand.Gainscha)
+        {
+            remote.Setup(r => r.GetInstalledDriverNamesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(["Gainscha GA-2408T"]);
+            remote.Setup(r => r.PrinterQueueExistsAsync("pc1", It.IsAny<NetworkCredential>(), "Etiqueta", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            remote.Setup(r => r.CreateTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<string>(), "192.0.2.10", 9100, "RAW", It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            remote.Setup(r => r.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "Etiqueta", "Gainscha GA-2408T", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            remote.Setup(r => r.ConfigureGainschaLabelPresetAsync("pc1", It.IsAny<NetworkCredential>(), "Etiqueta", GainschaLabelPreset.Lote, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+        }
+        using var client = new HttpClient(new GainschaInfoHttpHandler());
+        var identity = new NetworkPrinterIdentityService("", client);
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = ["pc1"],
+            Printers = [new PrinterQueueDefinition
+            {
+                Brand = selected,
+                PrinterHostAddress = "192.0.2.10",
+                DisplayName = "Etiqueta",
+                PortNumber = 9100,
+                Protocol = TcpPrinterProtocol.Raw,
+                GainschaLabelPreset = GainschaLabelPreset.Lote
+            }],
+            DomainCredential = new NetworkCredential("u", "p")
+        };
+        var events = new List<DeploymentProgressEvent>();
+        var logs = new List<string>();
+
+        await Create(remote.Object, identity).RunAsync(request, new DeploymentRollbackJournal(),
+            new InlineProgress<DeploymentProgressEvent>(events.Add), diagnosticLog: new InlineProgress<string>(logs.Add));
+
+        if (selected == PrinterBrand.Gainscha)
+        {
+            Assert.Contains(events, e => e.State == TargetMachineState.CompletedSuccess);
+            remote.Verify(r => r.GetInstalledDriverNamesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()), Times.Once);
+            remote.Verify(r => r.PrinterQueueExistsAsync("pc1", It.IsAny<NetworkCredential>(), "Etiqueta", It.IsAny<CancellationToken>()), Times.Once);
+            remote.Verify(r => r.CreateTcpPrinterPortAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<string>(), "192.0.2.10", 9100, "RAW", It.IsAny<CancellationToken>()), Times.Once);
+            remote.Verify(r => r.AddPrinterAsync("pc1", It.IsAny<NetworkCredential>(), "Etiqueta", "Gainscha GA-2408T", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            remote.Verify(r => r.ConfigureGainschaLabelPresetAsync("pc1", It.IsAny<NetworkCredential>(), "Etiqueta", GainschaLabelPreset.Lote, It.IsAny<CancellationToken>()), Times.Once);
+        }
+        else
+        {
+            Assert.Contains(events, e => e.State == TargetMachineState.PrinterIdentityMismatch);
+        }
+        Assert.Contains(logs, line => line.Contains("HTTP Gainscha Printer Info"));
+        Assert.DoesNotContain(logs, line => line.Contains("SERIAL-TEST"));
+        remote.VerifyNoOtherCalls();
     }
 }
