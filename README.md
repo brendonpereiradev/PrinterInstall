@@ -117,18 +117,6 @@ Operações que criam recursos no sistema registram suas ações no diário de r
 
 ---
 
-## Validação da identidade da impressora
-
-Antes de configurar qualquer máquina-alvo, o aplicativo consulta cada endereço de impressora informado e compara o fabricante e o modelo retornados com a marca selecionada e os modelos homologados para o driver correspondente. A regra funciona para qualquer endereço, sem cadastro fixo de IPs. Se uma impressora divergir ou não puder ser identificada, o lote inteiro é interrompido antes de instalar drivers, criar portas ou filas. O teste direto de impressão aplica a mesma verificação antes de enviar dados.
-
-A identificação usa SNMP v2c na porta UDP 161 e, quando necessário, tenta IPP nas portas 631, 80 e 443. Se esses protocolos não retornarem uma identidade completa, o aplicativo consulta a interface web por HTTP/HTTPS e lê o fabricante e o modelo no título, no cabeçalho ou nos campos de identificação do produto. A leitura acompanha redirecionamentos e frames no mesmo endereço, incluindo as versões básica e avançada do Web Config da Epson. Na Gainscha, quando a página Printer Info informa que o modelo é carregado por `/updata_message`, o aplicativo consulta esse endpoint de leitura e valida o modelo retornado. Essa consulta aceita certificados autoassinados válidos da própria impressora, apenas para ler sua identidade, sem importar certificados no Windows. O serviço é compartilhado por Epson, Lexmark, Brother e Gainscha e não recebe a marca selecionada como referência para descobrir o equipamento. Pelo menos uma dessas interfaces deve estar acessível a partir do computador que executa o aplicativo. A comunidade SNMP padrão é `public`; para outra comunidade, defina a variável de ambiente `PRINTERINSTALL_SNMP_COMMUNITY` antes de iniciar o aplicativo. Um valor vazio desativa a consulta SNMP e mantém as tentativas por IPP e pela interface web. Não salve a comunidade nos logs nem a confunda com as credenciais de domínio.
-
-Os modelos aceitos inicialmente são os registrados em `MODELOS_TESTADOS.txt`: Epson M1180, WF-M5899, WF-M5799, WF-C5890 e WF-C5790; Lexmark CX532adwe; Brother HL-L5212DW; e Gainscha GA-2408T. Os testes automatizados cobrem a leitura web de todos esses modelos e a rejeição das demais marcas. A identificação em hardware real foi confirmada nas Epson M1180 e WF-M5899, na Lexmark CX532adwe e na Gainscha GA-2408T; os demais equipamentos ainda exigem verificação dos protocolos e formatos disponíveis em cada firmware. Modelos adicionais exigem homologação e inclusão explícita no catálogo. Uma marca correta sem modelo confirmado não libera a instalação.
-
-Para consultar um endereço sem configurar máquinas, use `dotnet run --project scripts/PrinterIdentityProbe -- <IP-ou-host> <Epson|Lexmark|Brother|Gainscha>`. O utilitário mostra a identidade detectada e a decisão de compatibilidade. Em 29/09/2026, a consulta ao IP de exemplo `192.0.2.216` identificou uma Lexmark CX532ADWE via SNMP e bloqueou a seleção Epson. O endereço é apenas um exemplo de diagnóstico, sem regra especial no aplicativo.
-
----
-
 ## Presets de etiquetas Gainscha
 
 | Preset | Dimensões | Uso no ambiente hospitalar |
