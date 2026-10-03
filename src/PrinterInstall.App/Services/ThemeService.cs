@@ -1,7 +1,4 @@
-using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Interop;
 using System.Windows.Media;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
@@ -13,53 +10,6 @@ namespace PrinterInstall.App.Services;
 /// </summary>
 public sealed class ThemeService : IThemeService
 {
-    private enum WindowThemeAttributeType
-    {
-        WTA_NONCLIENT = 1
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct WTA_OPTIONS
-    {
-        public uint Flags;
-        public uint Mask;
-    }
-
-    private const uint WTNCA_NODRAWCAPTION = 0x00000001;
-    private const uint WTNCA_NODRAWICON = 0x00000002;
-
-    private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
-    private const int DWMWA_USE_IMMERSIVE_DARK_MODE_OLD = 19;
-
-    private const uint SwpNoMove = 0x0002;
-    private const uint SwpNoSize = 0x0001;
-    private const uint SwpNoZOrder = 0x0004;
-    private const uint SwpNoActivate = 0x0010;
-    private const uint SwpFrameChanged = 0x0020;
-    private const uint FrameRefreshFlags = SwpNoMove | SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpFrameChanged;
-
-    [DllImport("uxtheme.dll", PreserveSig = true)]
-    private static extern int SetWindowThemeAttribute(
-        IntPtr hWnd,
-        WindowThemeAttributeType wtype,
-        ref WTA_OPTIONS attributes,
-        uint size);
-
-    [DllImport("dwmapi.dll", PreserveSig = true)]
-    private static extern int DwmSetWindowAttribute(
-        IntPtr hwnd,
-        int attr,
-        ref int attrValue,
-        int attrSize);
-
-    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    private static extern bool SetWindowText(IntPtr hWnd, string lpString);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-    private static readonly Color DefaultAccentColor = Color.FromRgb(37, 99, 235);
-
     private readonly IAppSettingsStore _appSettingsStore;
     private ApplicationTheme _currentTheme;
 
@@ -125,7 +75,7 @@ public sealed class ThemeService : IThemeService
 
             void Action()
             {
-                ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
+                ApplicationThemeManager.Apply(theme, WindowBackdropType.Mica);
 
                 var accent = theme == ApplicationTheme.Dark
                     ? Color.FromRgb(59, 130, 246)
@@ -133,7 +83,15 @@ public sealed class ThemeService : IThemeService
 
                 ApplicationAccentColorManager.Apply(accent, theme);
                 UpdateThemeTokens(theme);
-                RefreshWindowTitlesAndFrames(theme);
+
+                // Janelas já abertas precisam reaplicar o backdrop (Mica) e a barra de título no novo tema
+                foreach (Window window in Application.Current.Windows)
+                {
+                    if (window is FluentWindow)
+                    {
+                        WindowBackgroundManager.UpdateBackground(window, theme, WindowBackdropType.Mica);
+                    }
+                }
             }
 
             if (Application.Current.Dispatcher.CheckAccess())
@@ -176,71 +134,6 @@ public sealed class ThemeService : IThemeService
         catch
         {
             // Fallback seguro
-        }
-    }
-
-    private static void RefreshWindowTitlesAndFrames(ApplicationTheme theme)
-    {
-        try
-        {
-            void RefreshCore()
-            {
-                if (Application.Current?.Windows == null)
-                    return;
-
-                foreach (Window window in Application.Current.Windows)
-                {
-                    ApplyNativeWindowTheme(window, theme);
-                    // Restaura explicitamente o pincel de canvas da janela, impedindo que o Wpf.Ui sobrescreva com cinza padrão
-                    window.SetResourceReference(Control.BackgroundProperty, "AppCanvasBackgroundBrush");
-                }
-            }
-
-            // Executa imediatamente e agenda um reforço em ApplicationIdle para quando o DWM terminar a transição
-            RefreshCore();
-            Application.Current?.Dispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(RefreshCore));
-        }
-        catch
-        {
-            // Ignora falhas de P/Invoke de UI em ambientes sem desktop
-        }
-    }
-
-    private static void ApplyNativeWindowTheme(Window window, ApplicationTheme theme)
-    {
-        try
-        {
-            var helper = new WindowInteropHelper(window);
-            var hwnd = helper.Handle;
-            if (hwnd == IntPtr.Zero)
-                return;
-
-            // 1. Aplica o Immersive Dark Mode nativo do DWM (ou remove no modo claro)
-            int isDark = theme == ApplicationTheme.Dark ? 1 : 0;
-            DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref isDark, sizeof(int));
-            DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, ref isDark, sizeof(int));
-
-            // 2. Reverte a flag WTNCA_NODRAWCAPTION inserida pelo WPF-UI para restaurar a legenda/título da janela nativa
-            var options = new WTA_OPTIONS
-            {
-                Flags = 0,
-                Mask = WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON
-            };
-            SetWindowThemeAttribute(hwnd, WindowThemeAttributeType.WTA_NONCLIENT, ref options, (uint)Marshal.SizeOf<WTA_OPTIONS>());
-
-            // 3. Garante o título no HWND Win32
-            var title = window.Title;
-            if (!string.IsNullOrEmpty(title))
-            {
-                SetWindowText(hwnd, title);
-            }
-
-            // 4. Força o DWM a recalcular e repintar imediatamente a moldura não-cliente
-            SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, FrameRefreshFlags);
-        }
-        catch
-        {
-            // Ignora falhas pontuais de P/Invoke
         }
     }
 }

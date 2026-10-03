@@ -1,9 +1,10 @@
 using System.Windows;
 using System.Windows.Media;
+using Wpf.Ui.Controls;
 
 namespace PrinterInstall.App.Views;
 
-public partial class ConfirmationDialogWindow : Window
+public partial class ConfirmationDialogWindow : FluentWindow
 {
     public ConfirmationDialogWindow()
     {

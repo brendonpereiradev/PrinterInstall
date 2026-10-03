@@ -19,6 +19,13 @@
             <Style TargetType="DataGrid">
                 <Setter Property="CanUserReorderColumns" Value="False"/>
             </Style>
+
+            <!-- Botões de ferramenta: sem moldura, como na barra de comandos do Windows 11 -->
+            <Style x:Key="ToolButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="Appearance" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="12,8"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -55,10 +55,9 @@ public class UiStrings
     public static string NetworkTest_Cancelled => ResourceManager.GetString(nameof(NetworkTest_Cancelled), ResourceCulture)!;
     public static string Main_Validation_InvalidHostAddressFormat => ResourceManager.GetString(nameof(Main_Validation_InvalidHostAddressFormat), ResourceCulture)!;
     public static string Main_Validation_InversionDetectedFormat => ResourceManager.GetString(nameof(Main_Validation_InversionDetectedFormat), ResourceCulture)!;
-    public static string Main_LogExportSuccessFormat => ResourceManager.GetString(nameof(Main_LogExportSuccessFormat), ResourceCulture)!;
-    public static string Main_LogExportErrorFormat => ResourceManager.GetString(nameof(Main_LogExportErrorFormat), ResourceCulture)!;
-    public static string Removal_LogExportSuccessFormat => ResourceManager.GetString(nameof(Removal_LogExportSuccessFormat), ResourceCulture)!;
-    public static string Removal_LogExportErrorFormat => ResourceManager.GetString(nameof(Removal_LogExportErrorFormat), ResourceCulture)!;
+    public static string Log_ExportSuccessFormat => ResourceManager.GetString(nameof(Log_ExportSuccessFormat), ResourceCulture)!;
+    public static string Log_ExportErrorFormat => ResourceManager.GetString(nameof(Log_ExportErrorFormat), ResourceCulture)!;
+    public static string Log_OpenFolderErrorFormat => ResourceManager.GetString(nameof(Log_OpenFolderErrorFormat), ResourceCulture)!;
     public static string Removal_SummaryDialogTitle => ResourceManager.GetString(nameof(Removal_SummaryDialogTitle), ResourceCulture)!;
     public static string Removal_SummaryLineFormat => ResourceManager.GetString(nameof(Removal_SummaryLineFormat), ResourceCulture)!;
     public static string Removal_SummaryFailuresHeader => ResourceManager.GetString(nameof(Removal_SummaryFailuresHeader), ResourceCulture)!;
