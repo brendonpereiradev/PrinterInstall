@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Text;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -25,7 +26,6 @@ public partial class MainViewModel : ObservableObject
     private readonly DeploymentRollbackRunner _rollbackRunner;
     private readonly IServiceProvider _serviceProvider;
     private readonly LocalMachineIdentity _localMachineIdentity;
-    private readonly ILogExportService _logExportService;
     private readonly IDeploymentNotificationService _notificationService;
     private readonly IConfirmationDialogService _dialogService;
     private readonly IThemeService? _themeService;
@@ -49,7 +49,8 @@ public partial class MainViewModel : ObservableObject
         _rollbackRunner = rollbackRunner;
         _serviceProvider = serviceProvider;
         _localMachineIdentity = localMachineIdentity;
-        _logExportService = logExportService ?? new LogExportService();
+        Log = new OperationLog(logExportService ?? new LogExportService(), diagnosticLogger, "MainDeploy");
+        Log.PropertyChanged += OnLogChanged;
         _notificationService = notificationService ?? new DeploymentNotificationService();
         _dialogService = dialogService ?? new ConfirmationDialogService();
         _themeService = themeService;
@@ -95,17 +96,35 @@ public partial class MainViewModel : ObservableObject
     }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ComputerCount))]
+    [NotifyPropertyChangedFor(nameof(InvalidComputerCount))]
+    [NotifyPropertyChangedFor(nameof(HasInvalidComputers))]
     private string _computersText = "";
+
+    public bool HasInvalidComputers => InvalidComputerCount > 0;
+
+    public int ComputerCount => ComputerNameListParser.Parse(ComputersText).Count;
+
+    public int InvalidComputerCount =>
+        ComputerNameListParser.Parse(ComputersText).Count(n => !ComputerNameValidator.IsPlausibleComputerName(n));
 
     [ObservableProperty]
     private bool _printTestPage;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanExportLog))]
-    private string _logText = "";
+    public OperationLog Log { get; }
 
-    partial void OnLogTextChanged(string value)
+    public string LogText
     {
+        get => Log.Text;
+        set => Log.Text = value;
+    }
+
+    private void OnLogChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(OperationLog.Text))
+            return;
+
+        OnPropertyChanged(nameof(LogText));
         OnPropertyChanged(nameof(CanExportLog));
         ExportLogCommand.NotifyCanExecuteChanged();
     }
@@ -125,24 +144,15 @@ public partial class MainViewModel : ObservableObject
         ExportLogCommand.NotifyCanExecuteChanged();
     }
 
-    public bool CanExportLog => !IsDeployRunning && !string.IsNullOrWhiteSpace(LogText);
+    public bool CanExportLog => !IsDeployRunning && Log.CanExport;
 
     public ObservableCollection<PrinterFormRowViewModel> PrinterRows { get; } = new();
 
     public ObservableCollection<TargetRowViewModel> Targets { get; } = new();
 
     [RelayCommand]
-    private void AddThisComputer()
-    {
-        var existing = ComputerNameListParser.Parse(ComputersText);
-        if (existing.Any(_localMachineIdentity.IsLocalMachine))
-            return;
-
-        var name = _localMachineIdentity.GetPrimaryLocalName();
-        ComputersText = string.IsNullOrWhiteSpace(ComputersText)
-            ? name
-            : ComputersText.TrimEnd() + Environment.NewLine + name;
-    }
+    private void AddThisComputer() =>
+        ComputersText = ComputerListText.WithThisComputer(ComputersText, _localMachineIdentity);
 
     [RelayCommand]
     private void AddPrinterRow()
@@ -182,9 +192,6 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanExportLog))]
     private void ExportLog()
     {
-        if (string.IsNullOrWhiteSpace(LogText))
-            return;
-
         var operatorId = _session.Credential is not null
             ? (string.IsNullOrEmpty(_session.Credential.Domain)
                 ? _session.Credential.UserName
@@ -198,24 +205,14 @@ public partial class MainViewModel : ObservableObject
             (string?)t.Message
         ));
 
-        var report = LogReportFormatter.FormatDeployReport(
-            operatorId,
-            _localMachineIdentity.GetPrimaryLocalName(),
-            targetSummaries,
-            LogText,
-            diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath);
-
-        var defaultFileName = $"PrinterInstall_Deploy_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt";
-        var result = _logExportService.ExportLog(defaultFileName, report);
-
-        if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.FilePath))
-        {
-            AppendLog(string.Format(UiStrings.Main_LogExportSuccessFormat, result.FilePath));
-        }
-        else if (!result.IsCancelled && !string.IsNullOrWhiteSpace(result.ErrorMessage))
-        {
-            AppendLog(string.Format(UiStrings.Main_LogExportErrorFormat, result.ErrorMessage));
-        }
+        Log.Export(
+            $"PrinterInstall_Deploy_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt",
+            logText => LogReportFormatter.FormatDeployReport(
+                operatorId,
+                _localMachineIdentity.GetPrimaryLocalName(),
+                targetSummaries,
+                logText,
+                diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath));
     }
 
     [RelayCommand(CanExecute = nameof(CanDeploy))]
@@ -228,14 +225,14 @@ public partial class MainViewModel : ObservableObject
         var cred = _session.Credential;
         if (cred is null)
         {
-            AppendLog(UiStrings.Main_NotAuthenticated);
+            Log.Append(UiStrings.Main_NotAuthenticated);
             return;
         }
 
         var rawNames = ComputerNameListParser.Parse(ComputersText);
         if (rawNames.Count == 0)
         {
-            AppendLog(UiStrings.Main_Validation_ComputersRequired);
+            Log.Append(UiStrings.Main_Validation_ComputersRequired);
             await _dialogService.ShowNoComputersWarningAsync();
             return;
         }
@@ -244,13 +241,13 @@ public partial class MainViewModel : ObservableObject
         {
             if (string.IsNullOrWhiteSpace(row.DisplayName))
             {
-                AppendLog(UiStrings.Main_Validation_DisplayNameRequired);
+                Log.Append(UiStrings.Main_Validation_DisplayNameRequired);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(row.PrinterHostAddress))
             {
-                AppendLog(UiStrings.Main_Validation_PrinterHostRequired);
+                Log.Append(UiStrings.Main_Validation_PrinterHostRequired);
                 return;
             }
         }
@@ -276,7 +273,7 @@ public partial class MainViewModel : ObservableObject
             var proceed = await _dialogService.ConfirmInversionCorrectionAsync(inversionItems);
             if (!proceed)
             {
-                AppendLog(UiStrings.Main_DeployCancelledByInversionWarning);
+                Log.Append(UiStrings.Main_DeployCancelledByInversionWarning);
                 return;
             }
 
@@ -285,7 +282,7 @@ public partial class MainViewModel : ObservableObject
             {
                 item.Row.DisplayName = item.HostAddress;
                 item.Row.PrinterHostAddress = item.DisplayName;
-                AppendLog(string.Format(UiStrings.Main_InversionCorrectedLogFormat, item.HostAddress, item.DisplayName));
+                Log.Append(string.Format(UiStrings.Main_InversionCorrectedLogFormat, item.HostAddress, item.DisplayName));
             }
         }
 
@@ -297,13 +294,13 @@ public partial class MainViewModel : ObservableObject
 
             if (!PrinterHostValidator.IsValidHostAddress(trimmedHost))
             {
-                AppendLog(string.Format(UiStrings.Main_Validation_InvalidHostAddressFormat, trimmedHost));
+                Log.Append(string.Format(UiStrings.Main_Validation_InvalidHostAddressFormat, trimmedHost));
                 return;
             }
 
             if (row.Brand == PrinterBrand.Gainscha && row.GainschaLabelPreset is null)
             {
-                AppendLog(UiStrings.Main_Validation_GainschaLabelPresetRequired);
+                Log.Append(UiStrings.Main_Validation_GainschaLabelPresetRequired);
                 return;
             }
 
@@ -324,7 +321,7 @@ public partial class MainViewModel : ObservableObject
             var proceed = await _dialogService.ConfirmDeployWarningAsync(heuristicWarnings);
             if (!proceed)
             {
-                AppendLog(UiStrings.Main_DeployCancelledByMismatchWarning);
+                Log.Append(UiStrings.Main_DeployCancelledByMismatchWarning);
                 return;
             }
         }
@@ -388,7 +385,7 @@ public partial class MainViewModel : ObservableObject
         var identityBlockReasons = new List<string>();
         var progress = new SynchronousProgress<DeploymentProgressEvent>(e =>
         {
-            RunOnUiDispatcher(() =>
+            OperationLog.RunOnUi(() =>
             {
                 if (e.State is (TargetMachineState.PrinterIdentityMismatch or TargetMachineState.PrinterIdentityUnknown) &&
                     !string.IsNullOrWhiteSpace(e.Detail))
@@ -417,13 +414,13 @@ public partial class MainViewModel : ObservableObject
                 var stateText = TargetMachineStateDisplay.GetDisplay(e.State);
                 var logMessage = e.Message.StartsWith(stateText, StringComparison.OrdinalIgnoreCase)
                     ? e.Message : $"{stateText}: {e.Message}";
-                AppendLog($"{e.ComputerName} [{q}]: {logMessage}");
+                Log.Append($"{e.ComputerName} [{q}]: {logMessage}");
             });
         });
 
         var diagnosticProgress = new SynchronousProgress<string>(msg =>
         {
-            RunOnUiDispatcher(() => AppendLog(msg));
+            OperationLog.RunOnUi(() => Log.Append(msg));
         });
 
         try
@@ -435,32 +432,32 @@ public partial class MainViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            AppendLog(UiStrings.Main_DeployCancelRequested);
-            RunOnUiDispatcher(MarkIntermediateTargetsAsDeployCancelled);
+            Log.Append(UiStrings.Main_DeployCancelRequested);
+            OperationLog.RunOnUi(MarkIntermediateTargetsAsDeployCancelled);
 
             if (journal.HasRollbackWork)
             {
-                AppendLog(UiStrings.Main_DeployRollbackStarting);
+                Log.Append(UiStrings.Main_DeployRollbackStarting);
                 var rbProgress = new SynchronousProgress<PrinterRemovalProgressEvent>(e =>
                 {
-                    RunOnUiDispatcher(() =>
+                    OperationLog.RunOnUi(() =>
                     {
                         ApplyRollbackProgress(e, journal);
-                        AppendLog($"{e.ComputerName}: {e.Message}");
+                        Log.Append($"{e.ComputerName}: {e.Message}");
                     });
                 });
                 try
                 {
                     await _rollbackRunner.RunAsync(journal, cred, rbProgress, CancellationToken.None).ConfigureAwait(true);
-                    AppendLog(UiStrings.Main_DeployRollbackFinished);
+                    Log.Append(UiStrings.Main_DeployRollbackFinished);
                 }
                 catch (Exception ex)
                 {
-                    AppendLog(string.Format(UiStrings.Main_DeployRollbackErrorFormat, ex.Message));
+                    Log.Append(string.Format(UiStrings.Main_DeployRollbackErrorFormat, ex.Message));
                 }
             }
 
-            RunOnUiDispatcher(() =>
+            OperationLog.RunOnUi(() =>
             {
                 foreach (var row in Targets)
                 {
@@ -476,7 +473,7 @@ public partial class MainViewModel : ObservableObject
                 }
             });
 
-            AppendLog(UiStrings.Main_DeployCooperativeCancelHint);
+            Log.Append(UiStrings.Main_DeployCooperativeCancelHint);
             LastSummaryText = BuildSummaryText();
             _notificationService.NotifyWarning();
         }
@@ -693,57 +690,8 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private static void RunOnUiDispatcher(Action action)
-    {
-        if (Application.Current?.Dispatcher is not null && !Application.Current.Dispatcher.CheckAccess())
-        {
-            Application.Current.Dispatcher.Invoke(action);
-        }
-        else
-        {
-            action();
-        }
-    }
-
-    private void AppendLog(string line)
-    {
-        _diagnosticLogger?.LogInfo(line, "MainDeploy");
-
-        void Write()
-        {
-            var ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            LogText += $"[{ts}] {line}\r\n";
-        }
-
-        RunOnUiDispatcher(Write);
-    }
-
     [RelayCommand]
-    private void OpenLogFolder()
-    {
-        try
-        {
-            var dir = _diagnosticLogger?.LogDirectory ?? System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "PrinterInstall",
-                "Logs");
-
-            if (!System.IO.Directory.Exists(dir))
-            {
-                System.IO.Directory.CreateDirectory(dir);
-            }
-
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = dir,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            AppendLog($"Não foi possível abrir a pasta de logs: {ex.Message}");
-        }
-    }
+    private void OpenLogFolder() => Log.OpenFolder();
 
     [RelayCommand]
     private void OpenRemovalWizard()

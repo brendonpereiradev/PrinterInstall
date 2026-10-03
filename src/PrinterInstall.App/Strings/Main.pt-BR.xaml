@@ -3,6 +3,11 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="Main_WindowTitle">Printer Install</sys:String>
   <sys:String x:Key="Main_ComputersLabel">Computadores alvo</sys:String>
+  <sys:String x:Key="Main_ComputersPlaceholder">Um nome por linha, ex.: PC-RECEPCAO-01</sys:String>
+  <sys:String x:Key="Main_ComputersCountOne">computador</sys:String>
+  <sys:String x:Key="Main_ComputersCountMany">computadores</sys:String>
+  <sys:String x:Key="Main_ComputersInvalidOne">inválido</sys:String>
+  <sys:String x:Key="Main_ComputersInvalidMany">inválidos</sys:String>
   <sys:String x:Key="Main_AddThisComputer">Adicionar este PC</sys:String>
   <sys:String x:Key="Main_StatusGroupHeader">Status</sys:String>
   <sys:String x:Key="Main_ColumnComputer">Computador</sys:String>
@@ -14,18 +19,17 @@
   <sys:String x:Key="Main_DisplayNameLabel">Nome da impressora</sys:String>
   <sys:String x:Key="Main_PrinterHostLabel">IP</sys:String>
   <sys:String x:Key="Main_GainschaLabelPresetLabel">Tamanho de etiqueta</sys:String>
-  <sys:String x:Key="Main_AddPrinterRow">+ Adicionar impressora</sys:String>
+  <sys:String x:Key="Main_AddPrinterRow">Adicionar impressora</sys:String>
   <sys:String x:Key="Main_RemovePrinterRow">Remover</sys:String>
   <sys:String x:Key="Main_PrintTestPageLabel">Imprimir teste</sys:String>
   <sys:String x:Key="Main_DeployButton">Implantar</sys:String>
-  <sys:String x:Key="Main_CancelDeployButton">Cancelar deploy</sys:String>
+  <sys:String x:Key="Main_CancelDeployButton">Cancelar</sys:String>
   <sys:String x:Key="Main_RemovePrintersButton">Controle de impressoras</sys:String>
   <sys:String x:Key="Main_TestPrinterButton">Testar impressora…</sys:String>
   <sys:String x:Key="Main_LogGroupHeader">Log</sys:String>
   <sys:String x:Key="Main_ExportLogButton">Exportar log</sys:String>
   <sys:String x:Key="Main_OpenLogFolderButton">Abrir pasta de logs</sys:String>
   <sys:String x:Key="Main_StatusEmptyHint">Adicione os computadores acima e clique em Implantar para acompanhar o progresso.</sys:String>
-  <sys:String x:Key="Main_PageSubtitle">Implantação remota de impressoras</sys:String>
   <sys:String x:Key="Main_ThemeToggle_DarkToolTip">Alternar para modo escuro</sys:String>
   <sys:String x:Key="Main_ThemeToggle_LightToolTip">Alternar para modo claro</sys:String>
 </ResourceDictionary>

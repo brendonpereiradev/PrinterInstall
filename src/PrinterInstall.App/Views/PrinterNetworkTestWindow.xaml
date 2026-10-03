@@ -1,4 +1,4 @@
-<Window x:Class="PrinterInstall.App.Views.PrinterNetworkTestWindow"
+<ui:FluentWindow x:Class="PrinterInstall.App.Views.PrinterNetworkTestWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
@@ -10,13 +10,22 @@
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="{DynamicResource AppCanvasBackgroundBrush}"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
         UseLayoutRounding="True">
-    <Window.Resources>
+    <ui:FluentWindow.Resources>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
-    </Window.Resources>
-    <Grid Margin="20">
+    </ui:FluentWindow.Resources>
+    <StackPanel>
+    <ui:TitleBar Title="{DynamicResource NetworkTest_WindowTitle}"
+                 ShowMaximize="False"
+                 ShowMinimize="False">
+        <ui:TitleBar.Icon>
+            <ui:ImageIcon Source="pack://application:,,,/Assets/app.png"/>
+        </ui:TitleBar.Icon>
+    </ui:TitleBar>
+    <Grid Margin="20,8,20,20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -84,4 +93,5 @@
                        Appearance="Secondary"/>
         </StackPanel>
     </Grid>
-</Window>
+    </StackPanel>
+</ui:FluentWindow>

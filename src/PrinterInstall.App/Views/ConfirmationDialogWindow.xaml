@@ -1,4 +1,4 @@
-<Window x:Class="PrinterInstall.App.Views.ConfirmationDialogWindow"
+<ui:FluentWindow x:Class="PrinterInstall.App.Views.ConfirmationDialogWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
@@ -10,22 +10,30 @@
         MaxHeight="620"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="{DynamicResource AppCanvasBackgroundBrush}"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
         TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}"
         UseLayoutRounding="True">
-    <Window.Resources>
+    <ui:FluentWindow.Resources>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
-    </Window.Resources>
+    </ui:FluentWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Height="4" Background="{DynamicResource AppHeaderAccentBrush}"/>
+        <ui:TitleBar Grid.Row="0"
+                     Title="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
+                     ShowMaximize="False"
+                     ShowMinimize="False">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/app.png"/>
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
 
-        <Grid Grid.Row="1" Margin="20,16,20,16">
+        <Grid Grid.Row="1" Margin="20,8,20,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -126,4 +134,4 @@
             </StackPanel>
         </Grid>
     </Grid>
-</Window>
+</ui:FluentWindow>

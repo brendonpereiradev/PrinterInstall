@@ -29,7 +29,6 @@ public partial class RemovalWizardViewModel : ObservableObject
     private readonly ISessionContext _session;
     private readonly IRemotePrinterOperations _remote;
     private readonly PrinterControlOrchestrator _orchestrator;
-    private readonly ILogExportService _logExportService;
     private readonly LocalMachineIdentity _localMachineIdentity;
     private readonly IDeploymentNotificationService _notificationService;
     private readonly IConfirmationDialogService _dialogService;
@@ -58,7 +57,8 @@ public partial class RemovalWizardViewModel : ObservableObject
         _session = session;
         _remote = remote;
         _orchestrator = orchestrator;
-        _logExportService = logExportService ?? new LogExportService();
+        Log = new OperationLog(logExportService ?? new LogExportService(), diagnosticLogger, "RemovalWizard");
+        Log.PropertyChanged += OnLogChanged;
         _localMachineIdentity = localMachineIdentity ?? new LocalMachineIdentity();
         _notificationService = notificationService ?? new DeploymentNotificationService();
         _dialogService = dialogService ?? new ConfirmationDialogService();
@@ -185,14 +185,21 @@ public partial class RemovalWizardViewModel : ObservableObject
 
     [ObservableProperty] private string _reviewSummary = "";
 
-    [ObservableProperty] private string _logText = "";
+    public OperationLog Log { get; }
+
+    public string LogText
+    {
+        get => Log.Text;
+        set => Log.Text = value;
+    }
+
     [ObservableProperty] private bool _isExecuting;
 
     public bool CanExecute => CurrentStepIndex == 2 && !IsExecuting;
 
     public bool CanClose => CurrentStepIndex == 3 && !IsExecuting;
 
-    public bool CanExportLog => CurrentStepIndex == 3 && !IsExecuting && !string.IsNullOrWhiteSpace(LogText);
+    public bool CanExportLog => CurrentStepIndex == 3 && !IsExecuting && Log.CanExport;
 
     public event EventHandler? CloseRequested;
 
@@ -238,8 +245,12 @@ public partial class RemovalWizardViewModel : ObservableObject
         RetryCurrentMachineCommand.NotifyCanExecuteChanged();
     }
 
-    partial void OnLogTextChanged(string value)
+    private void OnLogChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName != nameof(OperationLog.Text))
+            return;
+
+        OnPropertyChanged(nameof(LogText));
         OnPropertyChanged(nameof(CanExportLog));
         ExportLogCommand.NotifyCanExecuteChanged();
     }
@@ -259,31 +270,22 @@ public partial class RemovalWizardViewModel : ObservableObject
     partial void OnQueuesLoadErrorChanged(string? value) => OnPropertyChanged(nameof(ShowQueuesEmptyHint));
 
     [RelayCommand]
-    private void AddThisComputer()
-    {
-        var existing = ComputerNameListParser.Parse(ComputersText);
-        if (existing.Any(_localMachineIdentity.IsLocalMachine))
-            return;
-
-        var name = _localMachineIdentity.GetPrimaryLocalName();
-        ComputersText = string.IsNullOrWhiteSpace(ComputersText)
-            ? name
-            : ComputersText.TrimEnd() + Environment.NewLine + name;
-    }
+    private void AddThisComputer() =>
+        ComputersText = ComputerListText.WithThisComputer(ComputersText, _localMachineIdentity);
 
     [RelayCommand]
     private async Task StartAsync()
     {
         if (_session.Credential is null)
         {
-            AppendLog(UiStrings.Removal_NotAuthenticated);
+            Log.Append(UiStrings.Removal_NotAuthenticated);
             return;
         }
 
         var names = ComputerNameListParser.Parse(ComputersText);
         if (names.Count == 0)
         {
-            AppendLog(UiStrings.Removal_Validation_ComputersRequired);
+            Log.Append(UiStrings.Removal_Validation_ComputersRequired);
             return;
         }
 
@@ -339,7 +341,7 @@ public partial class RemovalWizardViewModel : ObservableObject
     {
         if (_session.Credential is null)
         {
-            AppendLog(UiStrings.Removal_NotAuthenticated);
+            Log.Append(UiStrings.Removal_NotAuthenticated);
             return;
         }
 
@@ -351,7 +353,7 @@ public partial class RemovalWizardViewModel : ObservableObject
             return;
 
         IsResettingSpooler = true;
-        AppendLog(string.Format(UiStrings.Removal_ResetSpoolerRunning, CurrentComputerName));
+        Log.Append(string.Format(UiStrings.Removal_ResetSpoolerRunning, CurrentComputerName));
 
         try
         {
@@ -362,19 +364,19 @@ public partial class RemovalWizardViewModel : ObservableObject
 
             if (result.IsSuccess)
             {
-                AppendLog(string.Format(UiStrings.Removal_ResetSpoolerSuccess, CurrentComputerName));
+                Log.Append(string.Format(UiStrings.Removal_ResetSpoolerSuccess, CurrentComputerName));
                 _notificationService.NotifySuccess();
                 await LoadCurrentMachineAsync().ConfigureAwait(true);
             }
             else
             {
-                AppendLog(string.Format(UiStrings.Removal_ResetSpoolerErrorFormat, CurrentComputerName, result.ErrorMessage));
+                Log.Append(string.Format(UiStrings.Removal_ResetSpoolerErrorFormat, CurrentComputerName, result.ErrorMessage));
                 _notificationService.NotifyError();
             }
         }
         catch (Exception ex)
         {
-            AppendLog(string.Format(UiStrings.Removal_ResetSpoolerErrorFormat, CurrentComputerName, ex.Message));
+            Log.Append(string.Format(UiStrings.Removal_ResetSpoolerErrorFormat, CurrentComputerName, ex.Message));
             _notificationService.NotifyError();
         }
         finally
@@ -402,7 +404,7 @@ public partial class RemovalWizardViewModel : ObservableObject
     {
         if (_session.Credential is null)
         {
-            AppendLog(UiStrings.Removal_NotAuthenticated);
+            Log.Append(UiStrings.Removal_NotAuthenticated);
             return;
         }
 
@@ -429,7 +431,7 @@ public partial class RemovalWizardViewModel : ObservableObject
 
             if (targets.Count == 0)
             {
-                AppendLog(UiStrings.Removal_NoPrintersSelected);
+                Log.Append(UiStrings.Removal_NoPrintersSelected);
                 return;
             }
 
@@ -447,7 +449,7 @@ public partial class RemovalWizardViewModel : ObservableObject
 
             var progress = new SynchronousProgress<PrinterRemovalProgressEvent>(ev =>
             {
-                AppendLog($"{ev.ComputerName}: {ev.State} - {ev.Message}");
+                Log.Append($"{ev.ComputerName}: {ev.State} - {ev.Message}");
 
                 if (ev.State == PrinterRemovalProgressState.Error)
                 {
@@ -465,7 +467,7 @@ public partial class RemovalWizardViewModel : ObservableObject
             });
 
             await _orchestrator.RunAsync(request, progress).ConfigureAwait(true);
-            AppendLog(UiStrings.Removal_Finished);
+            Log.Append(UiStrings.Removal_Finished);
 
             var totalRenames = targets.Sum(t => t.Renames.Count);
             var renameErrors = failureLines.Count(f => targets.Any(t => t.Renames.Any(r => f.Contains(r.CurrentName, StringComparison.OrdinalIgnoreCase))));
@@ -475,7 +477,7 @@ public partial class RemovalWizardViewModel : ObservableObject
             NotifyControlCompletion(totalActions, effectiveSuccessCount, warningCount, errorCount);
 
             var summary = BuildSummaryText(effectiveSuccessCount, warningCount, errorCount, failureLines);
-            AppendLog(summary);
+            Log.Append(summary);
 
             if (Application.Current is not null)
             {
@@ -487,14 +489,14 @@ public partial class RemovalWizardViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            AppendLog(UiStrings.Removal_Cancelled);
+            Log.Append(UiStrings.Removal_Cancelled);
             _notificationService.NotifyWarning();
         }
         catch (Exception ex)
         {
             _diagnosticLogger?.LogError(ex.Message, "RemovalWizard", ex);
             var errorFormatted = DiagnosticLogFormatter.FormatException(ex);
-            AppendLog(string.Format(UiStrings.Removal_LogErrorFormat, errorFormatted));
+            Log.Append(string.Format(UiStrings.Removal_LogErrorFormat, errorFormatted));
             _notificationService.NotifyError();
 
             if (Application.Current is not null)
@@ -589,7 +591,7 @@ public partial class RemovalWizardViewModel : ObservableObject
                     PingStatusBadgeText = UiStrings.Removal_Ping_Offline;
                     IsComputerOffline = true;
                     QueuesLoadError = string.Format(UiStrings.Removal_Ping_ComputerOfflineFormat, CurrentComputerName);
-                    AppendLog(string.Format(UiStrings.Removal_LogListPrintersFailedFormat, CurrentComputerName, QueuesLoadError));
+                    Log.Append(string.Format(UiStrings.Removal_LogListPrintersFailedFormat, CurrentComputerName, QueuesLoadError));
                     return;
                 }
             }
@@ -621,7 +623,7 @@ public partial class RemovalWizardViewModel : ObservableObject
         catch (Exception ex)
         {
             QueuesLoadError = ex.Message;
-            AppendLog(string.Format(UiStrings.Removal_LogListPrintersFailedFormat, CurrentComputerName, ex.Message));
+            Log.Append(string.Format(UiStrings.Removal_LogListPrintersFailedFormat, CurrentComputerName, ex.Message));
         }
         finally
         {
@@ -739,87 +741,30 @@ public partial class RemovalWizardViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanExportLog))]
     private void ExportLog()
     {
-        if (string.IsNullOrWhiteSpace(LogText))
-            return;
-
         var operatorId = _session.Credential is not null
             ? (string.IsNullOrEmpty(_session.Credential.Domain)
                 ? _session.Credential.UserName
                 : $@"{_session.Credential.Domain}\{_session.Credential.UserName}")
             : null;
 
-        var report = LogReportFormatter.FormatRemovalReport(
-            operatorId,
-            Environment.MachineName,
-            ReviewSummary,
-            LogText,
-            diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath);
-
-        var defaultFileName = $"PrinterInstall_Controle_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt";
-        var result = _logExportService.ExportLog(defaultFileName, report);
-
-        if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.FilePath))
-        {
-            AppendLog(string.Format(UiStrings.Removal_LogExportSuccessFormat, result.FilePath));
-        }
-        else if (!result.IsCancelled && !string.IsNullOrWhiteSpace(result.ErrorMessage))
-        {
-            AppendLog(string.Format(UiStrings.Removal_LogExportErrorFormat, result.ErrorMessage));
-        }
+        Log.Export(
+            $"PrinterInstall_Controle_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt",
+            logText => LogReportFormatter.FormatRemovalReport(
+                operatorId,
+                Environment.MachineName,
+                ReviewSummary,
+                logText,
+                diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath));
     }
 
     [RelayCommand]
-    private void OpenLogFolder()
-    {
-        try
-        {
-            var dir = _diagnosticLogger?.LogDirectory ?? System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "PrinterInstall",
-                "Logs");
-
-            if (!System.IO.Directory.Exists(dir))
-            {
-                System.IO.Directory.CreateDirectory(dir);
-            }
-
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = dir,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception ex)
-        {
-            AppendLog($"Não foi possível abrir a pasta de logs: {ex.Message}");
-        }
-    }
+    private void OpenLogFolder() => Log.OpenFolder();
 
     [RelayCommand(CanExecute = nameof(CanClose))]
     private void Close()
     {
         _loadCts?.Cancel();
         CloseRequested?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void AppendLog(string line)
-    {
-        _diagnosticLogger?.LogInfo(line, "RemovalWizard");
-
-        void Write()
-        {
-            var ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            LogText += $"[{ts}] {line}\r\n";
-        }
-
-        if (Application.Current?.Dispatcher is not null && !Application.Current.Dispatcher.CheckAccess())
-        {
-            Application.Current.Dispatcher.Invoke(Write);
-        }
-        else
-        {
-            Write();
-        }
     }
 
     private sealed class SynchronousProgress<T> : IProgress<T>
