@@ -91,7 +91,7 @@
                                 </TextBlock.Style>
                             </TextBlock>
                         </ui:Button.ToolTip>
-                        <ui:SymbolIcon FontSize="16">
+                        <ui:SymbolIcon FontSize="16" Foreground="{DynamicResource AppTextPrimaryBrush}">
                             <ui:SymbolIcon.Style>
                                 <Style TargetType="ui:SymbolIcon">
                                     <Setter Property="Symbol" Value="WeatherMoon24"/>
