@@ -110,7 +110,9 @@ public partial class LoginViewModel : ObservableObject
                 ? settings.LdapHost.Trim()
                 : ResolveLdapHost(domainName, configuredDomain);
 
-            var result = await _ldap.ValidateAsync(ldapHost, cred, cancellationToken).ConfigureAwait(false);
+            // Retoma no contexto da UI para atualizar bindings, estado e sessão.
+            var result = await _ldap.ValidateAsync(ldapHost, cred, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             if (!result.IsSuccess)
             {
                 ErrorMessage = result.ErrorMessage;

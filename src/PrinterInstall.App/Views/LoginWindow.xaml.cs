@@ -10,6 +10,7 @@ public partial class LoginWindow
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly LoginViewModel _viewModel;
+    private readonly CancellationTokenSource _loginCts = new();
     private bool _isSyncingPassword;
 
     public LoginWindow(LoginViewModel viewModel, IServiceProvider serviceProvider)
@@ -21,6 +22,14 @@ public partial class LoginWindow
 
         _viewModel.PropertyChanged += ViewModel_OnPropertyChanged;
         Loaded += OnLoaded;
+        Closed += OnClosed;
+    }
+
+    private void OnClosed(object? sender, EventArgs e)
+    {
+        _loginCts.Cancel();
+        _loginCts.Dispose();
+        _viewModel.PropertyChanged -= ViewModel_OnPropertyChanged;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -99,7 +108,7 @@ public partial class LoginWindow
 
         try
         {
-            var result = await _viewModel.TryLoginAsync().ConfigureAwait(true);
+            var result = await _viewModel.TryLoginAsync(_loginCts.Token).ConfigureAwait(true);
             if (!result.Success)
                 return;
 
@@ -107,6 +116,10 @@ public partial class LoginWindow
             Application.Current.MainWindow = main;
             main.Show();
             Close();
+        }
+        catch (OperationCanceledException) when (_loginCts.IsCancellationRequested)
+        {
+            // A janela foi fechada enquanto a autenticação estava em andamento.
         }
         catch (Exception ex)
         {
