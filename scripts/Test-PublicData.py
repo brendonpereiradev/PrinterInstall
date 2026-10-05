@@ -50,6 +50,10 @@ def git(root, *args):
     return subprocess.check_output(['git', '-C', str(root), *args])
 
 
+def vendor_package(name):
+    return name.startswith('drivers/') and not name.startswith('drivers/Gainscha/label-presets/')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--history', action='store_true', help='Scan all reachable Git references')
@@ -61,7 +65,7 @@ def main():
         objects = {}
         for record in git(root, 'rev-list', '--objects', '--all').decode('utf-8', 'replace').splitlines():
             oid, _, name = record.partition(' ')
-            if name and not name.startswith('drivers/'):
+            if name and not vendor_package(name):
                 objects[oid] = name
         proc = subprocess.Popen(['git', '-C', str(root), 'cat-file', '--batch'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         for oid, name in objects.items():
@@ -74,7 +78,7 @@ def main():
         findings.extend(inspect('[commit messages]', git(root, 'log', '--all', '--format=%B')))
     else:
         for name in git(root, 'ls-files', '-z').decode().split('\0'):
-            if name and not name.startswith('drivers/') and (root / name).is_file():
+            if name and not vendor_package(name) and (root / name).is_file():
                 findings.extend(inspect(name, (root / name).read_bytes()))
         config = json.loads((root / 'src/PrinterInstall.App/appsettings.json').read_text(encoding='utf-8-sig'))
         if config.get('DomainName', '').strip() or config.get('LdapHost', '').strip():

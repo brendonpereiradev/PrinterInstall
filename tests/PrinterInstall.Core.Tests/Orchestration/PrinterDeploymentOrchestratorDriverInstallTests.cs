@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using Moq;
 using PrinterInstall.Core.Catalog;
@@ -220,14 +221,22 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         var catalog = CatalogWith(PrinterBrand.Gainscha, MakePackage(PrinterBrand.Gainscha));
         var sut = TestDeploymentOrchestratorFactory.Create(remote.Object, catalog.Object);
         var events = new List<DeploymentProgressEvent>();
-        var diagnosticLogs = new List<string>();
+        var diagnosticLogs = new ConcurrentQueue<string>();
+        var diagnosticReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await sut.RunAsync(
             MakeRequest(printTestPage: false),
             new DeploymentRollbackJournal(),
             new InlineProgress<DeploymentProgressEvent>(events.Add),
             CancellationToken.None,
-            new InlineProgress<string>(diagnosticLogs.Add));
+            new InlineProgress<string>(message =>
+            {
+                diagnosticLogs.Enqueue(message);
+                if (message.Contains("WMI Win32_Process retornou 8"))
+                    diagnosticReceived.TrySetResult();
+            }));
+
+        await diagnosticReceived.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         // Garante que a mensagem de status da tabela NUNCA recebeu a mensagem técnica de WMI
         Assert.DoesNotContain(events, e => e.Message.Contains("WMI Win32_Process"));

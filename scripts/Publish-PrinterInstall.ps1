@@ -57,7 +57,7 @@ try {
 
     # 3. Executa dotnet publish
     Write-Host "[3/4] Compilando e publicando executável único (Self-Contained win-x64)..." -ForegroundColor Cyan
-    dotnet publish $project -c $Configuration /p:PublishProfile=WinDesktopFolder
+    dotnet publish $project -c $Configuration /p:PublishProfile=WinDesktopFolder /p:DebugType=none /p:DebugSymbols=false "/p:PathMap=$repoRoot=/_/"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # 4. Limpeza de resíduos de compilação
