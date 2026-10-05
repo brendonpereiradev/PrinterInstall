@@ -52,3 +52,18 @@ publish/
 ## Embedded binaries / archives
 **/EmbeddedDrivers.zip
 *.zip
+
+## Local configuration and private diagnostics
+settings.json
+remembered-user.json
+appsettings.local.json
+.env
+.env.*
+!.env.example
+.superpowers/
+docs/superpowers/
+security-audit/
+*.bundle
+*.pfx
+*.p12
+*.key

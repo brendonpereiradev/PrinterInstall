@@ -110,6 +110,12 @@ public partial class LoginViewModel : ObservableObject
                 ? settings.LdapHost.Trim()
                 : ResolveLdapHost(domainName, configuredDomain);
 
+            if (string.IsNullOrWhiteSpace(domainName) || string.IsNullOrWhiteSpace(ldapHost))
+            {
+                ErrorMessage = UiStrings.Login_Validation_DomainRequired;
+                return (false, ErrorMessage);
+            }
+
             // Retoma no contexto da UI para atualizar bindings, estado e sessão.
             var result = await _ldap.ValidateAsync(ldapHost, cred, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();

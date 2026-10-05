@@ -25,6 +25,7 @@
   <data name="Main_SummaryRolledBackFormat" xml:space="preserve"><value>Revertido(s) nesta execução: {0}</value></data>
   <data name="Main_SummaryDeployCancelledFormat" xml:space="preserve"><value>Interrompido(s) após cancelamento (sem reversão ou antes da reversão): {0}</value></data>
   <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>O nome de usuário é obrigatório.</value></data>
+  <data name="Login_Validation_DomainRequired" xml:space="preserve"><value>Configure o domínio em Configurações ou informe usuário@domínio. Para DOMINIO\usuário, configure também o domínio DNS ou o servidor LDAP.</value></data>
   <data name="Removal_NotAuthenticated" xml:space="preserve"><value>Não autenticado.</value></data>
   <data name="Removal_Validation_ComputersRequired" xml:space="preserve"><value>Informe pelo menos um nome de computador.</value></data>
   <data name="Removal_NoPrintersSelected" xml:space="preserve"><value>Nenhuma ação (remoção ou renomeação) selecionada; nada a fazer.</value></data>

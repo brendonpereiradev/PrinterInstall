@@ -1,0 +1,30 @@
+name: Public data checks
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Check public source and history
+        shell: pwsh
+        run: |
+          python scripts/Test-PublicData.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/Test-PublicData.py --history
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Check secrets
+        shell: pwsh
+        run: ./scripts/Test-Secrets.ps1

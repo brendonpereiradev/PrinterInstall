@@ -50,14 +50,9 @@ public class LoginViewModelRememberUserTests
     {
         ldap ??= new FakeLdapValidator();
         session ??= new SessionContext();
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["DomainName"] = "laboratorio.test"
-            })
-            .Build();
-
-        return new LoginViewModel(ldap, session, new AppSettingsStore(config), store);
+        var settings = new Mock<IAppSettingsStore>();
+        settings.Setup(s => s.Load()).Returns(new PrinterInstall.App.Models.AppSettings("laboratorio.test"));
+        return new LoginViewModel(ldap, session, settings.Object, store);
     }
 
     [Fact]

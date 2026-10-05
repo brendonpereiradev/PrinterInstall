@@ -3,7 +3,7 @@
                  Guia Pratico de Operacao e Suporte
 ================================================================================
 
-Versao da Aplicacao: 2.0
+Versao da Aplicacao: 1.4.2
 Publico: Tecnicos de suporte, helpdesk e analistas de campo
 Objetivo: Instalar, gerenciar e diagnosticar impressoras de rede e etiquetadoras
           em computadores locais e remotos.
@@ -46,7 +46,7 @@ remotos. O programa realiza as seguintes etapas:
 Pre-requisitos para operacao:
 1. Credenciais com privilegios administrativos no dominio ou na maquina remota.
 2. Identificacao dos computadores de destino:
-   - Nome de rede nos padroes corporativos (exemplo: NOTE-001234 ou 113-DESK004567).
+   - Nome de rede nos padroes corporativos (exemplo: PC-EXEMPLO-01 ou PC-EXEMPLO-02).
    - Ou endereco IP fixo da estacao na rede (exemplo: 192.0.2.120).
 3. Endereco IP fixo ou reservado da impressora (exemplo: 192.0.2.50).
 
@@ -55,12 +55,14 @@ Pre-requisitos para operacao:
 2. ACESSO AO SISTEMA (LOGIN) E CONFIGURACAO DE DOMINIO
 ================================================================================
 
-Na abertura do aplicativo, informe suas credenciais de rede na tela de autenticacao:
+Na primeira abertura, configure o dominio em Configuracoes ou informe usuario@dominio.
+O executavel nao inclui dominio ou servidor de uma empresa. As configuracoes ficam
+apenas neste computador. Depois, informe suas credenciais na tela de autenticacao:
 
   +-------------------------------------------------------------+
   |                     PRINTERINSTALL - LOGIN            [⚙]  |
   +-------------------------------------------------------------+
-  |  Usuario: [ suporte.silva                                ]  |
+  |  Usuario: [ usuario.teste                                ]  |
   |  Senha:   [ ******************                           ]  |
   |  [X] Lembrar-me                                             |
   |                                                             |
@@ -72,7 +74,8 @@ Formatos aceitos no campo Usuario:
 - Formato NetBIOS: DOMINIO\usuario (exemplo: EMPRESA\suporte.ti).
 - Apenas o nome de usuario: digitando "suporte.ti", o sistema aplica o dominio
   padrao salvo nas configuracoes.
-- Maquina local sem dominio: digite o usuario administrativo local (exemplo: Administrador).
+- As operacoes locais ficam disponiveis apos a autenticacao; use "Adicionar este PC".
+  O login exige um dominio informado no usuario ou nas configuracoes locais.
 
 Configuracao de dominio ou servidor LDAP:
 Para operar em clientes, filiais ou dominios diferentes:

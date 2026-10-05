@@ -66,7 +66,7 @@ public class LdapCredentialValidatorTests
         {
             attempts.Add((method, credential.UserName));
             Assert.Equal("test-domain", credential.Domain);
-            return credential.UserName == "12345678900"
+            return credential.UserName == "00000000000"
                 ? LdapValidationResult.Success()
                 : LdapValidationResult.Failure("Try sanitized identity.");
         }
@@ -76,14 +76,14 @@ public class LdapCredentialValidatorTests
             (_, credential) => Attempt("SMB", credential),
             (_, credential) => Attempt("LogonUser", credential));
 
-        var result = await sut.ValidateAsync("test.example", new NetworkCredential("123.456.789-00", "password", "test-domain"));
+        var result = await sut.ValidateAsync("test.example", new NetworkCredential("000.000.000-00", "password", "test-domain"));
 
         Assert.True(result.IsSuccess);
         Assert.Equal(new[]
         {
-            ("Negotiate", "123.456.789-00"), ("Ntlm", "123.456.789-00"),
-            ("SMB", "123.456.789-00"), ("LogonUser", "123.456.789-00"),
-            ("Negotiate", "12345678900")
+            ("Negotiate", "000.000.000-00"), ("Ntlm", "000.000.000-00"),
+            ("SMB", "000.000.000-00"), ("LogonUser", "000.000.000-00"),
+            ("Negotiate", "00000000000")
         }, attempts);
     }
 }

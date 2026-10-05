@@ -77,7 +77,8 @@ public class MainViewModelExportLogTests
     public void ExportLogCommand_ExecutesAndAppendsSuccessToLog()
     {
         var (sut, fakeExporter) = CreateSut();
-        fakeExporter.ResultToReturn = LogExportResult.Succeeded(@"C:\Development\Example\Desktop\log.txt");
+        var exportPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "PrinterInstallTests", "log.txt");
+        fakeExporter.ResultToReturn = LogExportResult.Succeeded(exportPath);
         sut.LogText = "[10:00:00] Instalação concluída com sucesso.";
 
         sut.ExportLogCommand.Execute(null);
@@ -85,7 +86,7 @@ public class MainViewModelExportLogTests
         Assert.NotNull(fakeExporter.LastDefaultFileName);
         Assert.StartsWith("PrinterInstall_Deploy_", fakeExporter.LastDefaultFileName);
         Assert.Contains("Instalação concluída com sucesso.", fakeExporter.LastContent);
-        Assert.Contains(@"Log exportado com sucesso para: C:\Development\Example\Desktop\log.txt", sut.LogText);
+        Assert.Contains($"Log exportado com sucesso para: {exportPath}", sut.LogText);
     }
 
     [Fact]

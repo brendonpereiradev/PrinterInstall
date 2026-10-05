@@ -5,7 +5,7 @@ Status: implementação de código concluída; homologação das demais marcas e
 
 O código atual contém consulta SNMP/IPP e leitura da interface web HTTP/HTTPS, comparação de marca/modelo e bloqueio antes das alterações remotas. A leitura web cobre redirecionamentos, frames, campos de identificação, as duas versões do Web Config da Epson e a consulta dinâmica de informações da Gainscha. As listas abaixo registram o plano original; a homologação completa de hardware continua pendente. Os detalhes de operação estão no `README.md`.
 
-Verificação real em 29/09/2026: a consulta somente de leitura a `192.0.2.216` retornou `Lexmark CX532ADWE` por `SNMP sysDescr`. O utilitário de diagnóstico bloqueou a seleção Epson e aceitou Lexmark. Não foi executada instalação em máquina-alvo nessa verificação.
+Os exemplos deste documento são fictícios e usam endereços reservados para documentação. A homologação deve ser feita em laboratório autorizado, sem publicar identificadores do ambiente.
 
 ## Objetivo
 
@@ -13,7 +13,7 @@ Consultar a impressora no endereço informado e impedir a configuração nas má
 
 O requisito é geral e vale para qualquer IP informado, em cada linha de configuração e em todas as execuções. A identidade deve ser obtida consultando o equipamento que responde naquele endereço e comparada com a seleção correspondente feita pelo usuário. Não criar regras especiais, listas de IPs conhecidos ou associações fixas entre endereço e fabricante/modelo.
 
-Caso motivador, exclusivamente como exemplo de teste: o usuário informou que o IP `192.0.2.216` pertence a uma Lexmark e que a instalação prosseguiu com Epson selecionada. A consulta realizada durante a implementação confirmou Lexmark CX532ADWE. Esse IP não foi incorporado às regras de produção nem é necessário para a funcionalidade operar.
+Cenário de teste: uma impressora de uma marca responde no endereço informado e o operador seleciona o driver de outra marca. A aplicação deve bloquear essa configuração antes de alterar as máquinas-alvo.
 
 ### Comparação por configuração
 
@@ -53,7 +53,7 @@ Marca correta não comprova compatibilidade de modelo. O termo “Universal” n
 
 ## Etapa 1 — Levantar as respostas dos equipamentos
 
-- [x] Consultar, somente para leitura, a Lexmark informada em `192.0.2.216`.
+- [ ] Consultar equipamentos de laboratório de cada marca, somente para leitura.
 - [ ] Coletar amostras de um equipamento de cada marca e dos modelos homologados disponíveis.
 - [ ] Confirmar protocolos habilitados, acesso a partir do computador que executa o aplicativo e parâmetros de autenticação necessários.
 - [ ] Confirmar especialmente os recursos disponíveis na Gainscha GA-2408T; não presumir suporte a SNMP ou IPP.
@@ -178,7 +178,7 @@ Usar fakes para provar ausência de chamadas de alteração e fixtures de respos
 
 ### Homologação real
 
-1. Consultar equipamentos de teste por seus respectivos IPs e registrar as identidades reais. A Lexmark `192.0.2.216` pode ser usada como um desses exemplos, se disponível; sua disponibilidade não é requisito para homologar a lógica geral.
+1. Consultar equipamentos de laboratório por seus respectivos endereços e registrar amostras sanitizadas das identidades retornadas. Não publicar endereços ou identificadores reais.
 2. Selecionar Epson e confirmar bloqueio antes de alterações.
 3. Selecionar Lexmark e, após confirmar a compatibilidade do modelo/driver, validar o fluxo correto em máquina de teste.
 4. Repetir com Epson, Brother e Gainscha.

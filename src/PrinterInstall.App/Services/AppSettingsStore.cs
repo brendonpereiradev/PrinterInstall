@@ -20,14 +20,14 @@ public sealed class AppSettingsStore : IAppSettingsStore
     private readonly string _defaultDomainName;
 
     public AppSettingsStore(IConfiguration? configuration = null)
-        : this(DefaultFilePath(), configuration?["DomainName"] ?? "laboratorio.test")
+        : this(DefaultFilePath(), configuration?["DomainName"] ?? "")
     {
     }
 
-    public AppSettingsStore(string filePath, string defaultDomainName = "laboratorio.test")
+    public AppSettingsStore(string filePath, string defaultDomainName = "")
     {
         _filePath = filePath;
-        _defaultDomainName = string.IsNullOrWhiteSpace(defaultDomainName) ? "laboratorio.test" : defaultDomainName.Trim();
+        _defaultDomainName = defaultDomainName?.Trim() ?? "";
     }
 
     public AppSettings Load()
@@ -39,13 +39,13 @@ public sealed class AppSettingsStore : IAppSettingsStore
         {
             var json = File.ReadAllText(_filePath);
             var dto = JsonSerializer.Deserialize<AppSettingsDto>(json, JsonOptions);
-            if (dto is null || string.IsNullOrWhiteSpace(dto.DomainName))
+            if (dto is null)
             {
                 TryDeleteFile();
                 return new AppSettings(_defaultDomainName);
             }
 
-            var domain = dto.DomainName.Trim();
+            var domain = dto.DomainName?.Trim() ?? "";
             var ldapHost = string.IsNullOrWhiteSpace(dto.LdapHost) ? null : dto.LdapHost.Trim();
             var theme = string.IsNullOrWhiteSpace(dto.Theme) ? "Light" : dto.Theme.Trim();
             return new AppSettings(domain, ldapHost, theme);
@@ -63,9 +63,6 @@ public sealed class AppSettingsStore : IAppSettingsStore
 
     public void Save(AppSettings settings)
     {
-        if (string.IsNullOrWhiteSpace(settings.DomainName))
-            return;
-
         try
         {
             var dir = Path.GetDirectoryName(_filePath);
@@ -74,7 +71,7 @@ public sealed class AppSettingsStore : IAppSettingsStore
 
             var dto = new AppSettingsDto
             {
-                DomainName = settings.DomainName.Trim(),
+                DomainName = settings.DomainName?.Trim() ?? "",
                 LdapHost = string.IsNullOrWhiteSpace(settings.LdapHost) ? null : settings.LdapHost.Trim(),
                 Theme = string.IsNullOrWhiteSpace(settings.Theme) ? "Light" : settings.Theme.Trim()
             };

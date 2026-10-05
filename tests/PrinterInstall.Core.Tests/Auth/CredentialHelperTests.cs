@@ -7,10 +7,10 @@ namespace PrinterInstall.Core.Tests.Auth;
 public sealed class CredentialHelperTests
 {
     [Theory]
-    [InlineData("123.456.789-00", "12345678900")]
-    [InlineData("123.456.789/00", "12345678900")]
-    [InlineData("12345678900", "12345678900")]
-    [InlineData("  123.456.789-00  ", "12345678900")]
+    [InlineData("000.000.000-00", "00000000000")]
+    [InlineData("000.000.000/00", "00000000000")]
+    [InlineData("00000000000", "00000000000")]
+    [InlineData("  000.000.000-00  ", "00000000000")]
     [InlineData("usuario.adm", "usuario.adm")]
     [InlineData("", "")]
     [InlineData(null, "")]
@@ -21,12 +21,12 @@ public sealed class CredentialHelperTests
     }
 
     [Theory]
-    [InlineData("EMPRESA", "12345678900", @"EMPRESA\12345678900")]
-    [InlineData("EMPRESA", @"EMPRESA\12345678900", @"EMPRESA\12345678900")]
-    [InlineData("OUTRO", @"EMPRESA\12345678900", @"EMPRESA\12345678900")]
+    [InlineData("EMPRESA", "00000000000", @"EMPRESA\00000000000")]
+    [InlineData("EMPRESA", @"EMPRESA\00000000000", @"EMPRESA\00000000000")]
+    [InlineData("OUTRO", @"EMPRESA\00000000000", @"EMPRESA\00000000000")]
     [InlineData("EMPRESA", "user@empresa.test", "user@empresa.test")]
-    [InlineData(null, "12345678900", "12345678900")]
-    [InlineData("", "12345678900", "12345678900")]
+    [InlineData(null, "00000000000", "00000000000")]
+    [InlineData("", "00000000000", "00000000000")]
     public void FormatDomainUser_FormatsCorrectlyWithoutDuplicates(string? domain, string? userName, string expected)
     {
         var result = CredentialHelper.FormatDomainUser(domain, userName);
@@ -37,7 +37,7 @@ public sealed class CredentialHelperTests
     [InlineData("jsilva", "laboratorio.test", "jsilva", "laboratorio.test")]
     [InlineData(@"LABORATORIO\jsilva", "laboratorio.test", "jsilva", "LABORATORIO")]
     [InlineData("jsilva@laboratorio.test", "laboratorio.test", "jsilva", "laboratorio.test")]
-    [InlineData(@"DOMINIO\123.456.789-00", "padrao.test", "123.456.789-00", "DOMINIO")]
+    [InlineData(@"DOMINIO\000.000.000-00", "padrao.test", "000.000.000-00", "DOMINIO")]
     [InlineData("", "padrao.test", "", "padrao.test")]
     [InlineData(null, "padrao.test", "", "padrao.test")]
     public void SplitDomainAndUser_SplitsCorrectly(string? input, string? defaultDomain, string expectedUser, string expectedDomain)

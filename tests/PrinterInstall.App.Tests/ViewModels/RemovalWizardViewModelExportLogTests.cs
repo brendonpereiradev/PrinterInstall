@@ -87,7 +87,8 @@ public class RemovalWizardViewModelExportLogTests
     public void ExportLogCommand_ExecutesAndAppendsSuccessToLog()
     {
         var (sut, fakeExporter) = CreateSut();
-        fakeExporter.ResultToReturn = LogExportResult.Succeeded(@"C:\Development\Example\Desktop\PrinterInstall_Controle.txt");
+        var exportPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "PrinterInstallTests", "PrinterInstall_Controle.txt");
+        fakeExporter.ResultToReturn = LogExportResult.Succeeded(exportPath);
         sut.CurrentStepIndex = 3;
         sut.ReviewSummary = "PC-01: remover 'OldPrinter' (porta '10.0.0.1')";
         sut.LogText = "[10:00:00] Fila removida.\r\n";
@@ -99,7 +100,7 @@ public class RemovalWizardViewModelExportLogTests
         Assert.Contains("Controle e Remoção de Impressoras", fakeExporter.LastContent);
         Assert.Contains("PC-01: remover 'OldPrinter'", fakeExporter.LastContent);
         Assert.Contains("Fila removida.", fakeExporter.LastContent);
-        Assert.Contains(@"Log exportado com sucesso para: C:\Development\Example\Desktop\PrinterInstall_Controle.txt", sut.LogText);
+        Assert.Contains($"Log exportado com sucesso para: {exportPath}", sut.LogText);
     }
 
     [Fact]

@@ -4,7 +4,7 @@ namespace PrinterInstall.App.Models;
 /// Representa as configurações de domínio e conectividade da aplicação.
 /// </summary>
 public sealed record AppSettings(
-    string DomainName = "laboratorio.test",
+    string DomainName = "",
     string? LdapHost = null,
     string Theme = "Light")
 {

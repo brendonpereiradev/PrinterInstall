@@ -45,7 +45,7 @@ public sealed class WindowsDomainCredentialValidator : ILdapCredentialValidator
 
         int win32Error = Marshal.GetLastWin32Error();
 
-        // 2. Fallback: Se o usuário informou um CPF com formatação/pontuação (ex: 123.456.789-00), tenta com CPF sanitizado
+        // 2. Fallback: Se o usuário informou um CPF com formatação/pontuação (ex: 000.000.000-00), tenta com CPF sanitizado
         var cleanUser = CredentialHelper.SanitizeCpf(credential.UserName);
         if (!string.Equals(cleanUser, credential.UserName, StringComparison.Ordinal))
         {

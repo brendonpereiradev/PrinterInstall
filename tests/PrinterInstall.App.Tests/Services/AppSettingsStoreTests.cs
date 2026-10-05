@@ -29,7 +29,34 @@ public class AppSettingsStoreTests : IDisposable
         }
     }
 
-    private AppSettingsStore CreateSut(string defaultDomain = "laboratorio.test") => new(_filePath, defaultDomain);
+    private AppSettingsStore CreateSut(string defaultDomain = "") => new(_filePath, defaultDomain);
+
+    [Fact]
+    public void Load_WhenUnconfigured_HasNoDomainOrLdapHost()
+    {
+        var loaded = CreateSut().Load();
+
+        Assert.Equal("", loaded.DomainName);
+        Assert.Null(loaded.LdapHost);
+        Assert.Equal("Light", loaded.Theme);
+        Assert.Equal("", new AppSettings().DomainName);
+    }
+
+    [Fact]
+    public void Save_WithoutDomain_PreservesThemeAndResetsToUnconfigured()
+    {
+        var sut = CreateSut();
+        sut.Save(new AppSettings(Theme: "Dark"));
+
+        var loaded = sut.Load();
+        Assert.Equal("", loaded.DomainName);
+        Assert.Null(loaded.LdapHost);
+        Assert.Equal("Dark", loaded.Theme);
+
+        sut.ResetToDefaults();
+        Assert.Equal("", sut.Load().DomainName);
+        Assert.Equal("Light", sut.Load().Theme);
+    }
 
     [Fact]
     public void Load_WhenFileMissing_ReturnsDefaultDomain()
@@ -45,13 +72,13 @@ public class AppSettingsStoreTests : IDisposable
     public void Save_ThenLoad_ReturnsSavedSettings()
     {
         var sut = CreateSut();
-        var expected = new AppSettings("corp.empresa.com", "ldap.empresa.com");
+        var expected = new AppSettings("corp.empresa.example", "ldap.empresa.example");
 
         sut.Save(expected);
         var loaded = sut.Load();
 
-        Assert.Equal("corp.empresa.com", loaded.DomainName);
-        Assert.Equal("ldap.empresa.com", loaded.LdapHost);
+        Assert.Equal("corp.empresa.example", loaded.DomainName);
+        Assert.Equal("ldap.empresa.example", loaded.LdapHost);
     }
 
     [Fact]
@@ -95,15 +122,17 @@ public class AppSettingsStoreTests : IDisposable
     }
 
     [Fact]
-    public void Load_WhenDomainEmpty_ReturnsDefaultsAndCleansUp()
+    public void Load_WhenDomainEmpty_PreservesLocalPreferences()
     {
-        File.WriteAllText(_filePath, """{"domainName":"   ","ldapHost":"10.0.0.1"}""");
+        File.WriteAllText(_filePath, """{"domainName":"   ","ldapHost":null,"theme":"Dark"}""");
         var sut = CreateSut("padrao.test");
 
         var loaded = sut.Load();
 
-        Assert.Equal("padrao.test", loaded.DomainName);
-        Assert.False(File.Exists(_filePath));
+        Assert.Equal("", loaded.DomainName);
+        Assert.Null(loaded.LdapHost);
+        Assert.Equal("Dark", loaded.Theme);
+        Assert.True(File.Exists(_filePath));
     }
 
     [Fact]

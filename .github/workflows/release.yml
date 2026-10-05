@@ -30,6 +30,20 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Verify public source and history
+        shell: pwsh
+        run: |
+          python scripts/Test-PublicData.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/Test-PublicData.py --history
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./scripts/Test-Secrets.ps1
+
       - name: Restore dependencies
         run: dotnet restore PrinterInstall.sln
 
@@ -55,6 +69,13 @@ jobs:
           Write-Host "Tamanho: $([math]::Round($size, 2)) MB"
           Write-Host "SHA256: $hash"
           "$hash  Printer Install.exe" | Out-File -FilePath "publish\PrinterInstall\checksums-sha256.txt" -Encoding utf8
+
+      - name: Check executable before upload
+        shell: pwsh
+        run: |
+          python scripts/Test-PublicData.py --artifact 'publish/PrinterInstall/Printer Install.exe'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./scripts/Test-Secrets.ps1 -ArtifactPath 'publish/PrinterInstall'
 
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v2

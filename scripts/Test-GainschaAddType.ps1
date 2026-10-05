@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-$root = 'C:\Development\Example\Documents\Projects\Code Projects\Printer Install 2'
+$root = Split-Path -Parent $PSScriptRoot
 
 $validatePath = Join-Path $root 'src\PrinterInstall.Core\Gainscha\GainschaPrintingDefaultsSyncScriptFragment.cs'
 
