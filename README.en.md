@@ -22,6 +22,8 @@
 
 The application includes driver packages for various manufacturers, authenticates against Active Directory via LDAP, configures Gainscha thermal labels through structured data streams, and automatically reverts changes if an installation fails on any machine.
 
+The windows use WPF-UI Fluent components, with an integrated title bar and a switch between light and dark themes. Windows 11 uses the Mica backdrop; Windows 10 uses a solid background. The main window's command bar brings together deployment, printer control, and direct testing. The event panel can be collapsed while keeping the latest log message visible.
+
 ---
 
 ## Features
@@ -29,6 +31,7 @@ The application includes driver packages for various manufacturers, authenticate
 | Feature | Description |
 |---|---|
 | **Batch deployment** | Installs queues on multiple computers simultaneously with live status tracking |
+| **Computer list** | Shows the number of listed computers and flags invalid names before deployment |
 | **Automatic rollback** | Reverts created ports and queues when an error occurs on a target workstation |
 | **Control wizard** | Lists, renames, and removes queues on remote machines or the local computer |
 | **Direct network test** | Validates connectivity and sends test pages or labels directly to raw port 9100 before deployment |
@@ -37,6 +40,7 @@ The application includes driver packages for various manufacturers, authenticate
 | **Customizable settings** | Allows modifying the default domain and LDAP server through the settings view |
 | **Privilege elevation** | Runs remote administrative actions via scheduled tasks when required |
 | **Report export** | Generates structured text log files with results from every operation |
+| **Collapsible event panel** | Shows the latest message when collapsed and the full history when expanded; provides report export and access to the log folder |
 
 ---
 
@@ -172,7 +176,7 @@ Verify which roll is loaded in the physical printer before configuring a Gainsch
 1. **Authentication:** Enter network credentials in `user@domain` or `DOMAIN\user` format. If you need to change the default domain or LDAP server, click the settings icon in the header. Credentials are only kept in memory during the active session.
 2. **Target selection:** Add destination workstations by hostname or IP address. The "Add This PC" button includes the current machine. Pasting a list adds multiple targets at once.
 3. **Queue configuration:** Select the manufacturer, enter the printer IP address, and define the queue name. For Gainscha thermal printers, select the matching label preset.
-4. **Deployment:** Start the installation and follow progress per machine. When finished, export the summary report to a text file.
+4. **Deployment:** Start the installation from the command bar and follow progress per machine. The cancel button appears during deployment. Expand the event panel to read the history and, when finished, export the summary report to a text file.
 
 ---
 

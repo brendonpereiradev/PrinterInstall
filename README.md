@@ -22,6 +22,8 @@
 
 A ferramenta inclui pacotes de drivers para diferentes fabricantes, realiza autenticação no Active Directory via LDAP, calibra etiquetas térmicas Gainscha por meio de fluxos de dados estruturados e desfaz alterações automaticamente caso ocorra alguma falha durante o processo.
 
+As janelas usam os componentes Fluent do WPF-UI, com barra de título integrada e alternância entre os temas claro e escuro. No Windows 11, o fundo usa o efeito Mica; no Windows 10, mantém um fundo sólido. Na tela principal, a barra de comandos reúne a implantação e as ferramentas de controle e teste. O painel de eventos pode ser recolhido e continua mostrando a última mensagem registrada.
+
 ---
 
 ## Funcionalidades
@@ -29,6 +31,7 @@ A ferramenta inclui pacotes de drivers para diferentes fabricantes, realiza aute
 | Feature | Descrição |
 |---|---|
 | **Instalação em lote** | Instala filas em vários computadores simultaneamente com acompanhamento de status em tempo real |
+| **Lista de computadores** | Mostra a quantidade de computadores informados e avisa sobre nomes inválidos antes da implantação |
 | **Reversão automática** | Desfaz filas e portas criadas quando ocorre falha durante a instalação em uma estação |
 | **Assistente de controle** | Lista, renomeia e remove filas em computadores remotos ou na máquina local |
 | **Teste de comunicação direta** | Valida a conexão e imprime páginas ou etiquetas de teste diretamente pela porta raw 9100 antes da instalação |
@@ -37,6 +40,7 @@ A ferramenta inclui pacotes de drivers para diferentes fabricantes, realiza aute
 | **Configurações personalizáveis** | Permite alterar o domínio padrão e o servidor LDAP na tela de configurações |
 | **Elevação de privilégios** | Executa ações administrativas remotas por meio de tarefas agendadas quando necessário |
 | **Exportação de relatórios** | Gera arquivos de log estruturados com o resultado de cada operação realizada |
+| **Painel de eventos recolhível** | Mostra a última mensagem quando fechado e o histórico completo quando aberto; permite exportar o relatório e abrir a pasta de logs |
 
 ---
 
@@ -172,7 +176,7 @@ Antes de instalar uma fila Gainscha, confirme o rolo instalado na impressora fí
 1. **Autenticação:** Informe suas credenciais de rede no formato `usuario@dominio` ou `DOMINIO\usuario`. Se precisar alterar o domínio ou servidor LDAP padrão, clique no ícone de configurações no cabeçalho. As credenciais permanecem ativas apenas durante a sessão do aplicativo.
 2. **Seleção de computadores:** Adicione os computadores alvo pelo nome de rede ou endereço IP. O botão "Adicionar Este PC" inclui a máquina local. Você também pode colar uma lista de computadores de uma vez.
 3. **Configuração de filas:** Escolha o fabricante, informe o IP da impressora e defina o nome da fila. Para impressoras térmicas Gainscha, selecione o preset de etiqueta correspondente.
-4. **Execução do deploy:** Inicie a instalação e acompanhe o status de cada máquina. Ao finalizar, exporte o relatório das operações em arquivo de texto.
+4. **Execução do deploy:** Clique em "Implantar" na barra de comandos e acompanhe o status de cada máquina. O botão "Cancelar" aparece durante a execução. Abra o painel de eventos para consultar o histórico e, ao finalizar, exporte o relatório das operações em arquivo de texto.
 
 ---
 
