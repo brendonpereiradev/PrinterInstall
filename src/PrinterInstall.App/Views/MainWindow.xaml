@@ -6,6 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
+        xmlns:appControls="clr-namespace:PrinterInstall.App.Controls"
         xmlns:vm="clr-namespace:PrinterInstall.App.ViewModels;assembly=PrinterInstall.App"
         mc:Ignorable="d"
         Title="{DynamicResource Main_WindowTitle}"
@@ -193,18 +194,7 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </ui:Button.ToolTip>
-                    <ui:SymbolIcon FontSize="16" Foreground="{DynamicResource AppTextPrimaryBrush}">
-                        <ui:SymbolIcon.Style>
-                            <Style TargetType="ui:SymbolIcon">
-                                <Setter Property="Symbol" Value="WeatherMoon24"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsDarkMode}" Value="True">
-                                        <Setter Property="Symbol" Value="WeatherSunny24"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:SymbolIcon.Style>
-                    </ui:SymbolIcon>
+                    <appControls:ThemeToggleIcon Style="{StaticResource ThemeToggleIconStyle}"/>
                 </ui:Button>
             </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
@@ -439,7 +429,7 @@
                       Background="{DynamicResource AppSurfaceCardBrush}"
                       BorderBrush="{DynamicResource AppSurfaceCardBorderBrush}">
                 <Expander.Header>
-                    <Grid>
+                    <Grid Margin="0,0,12,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
