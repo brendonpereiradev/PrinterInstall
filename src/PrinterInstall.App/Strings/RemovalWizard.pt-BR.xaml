@@ -23,4 +23,7 @@
   <sys:String x:Key="Removal_Ping_RetryButton">Testar novamente</sys:String>
   <sys:String x:Key="Removal_Queues_OfflineTitle">Computador inacessível</sys:String>
   <sys:String x:Key="Removal_Queues_OfflineHint">Verifique se o computador está ligado e conectado à rede. Você pode testar novamente ou avançar sem alterar este computador.</sys:String>
+  <sys:String x:Key="Removal_ReviewRemovals">Remoções:</sys:String>
+  <sys:String x:Key="Removal_ReviewRenames">Renomeações:</sys:String>
+  <sys:String x:Key="Removal_ReviewComputers">Computadores:</sys:String>
 </ResourceDictionary>

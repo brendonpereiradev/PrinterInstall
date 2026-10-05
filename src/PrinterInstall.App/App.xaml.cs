@@ -30,7 +30,7 @@ public partial class App : Application
         CultureInfo.DefaultThreadCurrentCulture = ptBr;
         CultureInfo.DefaultThreadCurrentUICulture = ptBr;
 
-        ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
+        ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.Mica);
         ApplicationAccentColorManager.Apply(
             Color.FromRgb(37, 99, 235),
             ApplicationTheme.Light);
