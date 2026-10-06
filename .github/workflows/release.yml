@@ -24,6 +24,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.inputs.tag_name || github.ref }}
 
       - name: Setup .NET 8 SDK
         uses: actions/setup-dotnet@v4
@@ -77,7 +78,7 @@ jobs:
           Write-Host "Executável gerado com sucesso: $exePath"
           Write-Host "Tamanho: $([math]::Round($size, 2)) MB"
           Write-Host "SHA256: $hash"
-          "$hash  Printer Install.exe" | Out-File -FilePath "publish\PrinterInstall\checksums-sha256.txt" -Encoding utf8
+          "$hash  Printer.Install.exe" | Out-File -FilePath "publish\PrinterInstall\checksums-sha256.txt" -Encoding utf8
 
       - name: Check executable before upload
         shell: pwsh
