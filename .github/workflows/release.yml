@@ -36,8 +36,17 @@ jobs:
           python-version: '3.x'
 
       - name: Verify public source and history
+        env:
+          REQUESTED_RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.event.inputs.tag_name }}
         shell: pwsh
         run: |
+          if ($env:REQUESTED_RELEASE_TAG) {
+            [xml]$project = Get-Content 'src/PrinterInstall.App/PrinterInstall.App.csproj'
+            $version = @($project.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+            if ($env:REQUESTED_RELEASE_TAG -ne "v$version") {
+              throw 'A tag solicitada deve corresponder à versão do aplicativo.'
+            }
+          }
           python scripts/Test-PublicData.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python scripts/Test-PublicData.py --history
