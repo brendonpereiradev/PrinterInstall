@@ -15,6 +15,15 @@ public sealed partial class OperationLog : ObservableObject
     private readonly ILogExportService _exportService;
     private readonly IDiagnosticFileLogger? _diagnosticLogger;
     private readonly string _category;
+    private string? _sensitiveValue;
+
+    public void SetSensitiveValue(string? value)
+    {
+        _sensitiveValue = value;
+        _diagnosticLogger?.RegisterSensitiveValue(value);
+    }
+    private string Redact(string text) => string.IsNullOrEmpty(_sensitiveValue) ? text :
+        text.Replace(_sensitiveValue, "[SENHA OMITIDA]", StringComparison.Ordinal);
 
     public OperationLog(ILogExportService exportService, IDiagnosticFileLogger? diagnosticLogger, string category)
     {
@@ -42,8 +51,9 @@ public sealed partial class OperationLog : ObservableObject
 
     public void Append(string line)
     {
+        line = Redact(line);
         _diagnosticLogger?.LogInfo(line, _category);
-        RunOnUi(() => Text += $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {line}\r\n");
+        RunOnUi(() => Text += $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {line}\r\n");
     }
 
     /// <summary>Exporta o relatório montado por <paramref name="buildReport"/> e registra o resultado no próprio log.</summary>
@@ -52,7 +62,7 @@ public sealed partial class OperationLog : ObservableObject
         if (!CanExport)
             return;
 
-        var result = _exportService.ExportLog(defaultFileName, buildReport(Text));
+        var result = _exportService.ExportLog(defaultFileName, Redact(buildReport(Text)));
 
         if (result.IsSuccess && !string.IsNullOrWhiteSpace(result.FilePath))
         {

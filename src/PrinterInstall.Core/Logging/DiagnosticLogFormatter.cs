@@ -53,6 +53,12 @@ public static class DiagnosticLogFormatter
             sb.AppendLine(ex.StackTrace.TrimEnd());
         }
 
+        if (ex.InnerException is not null)
+        {
+            sb.AppendLine("Cadeia completa de exceções:");
+            sb.AppendLine(ex.ToString());
+        }
+
         return sb.ToString().TrimEnd();
     }
 

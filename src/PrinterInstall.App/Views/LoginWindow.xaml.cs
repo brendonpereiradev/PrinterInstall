@@ -124,7 +124,7 @@ public partial class LoginWindow
         catch (Exception ex)
         {
             // Trata exceções não esperadas exibindo na interface sem derrubar o processo WPF.
-            _viewModel.ErrorMessage = ex.Message;
+            _viewModel.ShowUnexpectedError(ex);
         }
     }
 

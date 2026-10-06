@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using PrinterInstall.Core.Catalog;
 using PrinterInstall.Core.Drivers;
+using PrinterInstall.Core.Logging;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Network;
 using PrinterInstall.Core.Remote;
@@ -117,12 +118,14 @@ public sealed class PrinterDeploymentOrchestrator
         CancellationToken cancellationToken = default,
         IProgress<string>? diagnosticLog = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (request.TargetComputerNames.Count == 0)
             return;
 
         if (!_skipIdentityValidationForLegacyTests &&
             !await ValidatePrinterIdentitiesAsync(request, progress, cancellationToken, diagnosticLog).ConfigureAwait(false))
             return;
+        cancellationToken.ThrowIfCancellationRequested();
 
         var maxDegree = _configuredMaxDegreeOfParallelism
             ?? (request.MaxDegreeOfParallelism > 0 ? request.MaxDegreeOfParallelism : DefaultMaxDegreeOfParallelism);
@@ -135,6 +138,7 @@ public sealed class PrinterDeploymentOrchestrator
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await ProcessSingleTargetAsync(computer, request, rollbackJournal, progress, printerPingCache, cancellationToken, diagnosticLog).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
             }
             return;
         }
@@ -151,6 +155,7 @@ public sealed class PrinterDeploymentOrchestrator
             {
                 await ProcessSingleTargetAsync(computer, request, rollbackJournal, progress, printerPingCache, ct, diagnosticLog).ConfigureAwait(false);
             }).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
         }
         catch (Exception ex) when (cancellationToken.IsCancellationRequested && (ex is TaskCanceledException || ex.GetType() != typeof(OperationCanceledException)))
         {
@@ -246,8 +251,10 @@ public sealed class PrinterDeploymentOrchestrator
         progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ContactingRemote, "Conectando", null));
 
         var (isReachable, reachabilityError) = await _reachabilityChecker.CheckReachabilityAsync(computer, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
         if (!isReachable)
         {
+            diagnosticLog?.Report($"{computer}: conectividade indisponível: {reachabilityError}");
             progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Error, "Host inacessível", null));
             return;
         }
@@ -271,10 +278,14 @@ public sealed class PrinterDeploymentOrchestrator
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            diagnosticLog?.Report($"{computer}: falha ao consultar drivers.\n{DiagnosticLogFormatter.FormatExceptionDetails(ex)}");
             progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Error, Flatten(ex), null));
             return;
         }
 
+            cancellationToken.ThrowIfCancellationRequested();
+            diagnosticLog?.Report($"{computer}: drivers encontrados ({drivers.Count}): {string.Join(" | ", drivers)}");
             progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ValidatingDriver, "Verificando drivers", null));
 
             var brandOrder = DistinctBrandsInOrder(request.Printers);
@@ -283,6 +294,7 @@ public sealed class PrinterDeploymentOrchestrator
 
             foreach (var brand in brandOrder)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var driverOrder = PrinterCatalog.GetDriverResolutionOrder(brand);
                 if (DriverNameMatcher.IsAnyAcceptedDriverInstalled(drivers, driverOrder))
                     continue;
@@ -312,6 +324,8 @@ public sealed class PrinterDeploymentOrchestrator
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    diagnosticLog?.Report($"{computer}: falha na instalação do driver {brand}.\n{DiagnosticLogFormatter.FormatExceptionDetails(ex)}");
                     failedBrands.Add(brand);
                     brandFailureMessage[brand] = Flatten(ex);
                 }
@@ -566,6 +580,8 @@ public sealed class PrinterDeploymentOrchestrator
                         }
                         catch (Exception ex) when (ex is not OperationCanceledException)
                         {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            diagnosticLog?.Report($"{computer} [{displayName}]: falha no teste de impressão.\n{DiagnosticLogFormatter.FormatExceptionDetails(ex)}");
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 TargetMachineState.CompletedSuccess,
@@ -584,6 +600,8 @@ public sealed class PrinterDeploymentOrchestrator
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    diagnosticLog?.Report($"{computer} [{displayName}]: falha na configuração da fila.\n{DiagnosticLogFormatter.FormatExceptionDetails(ex)}");
                     progress.Report(new DeploymentProgressEvent(
                         computer,
                         TargetMachineState.Error,
@@ -591,6 +609,7 @@ public sealed class PrinterDeploymentOrchestrator
                         displayName));
                 }
             }
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
     private static IReadOnlyList<PrinterBrand> DistinctBrandsInOrder(IReadOnlyList<PrinterQueueDefinition> printers)

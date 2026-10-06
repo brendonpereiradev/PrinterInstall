@@ -48,6 +48,7 @@ public partial class App : Application
         }
 
         builder.Services.AddSingleton<IDiagnosticFileLogger, DiagnosticFileLogger>();
+        builder.Services.AddSingleton<ILocalDiagnosticCollector, LocalDiagnosticCollector>();
         builder.Services.AddSingleton<ISessionContext, SessionContext>();
         builder.Services.AddSingleton<IAppSettingsStore, AppSettingsStore>();
         builder.Services.AddSingleton<IThemeService, ThemeService>();

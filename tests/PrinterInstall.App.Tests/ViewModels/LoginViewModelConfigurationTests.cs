@@ -9,6 +9,27 @@ namespace PrinterInstall.App.Tests.ViewModels;
 
 public class LoginViewModelConfigurationTests
 {
+    [Fact]
+    public async Task ValidatedIdentity_IsAlsoUsedForDeploymentAndRememberedUser()
+    {
+        var validator = new Mock<ILdapCredentialValidator>();
+        validator.Setup(v => v.ValidateAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(LdapValidationResult.Success(new NetworkCredential("00000000000", "unused", "LABORATORIO")));
+        var settings = new Mock<IAppSettingsStore>();
+        settings.Setup(s => s.Load()).Returns(new AppSettings("laboratorio.test"));
+        var session = new SessionContext();
+        var remembered = new Mock<IRememberedUserStore>();
+        var sut = new LoginViewModel(validator.Object, session, settings.Object, remembered.Object)
+        {
+            UserName = "000.000.000-00", Password = "test-password", RememberMe = true
+        };
+        Assert.True((await sut.TryLoginAsync()).Success);
+        Assert.Equal("00000000000", session.Credential!.UserName);
+        Assert.Equal("LABORATORIO", session.Credential.Domain);
+        Assert.Equal("test-password", session.Credential.Password);
+        remembered.Verify(s => s.Save(It.Is<RememberedUser>(u => u.UserName == "00000000000" && u.DomainName == "LABORATORIO")));
+    }
+
     [Theory]
     [InlineData("usuario.teste")]
     [InlineData("LABORATORIO\\usuario.teste")]

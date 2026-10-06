@@ -58,14 +58,26 @@ public sealed class ElevatedRemoteProcessRunner
             cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task RunScheduledScriptAsync(
+    internal async Task<string> RunElevatedQueryAsync(
+        string host, NetworkCredential credential, string queryBody,
+        TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        var script = RemoteElevatedScriptBuilder.WrapWithResultHandling(queryBody + "\n" +
+            "ConvertTo-Json -InputObject $queryResult -Depth 4 -Compress | Set-Content -LiteralPath (Join-Path $PSScriptRoot 'query.json') -Encoding UTF8");
+        return await RunScheduledScriptAsync(host, credential, script, timeout, null,
+            runAsSystem: true, cancellationToken, outputFileName: "query.json").ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Consulta remota não retornou dados.");
+    }
+
+    private async Task<string?> RunScheduledScriptAsync(
         string host,
         NetworkCredential credential,
         string scriptContent,
         TimeSpan timeout,
         IProgress<string>? log,
         bool runAsSystem,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? outputFileName = null)
     {
         var paths = RemoteDriverStagingPaths.Create(host);
         var taskName = $"PrinterInstall_{paths.StagingId}";
@@ -76,8 +88,12 @@ public sealed class ElevatedRemoteProcessRunner
         var transcriptWrapper = WrapScriptWithTranscript(scriptWithResultFile, logLocal);
 
         var usedFallback = false;
+        var creationAttempted = false;
+        var launchAttempted = false;
+        var cancelled = false;
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             log?.Report(runAsSystem
                 ? "Executando via tarefa agendada elevada (será removida ao concluir)..."
                 : "Executando via tarefa agendada como usuário de deploy (será removida ao concluir)...");
@@ -99,8 +115,21 @@ public sealed class ElevatedRemoteProcessRunner
                     SchtasksRunAsFormatter.EscapeCmdArgument(SchtasksRunAsFormatter.FormatRunAsUser(credential)),
                     SchtasksRunAsFormatter.EscapeCmdArgument(credential.Password ?? string.Empty));
 
-            var createResult = await _wmiRunner.RunAsync(host, credential, createCmd, SchtasksBootstrapTimeout, cancellationToken)
-                .ConfigureAwait(false);
+            RemoteProcessResult createResult;
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                creationAttempted = true;
+                createResult = await _wmiRunner.RunAsync(host, credential, createCmd, SchtasksBootstrapTimeout, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException && AccessDeniedDetector.IsAccessDenied(ex))
+            {
+                // A conexão DCOM pode falhar antes de Win32_Process retornar um código.
+                // O Agendador remoto autentica as mesmas credenciais por seu próprio canal RPC.
+                log?.Report($"Acesso WMI/DCOM negado em {host}; tentando o Agendador de Tarefas remoto.");
+                createResult = new RemoteProcessResult(5, null, TimedOut: false);
+            }
 
             if (createResult.ReturnValue != 0)
             {
@@ -150,6 +179,7 @@ public sealed class ElevatedRemoteProcessRunner
 
             if (usedFallback)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var remoteUser = SchtasksRunAsFormatter.FormatRunAsUser(credential);
                 var remotePass = credential.Password ?? string.Empty;
                 var fallbackRunArgs = string.Format(
@@ -160,6 +190,7 @@ public sealed class ElevatedRemoteProcessRunner
                     SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
                     taskName);
 
+                launchAttempted = true;
                 var runResult = await _schtasksFallbackRunner.RunAsync(fallbackRunArgs, SchtasksBootstrapTimeout, cancellationToken)
                     .ConfigureAwait(false);
                 if (runResult.Result.ReturnValue != 0)
@@ -172,16 +203,73 @@ public sealed class ElevatedRemoteProcessRunner
             }
             else
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                launchAttempted = true;
                 var runCmd = $"schtasks /Run /TN \"{taskName}\"";
                 await _wmiRunner.RunAsync(host, credential, runCmd, SchtasksBootstrapTimeout, cancellationToken)
                     .ConfigureAwait(false);
             }
 
             await PollForResultAsync(host, credential, paths, timeout, cancellationToken).ConfigureAwait(false);
+            return outputFileName is null ? null : await _stager.ReadLogAsync(
+                host, credential, paths, outputFileName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            cancelled = true;
+            log?.Report($"Cancelamento recebido em {host}; encerrando a tarefa temporária antes da limpeza.");
+            throw;
         }
         finally
         {
-            if (usedFallback)
+            using var cleanupBudget = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            if (cancelled && launchAttempted)
+            {
+                try
+                {
+                    if (usedFallback)
+                    {
+                        var endArgs = $"/End /S \"{host}\" /U \"{SchtasksRunAsFormatter.EscapeCmdArgument(SchtasksRunAsFormatter.FormatRunAsUser(credential))}\" /P \"{SchtasksRunAsFormatter.EscapeCmdArgument(credential.Password ?? string.Empty)}\" /TN \"{taskName}\"";
+                        var endResult = await _schtasksFallbackRunner.RunAsync(endArgs, TimeSpan.FromSeconds(5), cleanupBudget.Token)
+                            .WaitAsync(cleanupBudget.Token).ConfigureAwait(false);
+                        if (endResult.Result.ReturnValue != 0 || endResult.Result.TimedOut)
+                            throw new InvalidOperationException($"schtasks /End falhou: {endResult.StandardError}; código={endResult.Result.ReturnValue}; timeout={endResult.Result.TimedOut}");
+                    }
+                    else
+                    {
+                        var endResult = await _wmiRunner.RunAsync(host, credential, $"schtasks /End /TN \"{taskName}\"", TimeSpan.FromSeconds(5), cleanupBudget.Token)
+                            .WaitAsync(cleanupBudget.Token).ConfigureAwait(false);
+                        if (endResult.ReturnValue != 0 || endResult.TimedOut)
+                            throw new InvalidOperationException($"WMI /End falhou: código={endResult.ReturnValue}; timeout={endResult.TimedOut}");
+                    }
+                    log?.Report($"Solicitação de encerramento enviada para a tarefa {taskName} em {host}.");
+                }
+                catch (Exception ex)
+                {
+                    log?.Report($"Não foi possível confirmar o encerramento da tarefa {taskName}: {ex.Message}");
+                }
+            }
+
+            if (launchAttempted && log is not null)
+            {
+                using var readBudget = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                try
+                {
+                    var transcript = await _stager.ReadLogAsync(host, credential, paths, "task.log", readBudget.Token)
+                        .WaitAsync(readBudget.Token).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(transcript))
+                    {
+                        log.Report($"Diagnóstico da tarefa {taskName} em {host} (antes da limpeza):");
+                        log.Report(transcript);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Report($"Não foi possível capturar task.log de {host}: {ex.Message}");
+                }
+            }
+
+            if (creationAttempted && usedFallback)
             {
                 try
                 {
@@ -194,7 +282,8 @@ public sealed class ElevatedRemoteProcessRunner
                         SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
                         SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
                         taskName);
-                    await _schtasksFallbackRunner.RunAsync(fallbackDeleteArgs, SchtasksBootstrapTimeout, CancellationToken.None)
+                    await _schtasksFallbackRunner.RunAsync(fallbackDeleteArgs, TimeSpan.FromSeconds(5), cleanupBudget.Token)
+                        .WaitAsync(cleanupBudget.Token)
                         .ConfigureAwait(false);
                 }
                 catch
@@ -202,12 +291,13 @@ public sealed class ElevatedRemoteProcessRunner
                     // best effort
                 }
             }
-            else
+            else if (creationAttempted)
             {
                 var deleteCmd = $"schtasks /Delete /TN \"{taskName}\" /F";
                 try
                 {
-                    await _wmiRunner.RunAsync(host, credential, deleteCmd, SchtasksBootstrapTimeout, CancellationToken.None)
+                    await _wmiRunner.RunAsync(host, credential, deleteCmd, TimeSpan.FromSeconds(5), cleanupBudget.Token)
+                        .WaitAsync(cleanupBudget.Token)
                         .ConfigureAwait(false);
                 }
                 catch

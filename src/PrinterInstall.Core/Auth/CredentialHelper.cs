@@ -42,7 +42,7 @@ public static class CredentialHelper
             var parts = cleanUser.Split('\\', 2, StringSplitOptions.TrimEntries);
             if (parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[0]) && !string.IsNullOrWhiteSpace(parts[1]))
             {
-                return $@"{parts[0]}\{parts[1]}";
+                return FormatDomainUser(parts[0], parts[1]);
             }
             return cleanUser;
         }
@@ -55,6 +55,10 @@ public static class CredentialHelper
         if (!string.IsNullOrWhiteSpace(domain))
         {
             var cleanDomain = domain.Trim().TrimEnd('\\');
+            // O formato DOMINIO\usuario usa o nome NetBIOS. Para um domínio
+            // DNS, use o UPN implícito, inclusive a partir de uma máquina workgroup.
+            if (cleanDomain.Contains('.') && cleanDomain != "." && !IPAddress.TryParse(cleanDomain, out _))
+                return $"{cleanUser}@{cleanDomain}";
             return $@"{cleanDomain}\{cleanUser}";
         }
 

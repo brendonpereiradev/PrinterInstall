@@ -5,6 +5,26 @@ namespace PrinterInstall.Core.Tests.Remote;
 public class LocalProcessRunnerTests
 {
     [Fact]
+    public async Task AlreadyCancelled_DoesNotAttemptToStartExecutable()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => LocalProcessRunner.RunExecutableWithOutputAsync(
+            @"C:\nonexistent-printerinstall-test\missing.exe", "", TimeSpan.FromSeconds(10), cts.Token));
+    }
+
+    [Fact]
+    public async Task Timeout_PreservesOutputProducedBeforeProcessIsStopped()
+    {
+        var output = await LocalProcessRunner.RunExecutableWithOutputAsync(
+            Environment.GetEnvironmentVariable("ComSpec") ?? "cmd.exe",
+            "/c echo completed-driver-step & ping -n 6 127.0.0.1 >nul",
+            TimeSpan.FromSeconds(1), CancellationToken.None);
+        Assert.True(output.Result.TimedOut);
+        Assert.Contains("completed-driver-step", output.StandardOutput);
+    }
+
+    [Fact]
     public async Task RunWithOutputAsync_UsesLocalWorkingDirectory_WhenParentMayBeUnc()
     {
         var output = await LocalProcessRunner.RunWithOutputAsync(

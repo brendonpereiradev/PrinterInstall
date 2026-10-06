@@ -7,9 +7,12 @@ internal static class WmiProcessRunnerCore
 {
     public static (uint CreateReturnValue, uint? ProcessId) TryStart(
         ManagementScope scope,
-        string commandLine)
+        string commandLine,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         scope.Connect();
+        cancellationToken.ThrowIfCancellationRequested();
 
         using var processClass = new ManagementClass(scope, new ManagementPath("Win32_Process"), null);
         using var inParams = processClass.GetMethodParameters("Create");
@@ -31,7 +34,7 @@ internal static class WmiProcessRunnerCore
         TimeSpan timeout,
         CancellationToken cancellationToken)
     {
-        var (createReturn, pid) = TryStart(scope, commandLine);
+        var (createReturn, pid) = TryStart(scope, commandLine, cancellationToken);
         if (createReturn != 0)
             return new RemoteProcessResult(createReturn, null, TimedOut: false);
 

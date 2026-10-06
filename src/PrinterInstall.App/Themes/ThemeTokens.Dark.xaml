@@ -20,9 +20,10 @@
   <SolidColorBrush x:Key="AppConsoleForegroundBrush" Color="#FFE4E4E7"/>
 
   <!-- Texto -->
-  <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="#FFF4F4F5"/>
+  <Color x:Key="AppTextPrimaryColor">#FFF4F4F5</Color>
+  <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="{StaticResource AppTextPrimaryColor}"/>
   <SolidColorBrush x:Key="AppTextSecondaryBrush" Color="#FFA1A1AA"/>
-  <SolidColorBrush x:Key="AppTextMutedBrush" Color="#FF71717A"/>
+  <SolidColorBrush x:Key="AppTextMutedBrush" Color="#FF92929C"/>
 
   <!-- Acento -->
   <SolidColorBrush x:Key="AppBrandAccentBrush" Color="#FF3B82F6"/>

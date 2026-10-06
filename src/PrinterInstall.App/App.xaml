@@ -25,17 +25,17 @@
             <Style x:Key="ToolButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="Appearance" Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
                 <Setter Property="Padding" Value="12,8"/>
             </Style>
 
             <!-- Símbolo e contraste seguem o tema salvo desde a abertura da janela. -->
             <Style x:Key="ThemeToggleIconStyle" TargetType="appControls:ThemeToggleIcon">
                 <Setter Property="FontSize" Value="16"/>
-                <Setter Property="Foreground" Value="#FF18181B"/>
+                <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
                 <Setter Property="Symbol" Value="WeatherMoon24"/>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsDarkMode}" Value="True">
-                        <Setter Property="Foreground" Value="#FFF4F4F5"/>
                         <Setter Property="Symbol" Value="WeatherSunny24"/>
                     </DataTrigger>
                 </Style.Triggers>

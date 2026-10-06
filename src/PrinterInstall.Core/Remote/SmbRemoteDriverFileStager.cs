@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Net;
 
@@ -8,12 +7,13 @@ public sealed class SmbRemoteDriverFileStager : IRemoteDriverFileStager
 {
     private static readonly object CacheLock = new();
 
-    public Task<RemoteDriverStagingPaths> StageAsync(string host, NetworkCredential credential, string localPackageFolder, CancellationToken cancellationToken)
+    public async Task<RemoteDriverStagingPaths> StageAsync(string host, NetworkCredential credential, string localPackageFolder, CancellationToken cancellationToken)
     {
-        return Task.Run(() =>
+        using var share = await SmbShareConnection.OpenAsync(host, "ADMIN$", credential, cancellationToken).ConfigureAwait(false);
+        return await Task.Run(() =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var paths = RemoteDriverStagingPaths.Create(host);
-            using var share = SmbShareConnection.Open(host, "ADMIN$", credential);
             Directory.CreateDirectory(paths.UncRoot);
 
             try
@@ -33,47 +33,48 @@ public sealed class SmbRemoteDriverFileStager : IRemoteDriverFileStager
             }
 
             return paths;
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
-    public Task<string> ReadLogAsync(string host, NetworkCredential credential, RemoteDriverStagingPaths paths, string logName, CancellationToken cancellationToken)
+    public async Task<string> ReadLogAsync(string host, NetworkCredential credential, RemoteDriverStagingPaths paths, string logName, CancellationToken cancellationToken)
     {
-        return Task.Run(() =>
+        using var share = await SmbShareConnection.OpenAsync(host, "ADMIN$", credential, cancellationToken).ConfigureAwait(false);
+        return await Task.Run(() =>
         {
-            using var share = SmbShareConnection.Open(host, "ADMIN$", credential);
             var logPath = paths.UncLogPath(logName);
             return RemoteStagingLogReader.ReadText(logPath);
-        }, cancellationToken);
+        }, cancellationToken).WaitAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task WriteTextFileAsync(string host, NetworkCredential credential, RemoteDriverStagingPaths paths, string fileName, string content, CancellationToken cancellationToken)
+    public async Task WriteTextFileAsync(string host, NetworkCredential credential, RemoteDriverStagingPaths paths, string fileName, string content, CancellationToken cancellationToken)
     {
-        return Task.Run(() =>
+        using var share = await SmbShareConnection.OpenAsync(host, "ADMIN$", credential, cancellationToken).ConfigureAwait(false);
+        await Task.Run(() =>
         {
-            using var share = SmbShareConnection.Open(host, "ADMIN$", credential);
+            cancellationToken.ThrowIfCancellationRequested();
             var target = Path.Combine(paths.UncRoot, fileName);
             Directory.CreateDirectory(paths.UncRoot);
             // Write as UTF-8 with BOM so powershell.exe parses it reliably when
             // invoked via -File on non-en-US Windows.
             File.WriteAllText(target, content, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
-    public Task CleanupAsync(string host, NetworkCredential credential, RemoteDriverStagingPaths paths, CancellationToken cancellationToken)
+    public async Task CleanupAsync(string host, NetworkCredential credential, RemoteDriverStagingPaths paths, CancellationToken cancellationToken)
     {
-        return Task.Run(() =>
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        budget.CancelAfter(TimeSpan.FromSeconds(5));
+        try
         {
-            try
+            using var share = await SmbShareConnection.OpenAsync(host, "ADMIN$", credential, budget.Token).ConfigureAwait(false);
+            await Task.Run(() =>
             {
-                using var share = SmbShareConnection.Open(host, "ADMIN$", credential);
+                budget.Token.ThrowIfCancellationRequested();
                 if (Directory.Exists(paths.UncRoot))
                     Directory.Delete(paths.UncRoot, recursive: true);
-            }
-            catch
-            {
-                // Best-effort cleanup.
-            }
-        }, CancellationToken.None);
+            }, budget.Token).ConfigureAwait(false);
+        }
+        catch { /* Limpeza não deve impedir o fim do cancelamento. */ }
     }
 
     private static void CopyDirectory(string source, string destination, CancellationToken cancellationToken)

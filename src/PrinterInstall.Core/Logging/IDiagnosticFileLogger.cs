@@ -15,6 +15,12 @@ public interface IDiagnosticFileLogger
     /// </summary>
     string CurrentLogFilePath { get; }
 
+    string SessionId => string.Empty;
+
+    /// <summary>Conteúdo desta sessão, independente do arquivo diário e de outras execuções.</summary>
+    string ReadSessionLog() => string.Empty;
+    void RegisterSensitiveValue(string? value) { }
+
     /// <summary>
     /// Grava uma entrada de log formatada em disco.
     /// </summary>

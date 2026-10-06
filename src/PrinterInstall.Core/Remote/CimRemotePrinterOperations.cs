@@ -1,5 +1,6 @@
 using System.Management;
 using System.Net;
+using System.Text.Json;
 using PrinterInstall.Core.Drivers;
 using PrinterInstall.Core.Gainscha;
 using PrinterInstall.Core.Logging;
@@ -36,7 +37,7 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
 
     public Task<IReadOnlyList<string>> GetInstalledDriverNamesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() =>
+        return ExecuteQueryAsync<IReadOnlyList<string>>(computerName, credential, () => Task.Run(() =>
         {
             var scope = ConnectRemote(computerName, credential);
             var query = new ObjectQuery("SELECT Name FROM Win32_PrinterDriver");
@@ -60,7 +61,9 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
             }
 
             return (IReadOnlyList<string>)list;
-        }, cancellationToken);
+        }, cancellationToken).WaitAsync(cancellationToken),
+            "$queryResult = @(Get-CimInstance Win32_PrinterDriver | ForEach-Object { ($_.Name -split ',')[0].Trim() } | Where-Object { $_ })",
+            cancellationToken);
     }
 
     public Task CreateTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, string printerHostAddress, int portNumber, string protocol, CancellationToken cancellationToken = default)
@@ -99,11 +102,12 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
 
     public Task<bool> PrinterQueueExistsAsync(string computerName, NetworkCredential credential, string printerDisplayName, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() =>
+        var filter = WmiPrinterOperationsCore.EscapePs($"Name='{WmiPrinterOperationsCore.EscapeWql(printerDisplayName)}'");
+        return ExecuteQueryAsync(computerName, credential, () => Task.Run(() =>
         {
             var scope = ConnectRemote(computerName, credential);
             return WmiPrinterOperationsCore.PrinterExists(scope, printerDisplayName);
-        }, cancellationToken);
+        }, cancellationToken).WaitAsync(cancellationToken), $"$queryResult = @(Get-CimInstance Win32_Printer -Filter '{filter}').Count -gt 0", cancellationToken);
     }
 
     public Task AddPrinterAsync(string computerName, NetworkCredential credential, string printerName, string driverName, string portName, CancellationToken cancellationToken = default)
@@ -233,7 +237,7 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
 
     public Task<IReadOnlyList<RemotePrinterQueueInfo>> ListPrinterQueuesAsync(string computerName, NetworkCredential credential, CancellationToken cancellationToken = default)
     {
-        return Task.Run<IReadOnlyList<RemotePrinterQueueInfo>>(() =>
+        return ExecuteQueryAsync(computerName, credential, () => Task.Run<IReadOnlyList<RemotePrinterQueueInfo>>(() =>
         {
             var scope = ConnectRemote(computerName, credential);
             var query = new ObjectQuery("SELECT Name, PortName FROM Win32_Printer");
@@ -252,7 +256,9 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
                 }
             }
             return list;
-        }, cancellationToken);
+        }, cancellationToken).WaitAsync(cancellationToken),
+            "$queryResult = @(Get-CimInstance Win32_Printer | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Name) } | Select-Object Name, PortName)",
+            cancellationToken);
     }
 
     public Task RemovePrinterQueueAsync(string computerName, NetworkCredential credential, string printerName, CancellationToken cancellationToken = default)
@@ -301,7 +307,8 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
 
     public Task<int> CountPrintersUsingPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() =>
+        var filter = WmiPrinterOperationsCore.EscapePs($"PortName='{WmiPrinterOperationsCore.EscapeWql(portName)}'");
+        return ExecuteQueryAsync(computerName, credential, () => Task.Run(() =>
         {
             var scope = ConnectRemote(computerName, credential);
             var query = new ObjectQuery($"SELECT Name FROM Win32_Printer WHERE PortName='{WmiPrinterOperationsCore.EscapeWql(portName)}'");
@@ -312,7 +319,7 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
                 using (mo) { count++; }
             }
             return count;
-        }, cancellationToken);
+        }, cancellationToken).WaitAsync(cancellationToken), $"$queryResult = @(Get-CimInstance Win32_Printer -Filter '{filter}').Count", cancellationToken);
     }
 
     public Task RemoveTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, CancellationToken cancellationToken = default)
@@ -387,13 +394,6 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
                 installLogLocal,
                 skipRunAsBlock: runElevated);
 
-            async Task ReadAndReportInstallLogAsync()
-            {
-                var installOutput = await _stager.ReadLogAsync(computerName, credential, paths, "install.log", cancellationToken).ConfigureAwait(false);
-                foreach (var line in WmiPrinterOperationsCore.SplitLines(installOutput))
-                    log?.Report(line);
-            }
-
             if (!runElevated)
             {
                 try
@@ -403,8 +403,6 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
 
                     log?.Report($"Launching install script on {computerName} via WMI (timeout {InstallTimeout.TotalMinutes:F0}min)...");
                     var runResult = await _processRunner.RunAsync(computerName, credential, runCmd, InstallTimeout, cancellationToken).ConfigureAwait(false);
-                    await ReadAndReportInstallLogAsync().ConfigureAwait(false);
-
                     if (runResult.ReturnValue != 0)
                     {
                         log?.Report($"Execução direta via WMI retornou código {runResult.ReturnValue} em {computerName}. Acionando execução elevada via tarefa agendada...");
@@ -448,33 +446,78 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
 
             if (runElevated)
             {
-                try
-                {
-                    await _elevatedRunner.RunElevatedScriptAsync(
-                        computerName,
-                        credential,
-                        scriptContent,
-                        InstallTimeout,
-                        log,
-                        cancellationToken).ConfigureAwait(false);
-                }
-                finally
-                {
-                    // Capture o diagnóstico antes da limpeza, inclusive quando a tarefa falha.
-                    try
-                    {
-                        await ReadAndReportInstallLogAsync().ConfigureAwait(false);
-                    }
-                    catch (Exception ex) when (ex is not OperationCanceledException)
-                    {
-                        log?.Report($"Nao foi possivel ler install.log de {computerName}: {ex.Message}");
-                    }
-                }
+                await _elevatedRunner.RunElevatedScriptAsync(
+                    computerName,
+                    credential,
+                    scriptContent,
+                    InstallTimeout,
+                    log,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
         finally
         {
+            // O token de deploy pode estar cancelado. Preserve a saída com um limite
+            // independente, sem substituir a exceção original ou adiar a limpeza indefinidamente.
+            if (log is not null)
+            {
+                using var readBudget = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                try
+                {
+                    var installOutput = await _stager.ReadLogAsync(computerName, credential, paths, "install.log", readBudget.Token)
+                        .WaitAsync(readBudget.Token).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(installOutput))
+                    {
+                        log.Report($"Diagnóstico final do instalador em {computerName} (antes da limpeza):");
+                        log.Report(installOutput);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Report($"Não foi possível ler install.log de {computerName}: {DiagnosticLogFormatter.FormatException(ex)}");
+                }
+            }
             await _stager.CleanupAsync(computerName, credential, paths, CancellationToken.None).ConfigureAwait(false);
+        }
+    }
+
+    internal async Task<T> ExecuteQueryAsync<T>(
+        string computerName, NetworkCredential credential, Func<Task<T>> direct,
+        string queryBody, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Exception? directError = null;
+        if (!_sessionFactory.RequiresElevatedExecution(computerName))
+        {
+            try
+            {
+                return await direct().ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException && AccessDeniedDetector.IsAccessDenied(ex))
+            {
+                directError = ex;
+            }
+        }
+
+        try
+        {
+            var json = await _elevatedRunner.RunElevatedQueryAsync(
+                computerName, credential, queryBody, InstallTimeout, cancellationToken).ConfigureAwait(false);
+            // Dados ausentes/inválidos não podem ser interpretados como uma lista vazia:
+            // isso permitiria criar filas duplicadas ou remover portas ainda em uso.
+            var result = JsonSerializer.Deserialize<T>(json.Trim().TrimStart('\uFEFF'))
+                ?? throw new InvalidOperationException("Consulta remota retornou dados nulos.");
+            _sessionFactory.RememberElevatedSession(computerName);
+            return result;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            var wmiDetail = directError is null ? "Sessão por tarefa agendada." :
+                $"WMI/DCOM: {DiagnosticLogFormatter.FormatException(directError)}.";
+            throw new InvalidOperationException(
+                $"Não foi possível consultar impressoras em {computerName}. {wmiDetail} " +
+                $"Alternativa via ADMIN$/Agendador: {DiagnosticLogFormatter.FormatException(ex)}. " +
+                RemoteAuthenticationDiagnostics.GetGuidance(ex), ex);
         }
     }
 

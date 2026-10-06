@@ -22,12 +22,15 @@ public static class LogReportFormatter
         IEnumerable<(string ComputerName, string PrinterQueueName, string State, string? Message)>? targets,
         string? logText,
         DateTime? exportTime = null,
-        string? diagnosticLogPath = null)
+        string? diagnosticLogPath = null,
+        string? diagnosticContext = null,
+        string? diagnosticLogText = null)
     {
         var timestamp = (exportTime ?? DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss");
         var sb = new StringBuilder();
 
         AppendHeader(sb, "Deploy de Impressoras", timestamp, operatorIdentity, localMachineName, diagnosticLogPath);
+        AppendDiagnostics(sb, diagnosticContext, diagnosticLogText);
 
         sb.AppendLine(SeparatorMinor);
         sb.AppendLine("RESUMO DOS ALVOS");
@@ -64,12 +67,15 @@ public static class LogReportFormatter
         string? reviewSummary,
         string? logText,
         DateTime? exportTime = null,
-        string? diagnosticLogPath = null)
+        string? diagnosticLogPath = null,
+        string? diagnosticContext = null,
+        string? diagnosticLogText = null)
     {
         var timestamp = (exportTime ?? DateTime.Now).ToString("yyyy-MM-dd HH:mm:ss");
         var sb = new StringBuilder();
 
         AppendHeader(sb, "Controle e Remoção de Impressoras", timestamp, operatorIdentity, localMachineName, diagnosticLogPath);
+        AppendDiagnostics(sb, diagnosticContext, diagnosticLogText);
 
         sb.AppendLine(SeparatorMinor);
         sb.AppendLine("PLANO / RESUMO DE AÇÕES");
@@ -152,5 +158,22 @@ public static class LogReportFormatter
         sb.AppendLine(SeparatorMajor);
         sb.AppendLine("Fim do Relatório");
         sb.AppendLine(SeparatorMajor);
+    }
+
+    private static void AppendDiagnostics(StringBuilder sb, string? context, string? sessionLog)
+    {
+        foreach (var (title, content) in new[]
+        {
+            ("CONTEXTO DE DIAGNÓSTICO DA EXECUÇÃO", context),
+            ("LOG TÉCNICO DA SESSÃO DO APLICATIVO", sessionLog)
+        })
+        {
+            if (string.IsNullOrWhiteSpace(content)) continue;
+            sb.AppendLine(SeparatorMinor);
+            sb.AppendLine(title);
+            sb.AppendLine(SeparatorMinor);
+            sb.AppendLine(content.TrimEnd());
+            sb.AppendLine();
+        }
     }
 }

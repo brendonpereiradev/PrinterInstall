@@ -11,6 +11,7 @@
         ResizeMode="NoResize"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
+        TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}"
         UseLayoutRounding="True">
     <ui:FluentWindow.Resources>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>

@@ -6,6 +6,49 @@ namespace PrinterInstall.Core.Tests.Remote;
 
 public class ElevatedRemoteProcessRunnerTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelAfterTaskStarts_EndsTaskBeforeDeletingIt(bool useRpc)
+    {
+        using var cts = new CancellationTokenSource();
+        var wmi = new Mock<IRemoteWmiProcessRunner>();
+        var rpc = new Mock<ISchtasksFallbackRunner>();
+        var stager = new Mock<IRemoteDriverFileStager>();
+        var actions = new List<string>();
+        var messages = new List<string>();
+        wmi.Setup(x => x.RunAsync(Host, Cred, It.IsAny<string>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .Returns<string, NetworkCredential, string, TimeSpan, CancellationToken>((_, _, cmd, _, _) =>
+            {
+                actions.Add(cmd);
+                if (!useRpc && cmd.Contains("/Run")) cts.Cancel();
+                return Task.FromResult(new RemoteProcessResult(useRpc ? 5u : 0u, 123, false));
+            });
+        rpc.Setup(x => x.RunAsync(It.IsAny<string>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .Returns<string, TimeSpan, CancellationToken>((args, _, _) =>
+            {
+                actions.Add(args);
+                if (args.Contains("/Run")) cts.Cancel();
+                return Task.FromResult(new LocalProcessOutput(new RemoteProcessResult(0, 123, false), "", ""));
+            });
+        stager.Setup(x => x.WriteTextFileAsync(Host, Cred, It.IsAny<RemoteDriverStagingPaths>(), "task.ps1", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        stager.Setup(x => x.ReadLogAsync(Host, Cred, It.IsAny<RemoteDriverStagingPaths>(), "task.log", It.Is<CancellationToken>(t => !t.IsCancellationRequested)))
+            .Callback(() => actions.Add("read-transcript")).ReturnsAsync("Driver step in progress");
+        stager.Setup(x => x.CleanupAsync(Host, Cred, It.IsAny<RemoteDriverStagingPaths>(), It.IsAny<CancellationToken>()))
+            .Callback(() => actions.Add("cleanup")).Returns(Task.CompletedTask);
+        var runner = new ElevatedRemoteProcessRunner(wmi.Object, stager.Object, rpc.Object);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runner.RunElevatedScriptAsync(
+            Host, Cred, RemoteElevatedScriptBuilder.WrapWithResultHandling("Write-Output 'test'"), TimeSpan.FromSeconds(20),
+            new PrinterInstall.Core.Tests.TestSupport.InlineProgress<string>(messages.Add), cts.Token));
+        var end = actions.FindIndex(a => a.Contains("/End"));
+        var delete = actions.FindIndex(a => a.Contains("/Delete"));
+        Assert.True(end >= 0 && delete > end, string.Join("\n", actions));
+        Assert.True(actions.IndexOf("read-transcript") > end && actions.IndexOf("read-transcript") < delete);
+        Assert.Contains("Driver step in progress", messages);
+        Assert.True(actions.IndexOf("cleanup") > delete);
+    }
+
     private static readonly NetworkCredential Cred = new("user", "pass", "DOMAIN");
     private const string Host = "remote-pc";
 

@@ -63,14 +63,14 @@ public class MainViewModelExportLogTests
     }
 
     [Fact]
-    public void CanExportLog_FalseWhenDeployIsRunningEvenIfLogHasContent()
+    public void CanExportLog_RemainsAvailableWhileDeployIsRunning()
     {
         var (sut, _) = CreateSut();
         sut.LogText = "[10:00:00] Evento";
         sut.IsDeployRunning = true;
 
-        Assert.False(sut.CanExportLog);
-        Assert.False(sut.ExportLogCommand.CanExecute(null));
+        Assert.True(sut.CanExportLog);
+        Assert.True(sut.ExportLogCommand.CanExecute(null));
     }
 
     [Fact]

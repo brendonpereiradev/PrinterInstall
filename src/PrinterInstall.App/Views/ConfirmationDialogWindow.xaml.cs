@@ -1,6 +1,7 @@
 using System.Windows;
-using System.Windows.Media;
+using System.Windows.Controls;
 using Wpf.Ui.Controls;
+using TextBlock = System.Windows.Controls.TextBlock;
 
 namespace PrinterInstall.App.Views;
 
@@ -30,9 +31,7 @@ public partial class ConfirmationDialogWindow : FluentWindow
 
         // Ícone de aviso (laranja/âmbar)
         IconGlyphText.Text = "\uE7BA"; // Warning icon
-        IconGlyphText.Foreground = new SolidColorBrush(Color.FromRgb(0xD3, 0x54, 0x00));
-        IconBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(0xFD, 0xF3, 0xE8));
-        IconBadgeBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF3, 0x9C, 0x12));
+        ApplyIconPalette("Warning");
     }
 
     public void ConfigureForPrinterIdentityBlock(
@@ -65,9 +64,7 @@ public partial class ConfirmationDialogWindow : FluentWindow
 
         // Ícone de troca/inversão e aviso (âmbar/laranja)
         IconGlyphText.Text = "\uE8AB"; // Switch / Swap icon
-        IconGlyphText.Foreground = new SolidColorBrush(Color.FromRgb(0xD3, 0x54, 0x00));
-        IconBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(0xFD, 0xF3, 0xE8));
-        IconBadgeBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF3, 0x9C, 0x12));
+        ApplyIconPalette("Warning");
     }
 
     public void ConfigureForNetworkTest(
@@ -88,9 +85,7 @@ public partial class ConfirmationDialogWindow : FluentWindow
 
         // Ícone de envio/informação (azul de destaque)
         IconGlyphText.Text = "\uE749"; // Send/Device icon or Info
-        IconGlyphText.Foreground = new SolidColorBrush(Color.FromRgb(0x1B, 0x3A, 0x5C));
-        IconBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(0xEB, 0xF5, 0xFB));
-        IconBadgeBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0x3D, 0x5A, 0x80));
+        ApplyIconPalette("Info");
     }
 
     public void ConfigureForSpoolerReset(
@@ -112,9 +107,7 @@ public partial class ConfirmationDialogWindow : FluentWindow
 
         // Ícone de manutenção (azul/ferramentas)
         IconGlyphText.Text = "\uE777";
-        IconGlyphText.Foreground = new SolidColorBrush(Color.FromRgb(0x0C, 0x4A, 0x8A));
-        IconBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(0xE5, 0xF2, 0xFF));
-        IconBadgeBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0x7A, 0xB6, 0xF0));
+        ApplyIconPalette("Info");
     }
 
     public void ConfigureForNoComputersAlert(
@@ -133,9 +126,14 @@ public partial class ConfirmationDialogWindow : FluentWindow
 
         // Ícone de aviso (laranja/âmbar)
         IconGlyphText.Text = "\uE7BA"; // Warning icon
-        IconGlyphText.Foreground = new SolidColorBrush(Color.FromRgb(0xD3, 0x54, 0x00));
-        IconBadgeBorder.Background = new SolidColorBrush(Color.FromRgb(0xFD, 0xF3, 0xE8));
-        IconBadgeBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF3, 0x9C, 0x12));
+        ApplyIconPalette("Warning");
+    }
+
+    private void ApplyIconPalette(string palette)
+    {
+        IconGlyphText.SetResourceReference(TextBlock.ForegroundProperty, $"AppBadge{palette}ForegroundBrush");
+        IconBadgeBorder.SetResourceReference(Border.BackgroundProperty, $"AppBadge{palette}BackgroundBrush");
+        IconBadgeBorder.SetResourceReference(Border.BorderBrushProperty, $"AppBadge{palette}BorderBrush");
     }
 
     protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)

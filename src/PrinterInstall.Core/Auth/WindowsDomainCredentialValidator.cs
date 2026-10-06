@@ -26,7 +26,7 @@ public sealed class WindowsDomainCredentialValidator : ILdapCredentialValidator
         if (string.IsNullOrWhiteSpace(credential.UserName) || credential.Password is null)
         {
             return Task.FromResult(LdapValidationResult.Failure(
-                LdapLoginErrorMessages.FromWin32Error(1326)));
+                LdapLoginErrorMessages.FromWin32Error(1326), LoginFailureKind.InvalidCredentials));
         }
 
         // 1. Tenta autenticação direta com o usuário fornecido
@@ -67,33 +67,29 @@ public sealed class WindowsDomainCredentialValidator : ILdapCredentialValidator
         }
 
         return Task.FromResult(LdapValidationResult.Failure(
-            LdapLoginErrorMessages.FromWin32Error(win32Error)));
+            $"LogonUser (Win32 {win32Error}): {LdapLoginErrorMessages.FromWin32Error(win32Error)}",
+            LdapLoginErrorMessages.KindFromWin32Error(win32Error)));
     }
 
     /// <summary>
-    /// LogonUser espera NetBIOS domain (LABORATORIO) ou UPN (user@domain.test com domain ".").
-    /// Nomes de domínio somente DNS falham com ERROR_LOGON_FAILURE (1326) mesmo com credenciais válidas se passados no campo de domínio.
+    /// LogonUser recebe domínio NetBIOS separado ou UPN com domínio nulo.
+    /// O host LDAP é apenas um fallback; não substitui o domínio da credencial.
     /// </summary>
-    internal static (string UserName, string Domain) ResolveLogonIdentity(
+    internal static (string UserName, string? Domain) ResolveLogonIdentity(
         string domainName,
         NetworkCredential credential)
     {
-        var rawUser = credential.UserName ?? string.Empty;
-        var (extractedUser, extractedDomain) = CredentialHelper.SplitDomainAndUser(rawUser, domainName);
-
-        var domain = !string.IsNullOrWhiteSpace(extractedDomain) ? extractedDomain.Trim() : domainName.Trim();
-        var userName = extractedUser.Trim();
-
-        if (domain.Contains('.', StringComparison.Ordinal))
-            return ($"{userName}@{domain}", ".");
-
-        return (userName, domain);
+        var domain = string.IsNullOrWhiteSpace(credential.Domain) ? domainName : credential.Domain;
+        var identity = CredentialHelper.FormatDomainUser(domain, credential.UserName);
+        if (identity.Contains('@'))
+            return (identity, null);
+        return CredentialHelper.SplitDomainAndUser(identity, domain);
     }
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LogonUserW")]
     private static extern bool LogonUser(
         string lpszUsername,
-        string lpszDomain,
+        string? lpszDomain,
         string lpszPassword,
         int dwLogonType,
         int dwLogonProvider,

@@ -31,6 +31,8 @@ public partial class MainViewModel : ObservableObject
     private readonly IThemeService? _themeService;
     private readonly IDiagnosticFileLogger? _diagnosticLogger;
     private CancellationTokenSource? _deployCts;
+    private readonly ILocalDiagnosticCollector? _diagnosticCollector;
+    private string _diagnosticContext = "";
 
     public MainViewModel(
         ISessionContext session,
@@ -42,7 +44,8 @@ public partial class MainViewModel : ObservableObject
         IDeploymentNotificationService? notificationService = null,
         IConfirmationDialogService? dialogService = null,
         IThemeService? themeService = null,
-        IDiagnosticFileLogger? diagnosticLogger = null)
+        IDiagnosticFileLogger? diagnosticLogger = null,
+        ILocalDiagnosticCollector? diagnosticCollector = null)
     {
         _session = session;
         _orchestrator = orchestrator;
@@ -55,6 +58,7 @@ public partial class MainViewModel : ObservableObject
         _dialogService = dialogService ?? new ConfirmationDialogService();
         _themeService = themeService;
         _diagnosticLogger = diagnosticLogger;
+        _diagnosticCollector = diagnosticCollector;
 
         if (_themeService != null)
         {
@@ -144,7 +148,15 @@ public partial class MainViewModel : ObservableObject
         ExportLogCommand.NotifyCanExecuteChanged();
     }
 
-    public bool CanExportLog => !IsDeployRunning && Log.CanExport;
+    public bool CanExportLog => Log.CanExport;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CancelDeployButtonText))]
+    private bool _isCancellationRequested;
+
+    public string CancelDeployButtonText => IsCancellationRequested ? "Cancelando…" : "Cancelar";
+
+    partial void OnIsCancellationRequestedChanged(bool value) => CancelDeployCommand.NotifyCanExecuteChanged();
 
     public ObservableCollection<PrinterFormRowViewModel> PrinterRows { get; } = new();
 
@@ -192,6 +204,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanExportLog))]
     private void ExportLog()
     {
+        Log.SetSensitiveValue(_session.Credential?.Password);
         var operatorId = _session.Credential is not null
             ? (string.IsNullOrEmpty(_session.Credential.Domain)
                 ? _session.Credential.UserName
@@ -212,7 +225,9 @@ public partial class MainViewModel : ObservableObject
                 _localMachineIdentity.GetPrimaryLocalName(),
                 targetSummaries,
                 logText,
-                diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath));
+                diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath,
+                diagnosticContext: _diagnosticContext,
+                diagnosticLogText: _diagnosticLogger?.ReadSessionLog()));
     }
 
     [RelayCommand(CanExecute = nameof(CanDeploy))]
@@ -221,6 +236,7 @@ public partial class MainViewModel : ObservableObject
         LogText = "";
         Targets.Clear();
         LastSummaryText = "";
+        _diagnosticContext = "";
 
         var cred = _session.Credential;
         if (cred is null)
@@ -228,6 +244,7 @@ public partial class MainViewModel : ObservableObject
             Log.Append(UiStrings.Main_NotAuthenticated);
             return;
         }
+        Log.SetSensitiveValue(cred.Password);
 
         var rawNames = ComputerNameListParser.Parse(ComputersText);
         if (rawNames.Count == 0)
@@ -380,7 +397,20 @@ public partial class MainViewModel : ObservableObject
 
         var journal = new DeploymentRollbackJournal();
         _deployCts = new CancellationTokenSource();
+        var deployToken = _deployCts.Token;
+        IsCancellationRequested = false;
         IsDeployRunning = true;
+        var started = DateTimeOffset.Now;
+        var runId = Guid.NewGuid().ToString("N");
+        var plan = new StringBuilder();
+        plan.AppendLine($"Execução: {runId}; sessão do aplicativo: {_diagnosticLogger?.SessionId}; início: {started:O}");
+        plan.AppendLine($"Conta informada: {PrinterInstall.Core.Auth.CredentialHelper.BuildCredentialUserName(cred)}; teste de impressão: {request.PrintTestPage}");
+        foreach (var computer in validNames)
+            plan.AppendLine($"Destino: {computer}; caminho: {(_localMachineIdentity.IsLocalMachine(computer) ? "LOCAL" : "REMOTO (WMI/SMB)")}");
+        foreach (var printer in definitions)
+            plan.AppendLine($"Fila planejada: {printer.DisplayName}; fabricante: {printer.Brand}; endereço: {printer.PrinterHostAddress}; porta: {printer.PortNumber}; protocolo: {printer.Protocol}; etiqueta: {printer.GainschaLabelPreset}");
+        _diagnosticContext = plan.ToString();
+        Log.Append($"Início do deploy. Execução: {runId}.");
 
         var identityBlockReasons = new List<string>();
         var progress = new SynchronousProgress<DeploymentProgressEvent>(e =>
@@ -425,14 +455,21 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
-            await _orchestrator.RunAsync(request, journal, progress, _deployCts.Token, diagnosticProgress).ConfigureAwait(true);
+            var context = await Task.Run(() => _diagnosticCollector is null
+                ? Task.FromResult(LocalDiagnosticCollector.CaptureBasicContext())
+                : _diagnosticCollector.CollectAsync(deployToken), deployToken);
+            _diagnosticContext = plan.ToString() + context;
+            _diagnosticLogger?.LogDebug(_diagnosticContext, "DeployContext");
+            // APIs nativas síncronas nunca devem bloquear o Dispatcher e impedir o clique em Cancelar.
+            await Task.Run(() => _orchestrator.RunAsync(request, journal, progress, deployToken, diagnosticProgress), deployToken);
+            deployToken.ThrowIfCancellationRequested();
 
             LastSummaryText = BuildSummaryText();
             NotifyDeployCompletion();
         }
         catch (OperationCanceledException)
         {
-            Log.Append(UiStrings.Main_DeployCancelRequested);
+            Log.Append("Deploy interrompido. Verificando alterações desta execução.");
             OperationLog.RunOnUi(MarkIntermediateTargetsAsDeployCancelled);
 
             if (journal.HasRollbackWork)
@@ -448,11 +485,12 @@ public partial class MainViewModel : ObservableObject
                 });
                 try
                 {
-                    await _rollbackRunner.RunAsync(journal, cred, rbProgress, CancellationToken.None).ConfigureAwait(true);
+                    await Task.Run(() => _rollbackRunner.RunAsync(journal, cred, rbProgress, CancellationToken.None));
                     Log.Append(UiStrings.Main_DeployRollbackFinished);
                 }
                 catch (Exception ex)
                 {
+                    _diagnosticLogger?.LogError("Falha durante a reversão.", "MainDeploy", ex);
                     Log.Append(string.Format(UiStrings.Main_DeployRollbackErrorFormat, ex.Message));
                 }
             }
@@ -477,8 +515,17 @@ public partial class MainViewModel : ObservableObject
             LastSummaryText = BuildSummaryText();
             _notificationService.NotifyWarning();
         }
+        catch (Exception ex)
+        {
+            Log.Append("Falha inesperada no deploy: " + DiagnosticLogFormatter.FormatExceptionDetails(ex));
+            _diagnosticLogger?.LogError("Falha inesperada no deploy.", "MainDeploy", ex);
+            LastSummaryText = BuildSummaryText();
+            _notificationService.NotifyWarning();
+        }
         finally
         {
+            _diagnosticContext += $"\nFim da execução: {DateTimeOffset.Now:O}; duração: {(DateTimeOffset.Now - started).TotalSeconds:F1}s; cancelamento solicitado: {IsCancellationRequested}.\n";
+            Log.Append($"Fim do deploy. Execução: {runId}; duração: {(DateTimeOffset.Now - started).TotalSeconds:F1}s; cancelamento solicitado: {IsCancellationRequested}.");
             _deployCts?.Dispose();
             _deployCts = null;
             IsDeployRunning = false;
@@ -504,10 +551,15 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCancelDeploy))]
     private void CancelDeploy()
     {
-        _deployCts?.Cancel();
+        if (_deployCts is null || IsCancellationRequested) return;
+        IsCancellationRequested = true;
+        Log.Append(UiStrings.Main_DeployCancelRequested + " Encerrando a etapa atual; novas etapas não serão iniciadas.");
+        foreach (var row in Targets.Where(r => IsIntermediateDeployState(r.State)))
+            row.Message = "Cancelamento solicitado — aguardando encerramento";
+        _deployCts.Cancel();
     }
 
-    private bool CanCancelDeploy() => IsDeployRunning;
+    private bool CanCancelDeploy() => IsDeployRunning && !IsCancellationRequested;
 
     private void MarkIntermediateTargetsAsDeployCancelled()
     {
@@ -519,7 +571,8 @@ public partial class MainViewModel : ObservableObject
     }
 
     private static bool IsIntermediateDeployState(TargetMachineState s) =>
-        s is TargetMachineState.IdentifyingPrinter
+        s is TargetMachineState.Pending
+            or TargetMachineState.IdentifyingPrinter
             or TargetMachineState.ValidatingPrinter
             or TargetMachineState.ContactingRemote
             or TargetMachineState.ValidatingDriver

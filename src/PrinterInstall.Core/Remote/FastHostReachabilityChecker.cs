@@ -18,6 +18,7 @@ public sealed class FastHostReachabilityChecker : IFastHostReachabilityChecker
 
     public async Task<(bool IsReachable, string? ErrorDetail)> CheckReachabilityAsync(string host, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var trimmed = host.Trim();
         if (string.IsNullOrEmpty(trimmed))
             return (false, "Nome de computador vazio.");
@@ -61,6 +62,10 @@ public sealed class FastHostReachabilityChecker : IFastHostReachabilityChecker
 
             await client.ConnectAsync(host, port, cts.Token).ConfigureAwait(false);
             return client.Connected;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch
         {

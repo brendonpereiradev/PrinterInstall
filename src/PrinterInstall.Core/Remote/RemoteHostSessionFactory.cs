@@ -24,6 +24,7 @@ public sealed class RemoteHostSessionFactory
         CancellationToken cancellationToken = default)
     {
         var key = NormalizeHostKey(host);
+        cancellationToken.ThrowIfCancellationRequested();
         if (_cache.TryGetValue(key, out var cached))
             return cached;
 
@@ -32,28 +33,38 @@ public sealed class RemoteHostSessionFactory
 
         try
         {
-            using (SmbShareConnection.Open(trimmedHost, "IPC$", credential)) { }
-            using (SmbShareConnection.Open(trimmedHost, "ADMIN$", credential)) { }
+            using (await SmbShareConnection.OpenAsync(trimmedHost, "IPC$", credential, cancellationToken).ConfigureAwait(false)) { }
+            using (await SmbShareConnection.OpenAsync(trimmedHost, "ADMIN$", credential, cancellationToken).ConfigureAwait(false)) { }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new InvalidOperationException(
-                $"Não foi possível autenticar sessão SMB em {trimmedHost}. Verifique firewall (445) e permissões de admin.",
+                $"Não foi possível acessar IPC$/ADMIN$ em {trimmedHost} com a conta informada. " +
+                RemoteAuthenticationDiagnostics.GetGuidance(ex) + " " +
+                Logging.DiagnosticLogFormatter.FormatException(ex),
                 ex);
         }
 
         try
         {
-            var scope = WmiPrinterOperationsCore.CreateRemoteScope(trimmedHost, credential);
-            scope.Connect();
-            using var searcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT Name FROM Win32_PrinterDriver"));
-            foreach (ManagementObject mo in searcher.Get())
+            await Task.Run(() =>
             {
-                mo.Dispose();
-                break;
-            }
+                var scope = WmiPrinterOperationsCore.CreateRemoteScope(trimmedHost, credential);
+                scope.Connect();
+                using var searcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT Name FROM Win32_PrinterDriver"));
+                foreach (ManagementObject mo in searcher.Get())
+                {
+                    mo.Dispose();
+                    break;
+                }
+            }, cancellationToken).WaitAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException && AccessDeniedDetector.IsAccessDenied(ex))
+        {
+            log?.Report($"Acesso WMI/DCOM negado em {trimmedHost}; usando tarefa agendada com as credenciais informadas.");
+            return RememberElevatedSession(trimmedHost);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new InvalidOperationException(
                 $"WMI remoto indisponível em {trimmedHost} (RPC 135, firewall WMI-In).",
@@ -64,8 +75,11 @@ public sealed class RemoteHostSessionFactory
         var probeLogLocal = paths.LocalLogPath("probe.log");
         var probeCmd = $"cmd.exe /c \"{ElevationProbeCommand} > {probeLogLocal} 2>&1\"";
 
-        using (SmbShareConnection.Open(trimmedHost, "ADMIN$", credential))
+        using (await SmbShareConnection.OpenAsync(trimmedHost, "ADMIN$", credential, cancellationToken).ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             Directory.CreateDirectory(paths.UncRoot);
+        }
 
         var requiresElevated = false;
         try
@@ -76,7 +90,7 @@ public sealed class RemoteHostSessionFactory
             if (probeResult.ReturnValue == 0 && !probeResult.TimedOut)
             {
                 string probeText;
-                using (SmbShareConnection.Open(trimmedHost, "ADMIN$", credential))
+                using (await SmbShareConnection.OpenAsync(trimmedHost, "ADMIN$", credential, cancellationToken).ConfigureAwait(false))
                 {
                     var uncProbe = paths.UncLogPath("probe.log");
                     probeText = File.Exists(uncProbe) ? await File.ReadAllTextAsync(uncProbe, cancellationToken).ConfigureAwait(false) : string.Empty;
@@ -87,11 +101,15 @@ public sealed class RemoteHostSessionFactory
             }
             else
             {
-                using (SmbShareConnection.Open(trimmedHost, "ADMIN$", credential))
+                using (await SmbShareConnection.OpenAsync(trimmedHost, "ADMIN$", credential, cancellationToken).ConfigureAwait(false))
                 {
                     try { Directory.Delete(paths.UncRoot, recursive: true); } catch { /* best effort */ }
                 }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch
         {
@@ -109,6 +127,16 @@ public sealed class RemoteHostSessionFactory
     }
 
     public static string NormalizeHostKey(string host) => host.Trim().ToUpperInvariant();
+
+    internal bool RequiresElevatedExecution(string host) =>
+        _cache.TryGetValue(NormalizeHostKey(host), out var session) && session.RequiresElevatedExecution;
+
+    internal RemoteHostSession RememberElevatedSession(string host)
+    {
+        var session = _cache.GetOrAdd(NormalizeHostKey(host), _ => new RemoteHostSession(host.Trim(), true));
+        session.MarkRequiresElevatedExecution();
+        return session;
+    }
 
     public static bool ParseElevationProbeOutput(string output)
     {

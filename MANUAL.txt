@@ -3,7 +3,7 @@
                  Guia Pratico de Operacao e Suporte
 ================================================================================
 
-Versao da Aplicacao: 1.4.2
+Versao da Aplicacao: 1.5.0
 Publico: Tecnicos de suporte, helpdesk e analistas de campo
 Objetivo: Instalar, gerenciar e diagnosticar impressoras de rede e etiquetadoras
           em computadores locais e remotos.
@@ -262,14 +262,31 @@ aplicar a configuracao.
     de acordo com a tabela de medidas.
 
 [?] 4. Como interromper uma instalacao em andamento?
-    Procedimento: clique no botao "Cancelar". O sistema finaliza a etapa atual
-    e aciona a reversao automatica (Rollback) nas estacoes com instalacao incompleta.
+    Procedimento: clique uma vez no botao "Cancelar". Ele muda para "Cancelando..."
+    e registra o pedido imediatamente. O sistema interrompe as proximas etapas,
+    solicita o encerramento dos processos/tarefas temporarias e aciona a reversao
+    automatica (Rollback) das filas e portas registradas nesta execucao.
+    Uma chamada nativa do Windows ja em andamento pode precisar terminar antes
+    da reversao. Aguarde o resumo final; erros de encerramento aparecem no log.
 
 [?] 5. Onde ficam gravados os relatorios e arquivos de log?
     Os registros operacionais sao salvos na pasta:
     %LocalAppData%\PrinterInstall\Logs
-    Tambem e possivel salvar uma copia em outro diretorio utilizando o botao
-    "Exportar Logs".
+    O botao "Exportar Logs" salva um unico arquivo .txt com o resumo, historico,
+    contexto do Windows e log tecnico desta sessao do aplicativo. O arquivo inclui
+    usuario do processo, elevacao, dominio, rede, spooler, administradores locais,
+    drivers e filas existentes, alem dos erros e da saida capturada do instalador.
+    A senha informada ao programa e ocultada. A coleta apenas consulta o Windows.
+    A exportacao fica disponivel tambem durante a execucao ou o cancelamento.
+
+[?] 6. Como coletar um diagnostico diretamente no notebook com problema?
+    1. Copie o novo executavel para uma pasta local do notebook alvo.
+    2. Clique com o botao direito e selecione "Executar como administrador".
+    3. Autentique-se e clique em "Adicionar Este PC". Deixe somente esse notebook
+       na lista de computadores e configure as impressoras desejadas.
+    4. Execute o deploy e aguarde o resumo final, mesmo em caso de erro/cancelamento.
+    5. Clique em "Exportar Logs" antes de fechar o aplicativo e transfira o .txt
+       para o computador de suporte. Nao e necessario copiar a pasta de logs.
 
 
 ================================================================================

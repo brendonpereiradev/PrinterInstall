@@ -51,17 +51,36 @@ public sealed class SmbShareConnection : IDisposable
             Thread.Sleep(100);
 
             code = WNetAddConnection2(netResource, password, user, 0);
-
-            if (code == ErrorSessionCredentialConflict && IsResourceAccessible(cleanHost, cleanShare))
-            {
-                return new SmbShareConnection(remote);
-            }
         }
 
-        if (code != 0 && code != ErrorAlreadyAssigned)
-            throw new Win32Exception(code, $"SMB mount of {remote} failed (Win32 error {code}).");
+        // Uma conexão existente com outra identidade não valida a conta informada.
+        if (code != 0)
+            throw new Win32Exception(code,
+                $"Falha SMB em {remote} (Win32 {code}): {new Win32Exception(code).Message}");
 
         return new SmbShareConnection(remote);
+    }
+
+    public static async Task<SmbShareConnection> OpenAsync(
+        string host, string shareName, NetworkCredential credential, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var pending = Task.Run(() => Open(host, shareName, credential), cancellationToken);
+        try
+        {
+            return await pending.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // WNetAddConnection2 não recebe CancellationToken. Não espera a negociação,
+            // mas libera uma conexão que eventualmente termine depois do cancelamento.
+            _ = pending.ContinueWith(t =>
+            {
+                if (t.IsCompletedSuccessfully) t.Result.Dispose();
+                else if (t.IsFaulted) _ = t.Exception;
+            }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            throw;
+        }
     }
 
     private static void PurgeHostConnections(string host, string remote)
@@ -70,22 +89,6 @@ public sealed class SmbShareConnection : IDisposable
         _ = WNetCancelConnection2($@"\\{host}\IPC$", 0, true);
         _ = WNetCancelConnection2($@"\\{host}\ADMIN$", 0, true);
         _ = WNetCancelConnection2($@"\\{host}", 0, true);
-    }
-
-    private static bool IsResourceAccessible(string host, string share)
-    {
-        try
-        {
-            if (share.Equals("IPC$", StringComparison.OrdinalIgnoreCase))
-                return true;
-
-            var unc = $@"\\{host}\{share}";
-            return Directory.Exists(unc);
-        }
-        catch
-        {
-            return false;
-        }
     }
 
     public string RemoteRoot => _remoteName;

@@ -47,7 +47,8 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
 
         if (string.IsNullOrWhiteSpace(credential.UserName) || string.IsNullOrEmpty(credential.Password))
         {
-            return Task.FromResult(LdapValidationResult.Failure(LdapLoginErrorMessages.FromWin32Error(1326)));
+            return Task.FromResult(LdapValidationResult.Failure(
+                LdapLoginErrorMessages.FromWin32Error(1326), LoginFailureKind.InvalidCredentials));
         }
 
         var host = domainName.Trim();
@@ -60,6 +61,7 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
 
     private LdapValidationResult Validate(string host, NetworkCredential credential, CancellationToken cancellationToken)
     {
+        var failures = new List<LdapValidationResult>();
         bool Succeeded(Func<LdapValidationResult> attempt)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -67,6 +69,8 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
             // As APIs nativas não aceitam CancellationToken. Verifica também após cada
             // chamada para não iniciar contingências nem concluir uma sessão cancelada.
             cancellationToken.ThrowIfCancellationRequested();
+            if (!result.IsSuccess)
+                failures.Add(result);
             return result.IsSuccess;
         }
 
@@ -84,26 +88,29 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
         {
             // 1. Tenta LDAP 389 Negotiate (Kerberos / NTLM)
             if (Succeeded(() => _bind(host, cred, AuthType.Negotiate)))
-                return LdapValidationResult.Success();
+                return LdapValidationResult.Success(cred);
 
             // 2. Tenta LDAP 389 NTLM
             if (Succeeded(() => _bind(host, cred, AuthType.Ntlm)))
-                return LdapValidationResult.Success();
+                return LdapValidationResult.Success(cred);
 
             // 3. Tenta SMB IPC$ (Porta 445)
             if (Succeeded(() => _smbAuth(host, cred)))
-                return LdapValidationResult.Success();
+                return LdapValidationResult.Success(cred);
 
             // 4. Tenta LogonUser Win32 LSA local
             if (Succeeded(() => _logonUser(host, cred)))
-                return LdapValidationResult.Success();
+                return LdapValidationResult.Success(cred);
         }
 
-        // Em ambientes cross-domain (notebook em outro domínio ou sem trust com o KDC central),
-        // se a máquina local não puder validar diretamente via LDAP/LSA da estação de trabalho,
-        // permite o prosseguimento da sessão para que as credenciais sejam utilizadas diretamente
-        // durante o deploy nas máquinas/estações de destino.
-        return LdapValidationResult.Success();
+        // Não apresentar uma autenticação recusada ou indisponível como login válido.
+        var details = string.Join(Environment.NewLine, failures
+            .Select(f => f.ErrorMessage)
+            .Where(m => !string.IsNullOrWhiteSpace(m))
+            .Distinct(StringComparer.Ordinal));
+        return LdapValidationResult.Failure(
+            "Não foi possível validar as credenciais no domínio." + Environment.NewLine + details,
+            LdapLoginErrorMessages.SelectFailureKind(failures));
     }
 
     private static LdapValidationResult TryBind(string host, NetworkCredential credential, AuthType authType)
@@ -119,7 +126,7 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
             using var connection = new LdapConnection(identifier)
             {
                 AuthType = authType,
-                Credential = credential,
+                Credential = BuildBindCredential(credential),
                 SessionOptions =
                 {
                     ProtocolVersion = 3
@@ -131,7 +138,9 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
         }
         catch (Exception ex)
         {
-            return LdapValidationResult.Failure(LdapLoginErrorMessages.FromException(ex));
+            return LdapValidationResult.Failure(
+                $"LDAP ({authType}): {LdapLoginErrorMessages.FromException(ex)}{Environment.NewLine}{ex}",
+                LdapLoginErrorMessages.KindFromException(ex));
         }
     }
 
@@ -144,8 +153,17 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
         }
         catch (Exception ex)
         {
-            return LdapValidationResult.Failure(ex.Message);
+            return LdapValidationResult.Failure(ex.Message, LdapLoginErrorMessages.KindFromException(ex));
         }
+    }
+
+    internal static NetworkCredential BuildBindCredential(NetworkCredential credential)
+    {
+        var identity = CredentialHelper.BuildCredentialUserName(credential);
+        if (identity.Contains('@'))
+            return new NetworkCredential(identity, credential.Password);
+        var (user, domain) = CredentialHelper.SplitDomainAndUser(identity);
+        return new NetworkCredential(user, credential.Password, domain);
     }
 
     private static LdapValidationResult TryLogonUser(string host, NetworkCredential credential)
@@ -161,13 +179,15 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
         }
 
         int win32Error = Marshal.GetLastWin32Error();
-        return LdapValidationResult.Failure(LdapLoginErrorMessages.FromWin32Error(win32Error));
+        return LdapValidationResult.Failure(
+            $"LogonUser (Win32 {win32Error}): {LdapLoginErrorMessages.FromWin32Error(win32Error)}",
+            LdapLoginErrorMessages.KindFromWin32Error(win32Error));
     }
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LogonUserW")]
     private static extern bool LogonUser(
         string lpszUsername,
-        string lpszDomain,
+        string? lpszDomain,
         string lpszPassword,
         int dwLogonType,
         int dwLogonProvider,

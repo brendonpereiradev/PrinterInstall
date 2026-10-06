@@ -64,7 +64,7 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
             }
 
             return (IReadOnlyList<string>)list;
-        }, cancellationToken);
+        }, cancellationToken).WaitAsync(cancellationToken);
     }
 
     public Task CreateTcpPrinterPortAsync(string computerName, NetworkCredential credential, string portName, string printerHostAddress, int portNumber, string protocol, CancellationToken cancellationToken = default)
@@ -97,7 +97,7 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
         {
             var scope = WmiPrinterOperationsCore.CreateLocalScope();
             return WmiPrinterOperationsCore.PrinterExists(scope, printerDisplayName);
-        }, cancellationToken);
+        }, cancellationToken).WaitAsync(cancellationToken);
     }
 
     public Task AddPrinterAsync(string computerName, NetworkCredential credential, string printerName, string driverName, string portName, CancellationToken cancellationToken = default)
@@ -342,6 +342,7 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
 
     public async Task InstallPrinterDriverAsync(string computerName, NetworkCredential credential, LocalDriverPackage package, IProgress<string>? log, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var stagingRoot = Path.Combine(Path.GetTempPath(), "PrinterInstall", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(stagingRoot);
 
@@ -362,9 +363,6 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
 
             var runResult = await LocalProcessRunner.RunAsync(runCmd, InstallTimeout, cancellationToken).ConfigureAwait(false);
             var installOutput = File.Exists(installLogLocal) ? File.ReadAllText(installLogLocal) : string.Empty;
-
-            foreach (var line in WmiPrinterOperationsCore.SplitLines(installOutput))
-                log?.Report(line);
 
             if (runResult.TimedOut)
                 throw new TimeoutException($"Install script timed out locally after {InstallTimeout}.");
@@ -387,6 +385,16 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
         }
         finally
         {
+            try
+            {
+                var lastLog = Path.Combine(stagingRoot, "install.log");
+                if (File.Exists(lastLog))
+                {
+                    log?.Report("Diagnóstico final do instalador local (antes da limpeza):");
+                    log?.Report(RemoteStagingLogReader.ReadText(lastLog));
+                }
+            }
+            catch (Exception ex) { log?.Report("Falha ao ler o diagnóstico local: " + DiagnosticLogFormatter.FormatException(ex)); }
             TryDeleteDirectory(stagingRoot);
         }
     }

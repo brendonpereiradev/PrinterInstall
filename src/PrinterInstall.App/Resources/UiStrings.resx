@@ -24,8 +24,36 @@
   <data name="Main_RollbackPreparingOnHost" xml:space="preserve"><value>Preparando reversão</value></data>
   <data name="Main_SummaryRolledBackFormat" xml:space="preserve"><value>Revertido(s) nesta execução: {0}</value></data>
   <data name="Main_SummaryDeployCancelledFormat" xml:space="preserve"><value>Interrompido(s) após cancelamento (sem reversão ou antes da reversão): {0}</value></data>
-  <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>O nome de usuário é obrigatório.</value></data>
-  <data name="Login_Validation_DomainRequired" xml:space="preserve"><value>Configure o domínio em Configurações ou informe usuário@domínio. Para DOMINIO\usuário, configure também o domínio DNS ou o servidor LDAP.</value></data>
+  <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>Informe seu usuário de rede.</value></data>
+  <data name="Login_Validation_PasswordRequired" xml:space="preserve"><value>Informe sua senha.</value></data>
+  <data name="Login_Validation_DomainTitle" xml:space="preserve"><value>Configure o domínio para entrar.</value></data>
+  <data name="Login_Validation_DomainRequired" xml:space="preserve"><value>Informe o domínio nas Configurações ou entre com usuário@domínio.</value></data>
+  <data name="Login_Error_Unknown_Title" xml:space="preserve"><value>Não foi possível entrar.</value></data>
+  <data name="Login_Error_Unknown_Guidance" xml:space="preserve"><value>Tente novamente. Se o problema continuar, contate o suporte de TI.</value></data>
+  <data name="Login_Error_InvalidCredentials_Title" xml:space="preserve"><value>Usuário ou senha incorretos.</value></data>
+  <data name="Login_Error_InvalidCredentials_Guidance" xml:space="preserve"><value>Confira os dados e tente novamente.</value></data>
+  <data name="Login_Error_NetworkUnavailable_Title" xml:space="preserve"><value>Não foi possível conectar ao domínio.</value></data>
+  <data name="Login_Error_NetworkUnavailable_Guidance" xml:space="preserve"><value>Verifique sua conexão com a rede da empresa ou a VPN e tente novamente.</value></data>
+  <data name="Login_Error_DomainNotFound_Title" xml:space="preserve"><value>O domínio não foi encontrado.</value></data>
+  <data name="Login_Error_DomainNotFound_Guidance" xml:space="preserve"><value>Confira o domínio nas Configurações e sua conexão com a rede da empresa.</value></data>
+  <data name="Login_Error_Timeout_Title" xml:space="preserve"><value>O domínio demorou para responder.</value></data>
+  <data name="Login_Error_Timeout_Guidance" xml:space="preserve"><value>Verifique a rede ou a VPN e tente novamente.</value></data>
+  <data name="Login_Error_AccountLocked_Title" xml:space="preserve"><value>Sua conta está bloqueada.</value></data>
+  <data name="Login_Error_AccountLocked_Guidance" xml:space="preserve"><value>Contate o suporte de TI para desbloquear sua conta.</value></data>
+  <data name="Login_Error_AccountDisabled_Title" xml:space="preserve"><value>Sua conta está desabilitada.</value></data>
+  <data name="Login_Error_AccountDisabled_Guidance" xml:space="preserve"><value>Contate o suporte de TI para verificar seu acesso.</value></data>
+  <data name="Login_Error_AccountExpired_Title" xml:space="preserve"><value>Sua conta expirou.</value></data>
+  <data name="Login_Error_AccountExpired_Guidance" xml:space="preserve"><value>Contate o suporte de TI para renovar seu acesso.</value></data>
+  <data name="Login_Error_PasswordExpired_Title" xml:space="preserve"><value>Sua senha expirou.</value></data>
+  <data name="Login_Error_PasswordExpired_Guidance" xml:space="preserve"><value>Altere sua senha de rede e tente novamente.</value></data>
+  <data name="Login_Error_PasswordMustChange_Title" xml:space="preserve"><value>Você precisa alterar sua senha.</value></data>
+  <data name="Login_Error_PasswordMustChange_Guidance" xml:space="preserve"><value>Altere sua senha de rede antes de tentar entrar novamente.</value></data>
+  <data name="Login_Error_AccountRestricted_Title" xml:space="preserve"><value>Sua conta tem uma restrição de acesso.</value></data>
+  <data name="Login_Error_AccountRestricted_Guidance" xml:space="preserve"><value>Contate o suporte de TI para verificar as regras de acesso.</value></data>
+  <data name="Login_Error_AccessDenied_Title" xml:space="preserve"><value>O acesso ao domínio foi negado.</value></data>
+  <data name="Login_Error_AccessDenied_Guidance" xml:space="preserve"><value>Contate o suporte de TI para verificar as permissões da sua conta.</value></data>
+  <data name="Login_Error_UnsupportedAuthentication_Title" xml:space="preserve"><value>Não foi possível usar a autenticação do domínio.</value></data>
+  <data name="Login_Error_UnsupportedAuthentication_Guidance" xml:space="preserve"><value>Contate o suporte de TI para verificar a configuração de autenticação.</value></data>
   <data name="Removal_NotAuthenticated" xml:space="preserve"><value>Não autenticado.</value></data>
   <data name="Removal_Validation_ComputersRequired" xml:space="preserve"><value>Informe pelo menos um nome de computador.</value></data>
   <data name="Removal_NoPrintersSelected" xml:space="preserve"><value>Nenhuma ação (remoção ou renomeação) selecionada; nada a fazer.</value></data>

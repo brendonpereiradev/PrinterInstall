@@ -118,7 +118,8 @@ public class LoginViewModelResponsivenessTests
             else
             {
                 Assert.False((await loginTask).Success);
-                Assert.Equal("Authentication failed.", sut.ErrorMessage);
+                Assert.Equal("Não foi possível entrar.", sut.ErrorMessage);
+                Assert.Equal("Authentication failed.", sut.ErrorDetails);
             }
 
             Assert.False(sut.IsAuthenticating);

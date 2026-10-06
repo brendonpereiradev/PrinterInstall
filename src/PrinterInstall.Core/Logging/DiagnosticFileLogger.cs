@@ -13,6 +13,20 @@ public sealed class DiagnosticFileLogger : IDiagnosticFileLogger
     private readonly string _logDirectory;
     private readonly Func<DateTime> _timeProvider;
     private bool _headerWritten;
+    private readonly StringBuilder _sessionLog = new();
+    private readonly HashSet<string> _sensitiveValues = new(StringComparer.Ordinal);
+    public string SessionId { get; } = Guid.NewGuid().ToString("N");
+
+    public string ReadSessionLog()
+    {
+        lock (_syncRoot) return _sessionLog.ToString();
+    }
+
+    public void RegisterSensitiveValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return;
+        lock (_syncRoot) _sensitiveValues.Add(value);
+    }
 
     public string LogDirectory => _logDirectory;
 
@@ -44,9 +58,6 @@ public sealed class DiagnosticFileLogger : IDiagnosticFileLogger
         {
             try
             {
-                EnsureDirectoryExists();
-                EnsureHeaderWritten();
-
                 var filePath = CurrentLogFilePath;
                 var now = _timeProvider();
                 var catPrefix = !string.IsNullOrWhiteSpace(category) ? $"[{category}] " : string.Empty;
@@ -64,7 +75,14 @@ public sealed class DiagnosticFileLogger : IDiagnosticFileLogger
 
                 sb.AppendLine();
 
-                File.AppendAllText(filePath, sb.ToString(), Encoding.UTF8);
+                var entry = sb.ToString();
+                foreach (var value in _sensitiveValues)
+                    entry = entry.Replace(value, "[SENHA OMITIDA]", StringComparison.Ordinal);
+                _sessionLog.Append(entry);
+
+                EnsureDirectoryExists();
+                EnsureHeaderWritten();
+                File.AppendAllText(filePath, entry, Encoding.UTF8);
             }
             catch
             {
@@ -136,6 +154,7 @@ public sealed class DiagnosticFileLogger : IDiagnosticFileLogger
             header.AppendLine("================================================================================");
             header.AppendLine($"PrinterInstall — Sessão de Diagnóstico de Depuração");
             header.AppendLine($"Iniciado em: {_timeProvider():yyyy-MM-dd HH:mm:ss}");
+            header.AppendLine($"Sessão do aplicativo: {SessionId}");
             header.AppendLine($"Sistema Operacional: {Environment.OSVersion} (.NET {Environment.Version})");
             header.AppendLine($"Máquina Local: {Environment.MachineName}");
             header.AppendLine($"Usuário do Processo: {Environment.UserDomainName}\\{Environment.UserName}");

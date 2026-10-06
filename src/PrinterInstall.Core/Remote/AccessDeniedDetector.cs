@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Management;
 
 namespace PrinterInstall.Core.Remote;
@@ -11,6 +12,9 @@ public static class AccessDeniedDetector
         for (var current = ex; current is not null; current = current.InnerException)
         {
             if (current is UnauthorizedAccessException)
+                return true;
+
+            if (current is Win32Exception { NativeErrorCode: 5 })
                 return true;
 
             if (current is ManagementException mgmt &&

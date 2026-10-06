@@ -20,6 +20,7 @@ public static class LocalProcessRunner
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(executablePath);
+        cancellationToken.ThrowIfCancellationRequested();
 
         using var process = new Process { StartInfo = CreateExecutableStartInfo(executablePath, arguments) };
         if (!process.Start())
@@ -30,6 +31,7 @@ public static class LocalProcessRunner
 
     public static async Task<LocalProcessOutput> RunWithOutputAsync(string commandLine, TimeSpan timeout, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         using var process = new Process { StartInfo = CreateStartInfo(commandLine) };
         if (!process.Start())
             return new LocalProcessOutput(new RemoteProcessResult(1, null, TimedOut: false), "", "");
@@ -82,7 +84,11 @@ public static class LocalProcessRunner
         catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
         {
             TryKill(process);
-            return new LocalProcessOutput(new RemoteProcessResult(0, pid, TimedOut: true), "", "Timed out.");
+            try { await Task.WhenAll(stdoutTask, stderrTask).WaitAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false); }
+            catch { }
+            return new LocalProcessOutput(new RemoteProcessResult(0, pid, TimedOut: true),
+                stdoutTask.IsCompletedSuccessfully ? stdoutTask.Result : "",
+                (stderrTask.IsCompletedSuccessfully ? stderrTask.Result : "") + "\nTimed out.");
         }
     }
 

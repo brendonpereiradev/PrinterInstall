@@ -145,9 +145,9 @@ public partial class RemovalWizardViewModel : ObservableObject
     public string PingBadgeIconForeground => (PingStatus, IsCurrentDarkTheme()) switch
     {
         (ComputerPingStatus.Checking, true) => "#FFFBBF24",
-        (ComputerPingStatus.Checking, false) => "#FFCA8A04",
+        (ComputerPingStatus.Checking, false) => "#FF8A5A00",
         (ComputerPingStatus.Online, true) => "#FF4ADE80",
-        (ComputerPingStatus.Online, false) => "#FF16A34A",
+        (ComputerPingStatus.Online, false) => "#FF1F6B35",
         (ComputerPingStatus.Offline, true) => "#FFF87171",
         (ComputerPingStatus.Offline, false) => "#FFDC2626",
         _ => "Transparent"
@@ -741,6 +741,7 @@ public partial class RemovalWizardViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanExportLog))]
     private void ExportLog()
     {
+        Log.SetSensitiveValue(_session.Credential?.Password);
         var operatorId = _session.Credential is not null
             ? (string.IsNullOrEmpty(_session.Credential.Domain)
                 ? _session.Credential.UserName
@@ -754,7 +755,9 @@ public partial class RemovalWizardViewModel : ObservableObject
                 Environment.MachineName,
                 ReviewSummary,
                 logText,
-                diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath));
+                diagnosticLogPath: _diagnosticLogger?.CurrentLogFilePath,
+                diagnosticContext: LocalDiagnosticCollector.CaptureBasicContext(),
+                diagnosticLogText: _diagnosticLogger?.ReadSessionLog()));
     }
 
     [RelayCommand]

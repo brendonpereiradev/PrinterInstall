@@ -38,6 +38,8 @@ public class UiStrings
     public static string Main_SummaryRolledBackFormat => ResourceManager.GetString(nameof(Main_SummaryRolledBackFormat), ResourceCulture)!;
     public static string Main_SummaryDeployCancelledFormat => ResourceManager.GetString(nameof(Main_SummaryDeployCancelledFormat), ResourceCulture)!;
     public static string Login_Validation_DomainUserRequired => ResourceManager.GetString(nameof(Login_Validation_DomainUserRequired), ResourceCulture)!;
+    public static string Login_Validation_PasswordRequired => ResourceManager.GetString(nameof(Login_Validation_PasswordRequired), ResourceCulture)!;
+    public static string Login_Validation_DomainTitle => ResourceManager.GetString(nameof(Login_Validation_DomainTitle), ResourceCulture)!;
     public static string Login_Validation_DomainRequired => ResourceManager.GetString(nameof(Login_Validation_DomainRequired), ResourceCulture)!;
     public static string Removal_NotAuthenticated => ResourceManager.GetString(nameof(Removal_NotAuthenticated), ResourceCulture)!;
     public static string Removal_Validation_ComputersRequired => ResourceManager.GetString(nameof(Removal_Validation_ComputersRequired), ResourceCulture)!;

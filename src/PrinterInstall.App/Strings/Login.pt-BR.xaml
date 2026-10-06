@@ -15,4 +15,6 @@
   <sys:String x:Key="Login_SettingsToolTip">Configurações de domínio e rede</sys:String>
   <sys:String x:Key="Login_ShowPasswordToolTip">Mostrar senha</sys:String>
   <sys:String x:Key="Login_HidePasswordToolTip">Ocultar senha</sys:String>
+  <sys:String x:Key="Login_ShowErrorDetails">Ver detalhes técnicos</sys:String>
+  <sys:String x:Key="Login_HideErrorDetails">Ocultar detalhes técnicos</sys:String>
 </ResourceDictionary>

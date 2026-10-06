@@ -15,7 +15,8 @@
         MinHeight="540" MinWidth="840"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
-        WindowBackdropType="Mica">
+        WindowBackdropType="Mica"
+        TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}">
     <ui:FluentWindow.Resources>
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
@@ -24,9 +25,9 @@
 
         <!-- Pincéis para neutralizar seleção azul padrão do WPF -->
         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
-        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{DynamicResource AppTextPrimaryBrush}"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{DynamicResource AppTextPrimaryColor}"/>
         <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
-        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource AppTextPrimaryBrush}"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource AppTextPrimaryColor}"/>
 
         <Style x:Key="CardStyle" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource AppSurfaceCardBrush}"/>
@@ -215,7 +216,7 @@
                            FontWeight="SemiBold"
                            MinWidth="120"
                            Padding="20,8"/>
-                <ui:Button Content="{DynamicResource Main_CancelDeployButton}"
+                <ui:Button Content="{Binding CancelDeployButtonText}"
                            Icon="{ui:SymbolIcon Dismiss24}"
                            Command="{Binding CancelDeployCommand}"
                            Visibility="{Binding IsDeployRunning, Converter={StaticResource BoolToVis}}"

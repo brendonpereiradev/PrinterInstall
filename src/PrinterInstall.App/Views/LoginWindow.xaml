@@ -7,11 +7,14 @@
         xmlns:appControls="clr-namespace:PrinterInstall.App.Controls"
         Title="{DynamicResource Login_WindowTitle}"
         Icon="pack://application:,,,/Assets/app.ico"
-        Height="480" Width="400"
+        Width="400" MinHeight="480"
+        SizeToContent="Height"
+        MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height}"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
+        TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
 
@@ -98,15 +101,19 @@
                                Padding="10,6"
                                ToolTip="{DynamicResource Login_SettingsToolTip}"
                                Click="Settings_OnClick">
-                        <ui:SymbolIcon Symbol="Settings24" FontSize="16"/>
+                        <ui:SymbolIcon Symbol="Settings24" FontSize="16" Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                     </ui:Button>
                 </StackPanel>
             </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
 
-        <StackPanel Grid.Row="1"
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalContentAlignment="Center">
+        <StackPanel
                     VerticalAlignment="Center"
-                    Margin="36,0,36,24">
+                    Margin="36,16,36,24">
 
             <TextBlock Text="{DynamicResource Login_Header}"
                        FontSize="22"
@@ -189,7 +196,7 @@
                                 </TextBlock.Style>
                             </TextBlock>
                         </ui:Button.ToolTip>
-                        <ui:SymbolIcon FontSize="16">
+                        <ui:SymbolIcon FontSize="16" Foreground="{DynamicResource AppTextPrimaryBrush}">
                             <ui:SymbolIcon.Style>
                                 <Style TargetType="ui:SymbolIcon">
                                     <Setter Property="Symbol" Value="Eye24"/>
@@ -225,13 +232,73 @@
                                    Symbol="ErrorCircle24"
                                    FontSize="16"
                                    Foreground="{DynamicResource AppBadgeDangerForegroundBrush}"
-                                   Margin="0,0,8,0"/>
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding ErrorMessage}"
-                               Foreground="{DynamicResource AppBadgeDangerForegroundBrush}"
-                               FontSize="12"
-                               TextWrapping="Wrap"
-                               VerticalAlignment="Center"/>
+                                   Margin="0,1,8,0"
+                                   VerticalAlignment="Top"/>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding ErrorMessage}"
+                                   Foreground="{DynamicResource AppBadgeDangerForegroundBrush}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding ErrorGuidance}"
+                                   Foreground="{DynamicResource AppTextPrimaryBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"
+                                   Visibility="{Binding ErrorGuidance, Converter={StaticResource StringNullOrEmptyToVis}, ConverterParameter=Invert}"/>
+                        <StackPanel Margin="0,8,0,0"
+                                    Visibility="{Binding ErrorDetails, Converter={StaticResource StringNullOrEmptyToVis}, ConverterParameter=Invert}">
+                            <ui:Button x:Name="ErrorDetailsToggleButton"
+                                       Style="{StaticResource ToolButtonStyle}"
+                                       Command="{Binding ToggleErrorDetailsCommand}"
+                                       HorizontalAlignment="Left"
+                                       MinHeight="24"
+                                       Padding="0"
+                                       FontSize="12">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Foreground="{DynamicResource AppBrandAccentBrush}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="{DynamicResource Login_ShowErrorDetails}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsErrorDetailsExpanded}" Value="True">
+                                                        <Setter Property="Text" Value="{DynamicResource Login_HideErrorDetails}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <ui:SymbolIcon FontSize="12"
+                                                   Foreground="{DynamicResource AppBrandAccentBrush}"
+                                                   Margin="6,0,0,0">
+                                        <ui:SymbolIcon.Style>
+                                            <Style TargetType="ui:SymbolIcon">
+                                                <Setter Property="Symbol" Value="ChevronDown24"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsErrorDetailsExpanded}" Value="True">
+                                                        <Setter Property="Symbol" Value="ChevronUp24"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:SymbolIcon.Style>
+                                    </ui:SymbolIcon>
+                                </StackPanel>
+                            </ui:Button>
+                            <TextBox Text="{Binding ErrorDetails, Mode=OneWay}"
+                                     IsReadOnly="True"
+                                     TextWrapping="Wrap"
+                                     MaxHeight="160"
+                                     VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Disabled"
+                                     Background="{DynamicResource AppInputBackgroundBrush}"
+                                     Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                     BorderBrush="{DynamicResource AppInputBorderBrush}"
+                                     FontSize="11"
+                                     Padding="8"
+                                     Margin="0,6,0,0"
+                                     Visibility="{Binding IsErrorDetailsExpanded, Converter={StaticResource BoolToVis}}"/>
+                        </StackPanel>
+                    </StackPanel>
                 </Grid>
             </Border>
 
@@ -246,6 +313,7 @@
                        Click="SignIn_OnClick">
                 <Grid>
                     <TextBlock Text="{DynamicResource Login_SignInButton}"
+                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ui:Button}}"
                                HorizontalAlignment="Center"
                                Visibility="{Binding IsAuthenticating, Converter={StaticResource InverseBoolToVis}}"/>
                     <StackPanel Orientation="Horizontal"
@@ -255,10 +323,13 @@
                                          Height="16"
                                          IsIndeterminate="True"
                                          Margin="0,0,8,0"/>
-                        <TextBlock Text="{DynamicResource Login_SigningInButton}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Login_SigningInButton}"
+                                   Foreground="{DynamicResource AppTextPrimaryBrush}"
+                                   VerticalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
             </ui:Button>
         </StackPanel>
+        </ScrollViewer>
     </Grid>
 </ui:FluentWindow>

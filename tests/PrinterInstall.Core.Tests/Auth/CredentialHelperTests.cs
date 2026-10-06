@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using PrinterInstall.Core.Auth;
+using PrinterInstall.Core.Remote;
 using Xunit;
 
 namespace PrinterInstall.Core.Tests.Auth;
@@ -27,6 +28,11 @@ public sealed class CredentialHelperTests
     [InlineData("EMPRESA", "user@empresa.test", "user@empresa.test")]
     [InlineData(null, "00000000000", "00000000000")]
     [InlineData("", "00000000000", "00000000000")]
+    [InlineData("laboratorio.test", "jsilva", "jsilva@laboratorio.test")]
+    [InlineData("laboratorio.test", "jsilva@custom.example", "jsilva@custom.example")]
+    [InlineData("unused", @"laboratorio.test\jsilva", "jsilva@laboratorio.test")]
+    [InlineData(".", "admin", @".\admin")]
+    [InlineData("192.0.2.10", "admin", @"192.0.2.10\admin")]
     public void FormatDomainUser_FormatsCorrectlyWithoutDuplicates(string? domain, string? userName, string expected)
     {
         var result = CredentialHelper.FormatDomainUser(domain, userName);
@@ -61,5 +67,14 @@ public sealed class CredentialHelperTests
         var cred = new NetworkCredential(@"LABORATORIO\jsilva", "senha123", "LABORATORIO");
         var result = CredentialHelper.BuildCredentialUserName(cred);
         Assert.Equal(@"LABORATORIO\jsilva", result);
+    }
+
+    [Fact]
+    public void RemoteProtocols_UseTheSameUpnForDnsDomain()
+    {
+        var credential = new NetworkCredential("jsilva", "secret", "laboratorio.test");
+        Assert.Equal("jsilva@laboratorio.test", CredentialHelper.BuildCredentialUserName(credential));
+        Assert.Equal("jsilva@laboratorio.test", WmiPrinterOperationsCore.BuildCredentialUserName(credential));
+        Assert.Equal("jsilva@laboratorio.test", SchtasksRunAsFormatter.FormatRunAsUser(credential));
     }
 }

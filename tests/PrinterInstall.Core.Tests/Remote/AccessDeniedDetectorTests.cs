@@ -7,6 +7,13 @@ namespace PrinterInstall.Core.Tests.Remote;
 public class AccessDeniedDetectorTests
 {
     [Fact]
+    public void IsAccessDenied_Win32Code5_DoesNotDependOnLocalizedMessage()
+    {
+        Assert.True(AccessDeniedDetector.IsAccessDenied(new System.ComponentModel.Win32Exception(5, "SMB mount failed")));
+        Assert.False(AccessDeniedDetector.IsAccessDenied(new System.ComponentModel.Win32Exception(53, "Network path not found")));
+    }
+
+    [Fact]
     public void IsAccessDenied_UnauthorizedAccessException_ReturnsTrue()
     {
         Assert.True(AccessDeniedDetector.IsAccessDenied(new UnauthorizedAccessException()));

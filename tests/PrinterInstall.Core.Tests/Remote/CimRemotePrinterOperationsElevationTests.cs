@@ -195,6 +195,40 @@ public class CimRemotePrinterOperationsElevationTests
     }
 
     [Fact]
+    public async Task InstallPrinterDriverAsync_Cancelled_CapturesInstallLogWithIndependentToken()
+    {
+        using var cts = new CancellationTokenSource();
+        var sessionFactory = CreateSessionFactoryWithCachedSession(Host, new RemoteHostSession(Host, false));
+        var stager = new Mock<IRemoteDriverFileStager>();
+        var runner = new Mock<IRemoteWmiProcessRunner>();
+        var paths = RemoteDriverStagingPaths.Create(Host);
+        var actions = new List<string>();
+        var messages = new List<string>();
+        stager.Setup(x => x.StageAsync(Host, Credential, It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(paths);
+        stager.Setup(x => x.WriteTextFileAsync(Host, Credential, paths, "install.ps1", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        runner.Setup(x => x.RunAsync(Host, Credential, It.IsAny<string>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                cts.Cancel();
+                return Task.FromCanceled<RemoteProcessResult>(cts.Token);
+            });
+        stager.Setup(x => x.ReadLogAsync(Host, Credential, paths, "install.log", It.Is<CancellationToken>(t => !t.IsCancellationRequested)))
+            .Callback(() => actions.Add("read")).ReturnsAsync("PNPUTIL>> last completed step");
+        stager.Setup(x => x.CleanupAsync(Host, Credential, paths, It.IsAny<CancellationToken>()))
+            .Callback(() => actions.Add("cleanup")).Returns(Task.CompletedTask);
+        var sut = new CimRemotePrinterOperations(stager.Object, sessionFactory, runner.Object,
+            new ElevatedRemoteProcessRunner(runner.Object, stager.Object));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => sut.InstallPrinterDriverAsync(
+            Host, Credential, new LocalDriverPackage(PrinterBrand.Lexmark, @"C:\Fake", "fake.inf", "Driver"),
+            new PrinterInstall.Core.Tests.TestSupport.InlineProgress<string>(messages.Add), cts.Token));
+
+        Assert.Equal(new[] { "read", "cleanup" }, actions);
+        Assert.Contains(messages, message => message.Contains("last completed step"));
+    }
+
+    [Fact]
     public async Task RenamePrinterQueueAsync_WhenSessionRequiresElevation_RunsElevatedScript()
     {
         var session = new RemoteHostSession(Host, requiresElevatedExecution: true);
